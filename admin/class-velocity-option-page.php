@@ -79,7 +79,7 @@
                             <input type="checkbox" id="limit_login_attempts" name="limit_login_attempts" value="1" <?php checked(get_option('limit_login_attempts'), 1); ?>>
                             <label for="limit_login_attempts">
                                 <small>
-                                Opsi ini memungkinkan Anda untuk membatasi jumlah percobaan login yang diizinkan untuk pengguna. Jika opsi ini diaktifkan, ketika pengguna melakukan percobaan login yang melebihi batas yang ditentukan, mereka akan diblokir untuk sementara waktu sebagai tindakan keamanan.
+                                Opsi ini memungkinkan Anda untuk membatasi jumlah percobaan login yang diizinkan untuk pengguna. Jika opsi ini diaktifkan, ketika pengguna melakukan percobaan login yang melebihi 5X dalam 24 Jam, mereka akan diblokir untuk sementara waktu sebagai tindakan keamanan.
                                 </small>
                             </label>
                         </td>
