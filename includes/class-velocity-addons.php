@@ -132,19 +132,24 @@ class Velocity_Addons {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-maintenance-mode.php';
 
 		/**
-		 * Berisi Class untuk disable XML RPC
+		 * Berisi Class untuk disable XML RPC.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-maintenance-mode.php';
 
 		/**
-		 * Berisi Class untuk disable REST API
+		 * Berisi Class untuk disable REST API.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-disable-rest-api.php';
 
 		/**
-		 * Berisi Class untuk disable visual editor
+		 * Berisi Class untuk disable visual editor.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-disable-gutenberg.php';
+
+		/**
+		 * Berisi Class untuk block akses ke wp-admin berdasarkan kode negara.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-block-wp-login.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.

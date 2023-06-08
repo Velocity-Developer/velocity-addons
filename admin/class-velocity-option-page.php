@@ -41,6 +41,7 @@
         register_setting('custom_admin_options_group', 'disable_gutenberg');
         register_setting('custom_admin_options_group', 'block_wp_login');
         register_setting('custom_admin_options_group', 'whitelist_country');
+        register_setting('custom_admin_options_group', 'redirect_to');
     }
   
     public function options_page_callback() {
@@ -144,6 +145,17 @@
                         <td>
                             <input type="text" id="whitelist_country" name="whitelist_country" value="<?php echo esc_attr(get_option('whitelist_country')); ?>">
                             <label for="whitelist_country">
+                                <small>
+                                Whitelist Country adalah opsi yang memungkinkan Anda membatasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.
+                                </small>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Redirect To</th>
+                        <td>
+                            <input type="text" id="redirect_to" name="redirect_to" value="<?php echo esc_attr(get_option('redirect_to',home_url())); ?>">
+                            <label for="redirect_to">
                                 <small>
                                 Whitelist Country adalah opsi yang memungkinkan Anda membatasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.
                                 </small>
