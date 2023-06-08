@@ -132,6 +132,11 @@ class Velocity_Addons {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-maintenance-mode.php';
 
 		/**
+		 * Berisi Class untuk disable XML RPC
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-maintenance-mode.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-velocity-addons-admin.php';
