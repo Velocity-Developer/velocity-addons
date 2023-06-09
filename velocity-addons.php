@@ -16,7 +16,7 @@
  * Plugin Name:       Velocity Addons
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Addon plugin for Velocitydeveloper Client
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
@@ -36,6 +36,10 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'VELOCITY_ADDONS_VERSION', '1.0.0' );
+
+define('PLUGIN_DIR', plugin_dir_path(__DIR__));
+define('PLUGIN_FILE', plugin_dir_path(__FILE__));
+define('PLUGIN_BASE_NAME', plugin_basename( __DIR__ ));
 
 /**
  * The code that runs during plugin activation.
