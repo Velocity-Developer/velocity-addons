@@ -154,7 +154,7 @@
                     <tr>
                         <th scope="row">Redirect To</th>
                         <td>
-                            <input type="text" id="redirect_to" name="redirect_to" value="<?php echo esc_attr(get_option('redirect_to',home_url())); ?>">
+                            <input type="text" id="redirect_to" name="redirect_to" value="<?php echo esc_attr(get_option('redirect_to','http://127.0.0.1')); ?>">
                             <label for="redirect_to">
                                 <small>
                                 Fungsi ini hanya berjalan jika Block wp-login.php aktif. BVerfungsi untuk redirect wp-login.php
