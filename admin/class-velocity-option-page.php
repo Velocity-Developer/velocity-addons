@@ -53,7 +53,7 @@
                 <?php do_settings_sections('custom_admin_options_group'); ?>
                 <table class="form-table">
                     <tr>
-                        <th scope="row">Fully Disable Comment</th>
+                        <th scope="row">Disable Comment</th>
                         <td>
                             <input type="checkbox" id="fully_disable_comment" name="fully_disable_comment" value="1" <?php checked(get_option('fully_disable_comment'), 1); ?>>
                             <label for="fully_disable_comment">
@@ -157,7 +157,7 @@
                             <input type="text" id="redirect_to" name="redirect_to" value="<?php echo esc_attr(get_option('redirect_to',home_url())); ?>">
                             <label for="redirect_to">
                                 <small>
-                                Whitelist Country adalah opsi yang memungkinkan Anda membatasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.
+                                Fungsi ini hanya berjalan jika Block wp-login.php aktif. BVerfungsi untuk redirect wp-login.php
                                 </small>
                             </label>
                         </td>
