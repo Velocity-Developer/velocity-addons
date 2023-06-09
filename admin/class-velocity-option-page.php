@@ -55,7 +55,7 @@
                     <tr>
                         <th scope="row">Disable Comment</th>
                         <td>
-                            <input type="checkbox" id="fully_disable_comment" name="fully_disable_comment" value="1" <?php checked(get_option('fully_disable_comment'), 1); ?>>
+                            <input type="checkbox" id="fully_disable_comment" name="fully_disable_comment" value="1" <?php checked(get_option('fully_disable_comment','1'), 1); ?>>
                             <label for="fully_disable_comment">
                                 <small>
                                     Opsi ini memungkinkan Anda untuk sepenuhnya menonaktifkan fitur komentar pada situs WordPress Anda. Ketika opsi ini diaktifkan, pengguna tidak akan dapat meninggalkan komentar di halaman atau postingan.
@@ -66,7 +66,7 @@
                     <tr>
                         <th scope="row">Hide Admin Notice</th>
                         <td>
-                            <input type="checkbox" id="hide_admin_notice" name="hide_admin_notice" value="1" <?php checked(get_option('hide_admin_notice'), 1); ?>>
+                            <input type="checkbox" id="hide_admin_notice" name="hide_admin_notice" value="1" <?php checked(get_option('hide_admin_notice','1'), 1); ?>>
                             <label for="hide_admin_notice">
                                 <small>
                                 Dengan opsi ini, Anda dapat menyembunyikan pemberitahuan admin di halaman admin WordPress. Pemberitahuan admin seringkali muncul untuk memberikan informasi atau peringatan kepada admin situs, dan dengan mengaktifkan opsi ini, Anda dapat menghilangkannya untuk mengurangi gangguan visual.
@@ -77,7 +77,7 @@
                     <tr>
                         <th scope="row">Limit Login Attempts</th>
                         <td>
-                            <input type="checkbox" id="limit_login_attempts" name="limit_login_attempts" value="1" <?php checked(get_option('limit_login_attempts'), 1); ?>>
+                            <input type="checkbox" id="limit_login_attempts" name="limit_login_attempts" value="1" <?php checked(get_option('limit_login_attempts','1'), 1); ?>>
                             <label for="limit_login_attempts">
                                 <small>
                                 Opsi ini memungkinkan Anda untuk membatasi jumlah percobaan login yang diizinkan untuk pengguna. Jika opsi ini diaktifkan, ketika pengguna melakukan percobaan login yang melebihi 5X dalam 24 Jam, mereka akan diblokir untuk sementara waktu sebagai tindakan keamanan.
@@ -99,7 +99,7 @@
                     <tr>
                         <th scope="row">Disable XML-RPC</th>
                         <td>
-                            <input type="checkbox" id="disable_xmlrpc" name="disable_xmlrpc" value="1" <?php checked(get_option('disable_xmlrpc'), 1); ?>>
+                            <input type="checkbox" id="disable_xmlrpc" name="disable_xmlrpc" value="1" <?php checked(get_option('disable_xmlrpc','1'), 1); ?>>
                             <label for="disable_xmlrpc">
                                 <small>
                                 Opsi ini memungkinkan Anda untuk menonaktifkan protokol XML-RPC pada situs WordPress. XML-RPC digunakan oleh beberapa aplikasi atau layanan pihak ketiga untuk berinteraksi dengan situs WordPress. Dengan mengaktifkan opsi ini, Anda dapat membatasi akses melalui XML-RPC untuk alasan keamanan.
@@ -110,7 +110,7 @@
                     <tr>
                         <th scope="row">Disable REST API / JSON</th>
                         <td>
-                            <input type="checkbox" id="disable_rest_api" name="disable_rest_api" value="1" <?php checked(get_option('disable_rest_api'), 1); ?>>
+                            <input type="checkbox" id="disable_rest_api" name="disable_rest_api" value="1" <?php checked(get_option('disable_rest_api','1'), 1); ?>>
                             <label for="disable_rest_api">
                                 <small>
                                 Dengan opsi ini, Anda dapat menonaktifkan antarmuka pemrograman aplikasi (API) REST pada situs WordPress Anda. REST API memungkinkan aplikasi atau layanan eksternal untuk berkomunikasi dengan situs WordPress. Dengan mengaktifkan opsi ini, Anda dapat membatasi akses ke REST API untuk keperluan keamanan atau privasi.
@@ -121,7 +121,7 @@
                     <tr>
                         <th scope="row">Disable Gutenberg</th>
                         <td>
-                            <input type="checkbox" id="disable_gutenberg" name="disable_gutenberg" value="1" <?php checked(get_option('disable_gutenberg'), 1); ?>>
+                            <input type="checkbox" id="disable_gutenberg" name="disable_gutenberg" value="1" <?php checked(get_option('disable_gutenberg','1'), 1); ?>>
                             <label for="disable_gutenberg">
                                 <small>
                                 Opsi ini memungkinkan Anda untuk menonaktifkan editor blok Gutenberg pada situs WordPress. Jika opsi ini diaktifkan, Anda akan kembali menggunakan editor klasik WordPress. Gutenberg adalah editor konten visual yang diperkenalkan dalam versi WordPress 5.0.
@@ -132,7 +132,7 @@
                     <tr>
                         <th scope="row">Block wp-login.php</th>
                         <td>
-                            <input type="checkbox" id="block_wp_login" name="block_wp_login" value="1" <?php checked(get_option('block_wp_login'), 1); ?>>
+                            <input type="checkbox" id="block_wp_login" name="block_wp_login" value="1" <?php checked(get_option('block_wp_login','1'), 1); ?>>
                             <label for="block_wp_login">
                                 <small>
                                 "Block wp-login.php" adalah opsi yang memungkinkan Anda untuk mengaktifkan pemblokiran akses ke file wp-login.php pada situs WordPress.
