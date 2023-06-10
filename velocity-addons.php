@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'VELOCITY_ADDONS_VERSION', '1.0.0' );
+define( 'VELOCITY_ADDONS_VERSION', '1.0.2' );
 
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
 define('PLUGIN_FILE', plugin_basename(__FILE__));
@@ -67,6 +67,10 @@ register_deactivation_hook( __FILE__, 'deactivate_velocity_addons' );
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-velocity-addons.php';
+
+/**
+ * The core plugin class that is used to cek update and run auto update.
+ */
 require 'includes/plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 $myUpdateChecker = PucFactory::buildUpdateChecker(
