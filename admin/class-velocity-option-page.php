@@ -160,7 +160,7 @@ class Custom_Admin_Option_Page
         <tr>
             <th scope="row">Whitelist Country</th>
             <td>
-                <input type="text" id="whitelist_country" name="whitelist_country" value="<?php echo esc_attr(get_option('whitelist_country')); ?>">
+                <input type="text" id="whitelist_country" name="whitelist_country" value="<?php echo esc_attr(get_option('whitelist_country', 'ID')); ?>">
                 <label for="whitelist_country">
                     <small>
                         Whitelist Country adalah opsi yang memungkinkan Anda membatasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.
