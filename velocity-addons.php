@@ -38,7 +38,7 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'VELOCITY_ADDONS_VERSION', '1.0.0' );
 
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
-define('PLUGIN_FILE', plugin_dir_path(__FILE__));
+define('PLUGIN_FILE', plugin_basename(__FILE__));
 define('PLUGIN_BASE_NAME', plugin_basename( __DIR__ ));
 
 /**
@@ -67,6 +67,13 @@ register_deactivation_hook( __FILE__, 'deactivate_velocity_addons' );
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-velocity-addons.php';
+require 'includes/plugin-update-checker/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+$myUpdateChecker = PucFactory::buildUpdateChecker(
+	'https://velocitydeveloper.id/auto-update/plugins/velocity-addons/info.json',
+	__FILE__, //Full path to the main plugin file or functions.php.
+	'velocity-addons'
+);
 
 /**
  * Begins execution of the plugin.
