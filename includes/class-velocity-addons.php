@@ -27,7 +27,8 @@
  * @subpackage Velocity_Addons/includes
  * @author     Velocity <bantuanvelocity@gmail.com>
  */
-class Velocity_Addons {
+class Velocity_Addons
+{
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -66,8 +67,9 @@ class Velocity_Addons {
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct() {
-		if ( defined( 'VELOCITY_ADDONS_VERSION' ) ) {
+	public function __construct()
+	{
+		if (defined('VELOCITY_ADDONS_VERSION')) {
 			$this->version = VELOCITY_ADDONS_VERSION;
 		} else {
 			$this->version = '1.0.0';
@@ -78,7 +80,6 @@ class Velocity_Addons {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
-
 	}
 
 	/**
@@ -97,84 +98,89 @@ class Velocity_Addons {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function load_dependencies() {
+	private function load_dependencies()
+	{
 
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-loader.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-i18n.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-i18n.php';
 
 		/**
 		 * Berisi Class untuk mematikan fungsi komentar di wordpress.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-disable-comments.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-disable-comments.php';
 
 		/**
 		 * Berisi Class untuk mematikan semua notice di wp-admin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-hide-admin-notice.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-hide-admin-notice.php';
 
 		/**
 		 * Berisi Class untuk membatasi gagal login.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-limit-login-attempts.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-limit-login-attempts.php';
 
 		/**
 		 * Berisi Class untuk fungsi maintenance mode.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-maintenance-mode.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-maintenance-mode.php';
 
 		/**
 		 * Berisi Class untuk disable XML RPC.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-maintenance-mode.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-maintenance-mode.php';
 
 		/**
 		 * Berisi Class untuk disable REST API.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-disable-rest-api.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-disable-rest-api.php';
 
 		/**
 		 * Berisi Class untuk disable visual editor.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-disable-gutenberg.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-disable-gutenberg.php';
 
 		/**
 		 * Berisi Class untuk block akses ke wp-admin berdasarkan kode negara.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-block-wp-login.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-block-wp-login.php';
 
 		/**
 		 * Berisi Class untuk auto update plugin
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-velocity-addons-auto-updater.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-auto-updater.php';
+
+		/**
+		 * Berisi Class untuk standar Editor
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-standar-editor.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-velocity-addons-admin.php';
-		
+		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-admin.php';
+
 		/**
 		 * Class untuk menambah option page untuk Admin Option
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-velocity-option-page.php';
-		
+		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-option-page.php';
+
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-velocity-addons-public.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'public/class-velocity-addons-public.php';
 
 		$this->loader = new Velocity_Addons_Loader();
-
 	}
 
 	/**
@@ -186,12 +192,12 @@ class Velocity_Addons {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function set_locale() {
+	private function set_locale()
+	{
 
 		$plugin_i18n = new Velocity_Addons_i18n();
 
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-
+		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
 	}
 
 	/**
@@ -201,13 +207,13 @@ class Velocity_Addons {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function define_admin_hooks() {
+	private function define_admin_hooks()
+	{
 
-		$plugin_admin = new Velocity_Addons_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new Velocity_Addons_Admin($this->get_plugin_name(), $this->get_version());
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
+		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
+		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 	}
 
 	/**
@@ -217,13 +223,13 @@ class Velocity_Addons {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function define_public_hooks() {
+	private function define_public_hooks()
+	{
 
-		$plugin_public = new Velocity_Addons_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new Velocity_Addons_Public($this->get_plugin_name(), $this->get_version());
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-
+		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
+		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
 	}
 
 	/**
@@ -231,7 +237,8 @@ class Velocity_Addons {
 	 *
 	 * @since    1.0.0
 	 */
-	public function run() {
+	public function run()
+	{
 		$this->loader->run();
 	}
 
@@ -242,7 +249,8 @@ class Velocity_Addons {
 	 * @since     1.0.0
 	 * @return    string    The name of the plugin.
 	 */
-	public function get_plugin_name() {
+	public function get_plugin_name()
+	{
 		return $this->plugin_name;
 	}
 
@@ -252,7 +260,8 @@ class Velocity_Addons {
 	 * @since     1.0.0
 	 * @return    Velocity_Addons_Loader    Orchestrates the hooks of the plugin.
 	 */
-	public function get_loader() {
+	public function get_loader()
+	{
 		return $this->loader;
 	}
 
@@ -262,8 +271,8 @@ class Velocity_Addons {
 	 * @since     1.0.0
 	 * @return    string    The version number of the plugin.
 	 */
-	public function get_version() {
+	public function get_version()
+	{
 		return $this->version;
 	}
-
 }
