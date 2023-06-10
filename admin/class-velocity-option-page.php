@@ -153,7 +153,7 @@ class Custom_Admin_Option_Page
                             <input type="checkbox" id="standar_editor_velocity" name="standar_editor_velocity" value="1" <?php checked(get_option('standar_editor_velocity', '0'), 1); ?>>
                             <label for="standar_editor_velocity">
                                 <small>
-                                    Opsi untuk menggunakan pengaturan dasar Editor TinyMCE, seperti : Tombol Justify,Underline
+                                    Opsi untuk menggunakan pengaturan dasar Editor TinyMCE
                                 </small>
                             </label>
                         </td>
