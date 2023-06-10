@@ -13,10 +13,10 @@
  * @package           Velocity_Addons
  *
  * @wordpress-plugin
- * Plugin Name:       Velocity Addons
+ * Plugin Name:       Velocity Security
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Addon plugin for Velocitydeveloper Client
- * Version:           1.0.2
+ * Version:           1.0.3
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('VELOCITY_ADDONS_VERSION', '1.0.2');
+define('VELOCITY_ADDONS_VERSION', '1.0.3');
 
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
 define('PLUGIN_FILE', plugin_basename(__FILE__));
