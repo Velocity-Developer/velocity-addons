@@ -159,9 +159,15 @@ class Velocity_Addons
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-auto-updater.php';
 
 		/**
+		 * Berisi Class untuk Classic Widget
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-classic-widget.php';
+
+		/**
 		 * Berisi Class untuk standar Editor
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-standar-editor.php';
+
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.

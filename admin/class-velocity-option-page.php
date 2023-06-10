@@ -47,6 +47,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'whitelist_country');
         register_setting('custom_admin_options_group', 'redirect_to');
         register_setting('custom_admin_options_group', 'standar_editor_velocity');
+        register_setting('custom_admin_options_group', 'classic_widget_velocity');
     }
 
     public function options_page_callback()
@@ -136,6 +137,17 @@ class Custom_Admin_Option_Page
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row">Classic Widget</th>
+                        <td>
+                            <input type="checkbox" id="classic_widget_velocity" name="classic_widget_velocity" value="1" <?php checked(get_option('classic_widget_velocity', '1'), 1); ?>>
+                            <label for="classic_widget_velocity">
+                                <small>
+                                    Opsi untuk menggunakan Widget Classic
+                                </small>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row">Standar Editor TinyMCE</th>
                         <td>
                             <input type="checkbox" id="standar_editor_velocity" name="standar_editor_velocity" value="1" <?php checked(get_option('standar_editor_velocity', '0'), 1); ?>>
@@ -154,34 +166,33 @@ class Custom_Admin_Option_Page
                                 <small>
                                     "Block wp-login.php" adalah opsi yang memungkinkan Anda untuk mengaktifkan pemblokiran akses ke file wp-login.php pada situs WordPress.
                                 </small>
-        </div>
-        </td>
-        </tr>
-        <tr>
-            <th scope="row">Whitelist Country</th>
-            <td>
-                <input type="text" id="whitelist_country" name="whitelist_country" value="<?php echo esc_attr(get_option('whitelist_country', 'ID')); ?>">
-                <label for="whitelist_country">
-                    <small>
-                        Whitelist Country adalah opsi yang memungkinkan Anda membatasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.
-                    </small>
-                </label>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row">Redirect To</th>
-            <td>
-                <input type="text" id="redirect_to" name="redirect_to" value="<?php echo esc_attr(get_option('redirect_to', 'http://127.0.0.1')); ?>">
-                <label for="redirect_to">
-                    <small>
-                        Fungsi ini hanya berjalan jika Block wp-login.php aktif. BVerfungsi untuk redirect wp-login.php
-                    </small>
-                </label>
-            </td>
-        </tr>
-        </table>
-        <?php submit_button(); ?>
-        </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Whitelist Country</th>
+                        <td>
+                            <input type="text" id="whitelist_country" name="whitelist_country" value="<?php echo esc_attr(get_option('whitelist_country', 'ID')); ?>">
+                            <label for="whitelist_country">
+                                <small>
+                                    Whitelist Country adalah opsi yang memungkinkan Anda membatasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.
+                                </small>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Redirect To</th>
+                        <td>
+                            <input type="text" id="redirect_to" name="redirect_to" value="<?php echo esc_attr(get_option('redirect_to', 'http://127.0.0.1')); ?>">
+                            <label for="redirect_to">
+                                <small>
+                                    Fungsi ini hanya berjalan jika Block wp-login.php aktif. BVerfungsi untuk redirect wp-login.php
+                                </small>
+                            </label>
+                        </td>
+                    </tr>
+                </table>
+                <?php submit_button(); ?>
+            </form>
         </div>
 <?php
     }
