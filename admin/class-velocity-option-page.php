@@ -48,6 +48,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'redirect_to');
         register_setting('custom_admin_options_group', 'standar_editor_velocity');
         register_setting('custom_admin_options_group', 'classic_widget_velocity');
+        register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
     }
 
     public function options_page_callback()
@@ -154,6 +155,17 @@ class Custom_Admin_Option_Page
                             <label for="standar_editor_velocity">
                                 <small>
                                     Opsi untuk menggunakan pengaturan dasar Editor TinyMCE
+                                </small>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Remove Slug Category</th>
+                        <td>
+                            <input type="checkbox" id="remove_slug_category_velocity" name="remove_slug_category_velocity" value="1" <?php checked(get_option('remove_slug_category_velocity', '1'), 1); ?>>
+                            <label for="remove_slug_category_velocity">
+                                <small>
+                                    Opsi ini untuk hapus /category/ dari URL
                                 </small>
                             </label>
                         </td>

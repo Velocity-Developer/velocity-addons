@@ -168,6 +168,11 @@ class Velocity_Addons
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-standar-editor.php';
 
+		/**
+		 * Berisi Class untuk hapus slug category
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-remove-slug-category.php';
+
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
