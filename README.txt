@@ -25,6 +25,7 @@ This section describes how to install the plugin and get it working.
 = 1.0.3 =
 add Classic Widget : Kembalikan pengelolaan widget ke tampilan klasik
 Add Standar Editor TinyMCE
+Add Remove Slug Category
 
 = 1.0.2 =
 Auto Update Plugin
