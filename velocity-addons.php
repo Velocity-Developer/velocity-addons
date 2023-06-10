@@ -71,7 +71,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-velocity-addons.php';
 /**
  * The core plugin class that is used to cek update and run auto update.
  */
-require 'includes/plugin-update-checker/plugin-update-checker.php';
+require 'lib/plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 $myUpdateChecker = PucFactory::buildUpdateChecker(
 	'https://velocitydeveloper.id/auto-update/plugins/velocity-addons/info.json',
