@@ -22,6 +22,10 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+= 1.0.4 =
+- Perbaikan bug Permalink
+- Exclude halaman myaccount dari maintenance mode
+
 = 1.0.3 =
 add Classic Widget : Kembalikan pengelolaan widget ke tampilan klasik
 Add Standar Editor TinyMCE
