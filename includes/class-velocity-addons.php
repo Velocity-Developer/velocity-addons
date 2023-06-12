@@ -136,7 +136,7 @@ class Velocity_Addons
 		/**
 		 * Berisi Class untuk disable XML RPC.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-maintenance-mode.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-disable-xmlrpc.php';
 
 		/**
 		 * Berisi Class untuk disable REST API.
