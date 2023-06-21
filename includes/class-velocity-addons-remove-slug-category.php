@@ -22,23 +22,35 @@
  * @author     Velocity <bantuanvelocity@gmail.com>
  */
 
-class Velocity_Addons_Remove_Slug_Category
-{
-    public function __construct()
-    {
-        if (get_option('remove_slug_category_velocity')) {
-            add_filter('user_trailingslashit', array($this, 'remove_category'), 100, 2);
-        }
+ class Velocity_Addons_Remove_Slug_Category {
+    public function __construct() {
+        add_filter('post_type_link', array($this, 'remove_category_slug'), 10, 2);
+        add_action('init', array($this, 'flush_rewrite_rules'));
     }
 
-    function remove_category($string, $type)
-    {
-        if ($type != 'single' && $type == 'category' && (strpos($string, 'category') !== false)) {
-            $url_without_category = str_replace("/category/", "/", $string);
-            return trailingslashit($url_without_category);
+    public function remove_category_slug($post_link, $post) {
+        $remove_slug_category = get_option('remove_slug_category_velocity');
+
+        if ($remove_slug_category && 'post' === $post->post_type && 'publish' === $post->post_status) {
+            $categories = get_the_category($post->ID);
+
+            if ($categories) {
+                $category_slug = $categories[0]->slug;
+                $post_link = str_replace('/category/' . $category_slug, '/', $post_link);
+            }
         }
-        return $string;
+
+        return $post_link;
+    }
+
+    public function flush_rewrite_rules() {
+        $remove_slug_category = get_option('remove_slug_category_velocity');
+
+        if ($remove_slug_category) {
+            flush_rewrite_rules();
+        }
     }
 }
-// Initialize the Velocity_Addons_Standar_Editor class
-$velocity_addons_remove_slug_sategory = new Velocity_Addons_Remove_Slug_Category();
+
+// Inisialisasi class Velocity_Addons_Remove_Slug_Category
+$Velocity_Addons_Remove_Slug_Category = new Velocity_Addons_Remove_Slug_Category();
