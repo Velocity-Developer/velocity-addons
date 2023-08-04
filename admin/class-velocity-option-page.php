@@ -118,7 +118,7 @@ class Custom_Admin_Option_Page
                     <tr>
                         <th scope="row">Disable REST API / JSON</th>
                         <td>
-                            <input type="checkbox" id="disable_rest_api" name="disable_rest_api" value="1" <?php checked(get_option('disable_rest_api', '1'), 1); ?>>
+                            <input type="checkbox" id="disable_rest_api" name="disable_rest_api" value="0" <?php checked(get_option('disable_rest_api', '1'), 1); ?>>
                             <label for="disable_rest_api">
                                 <small>
                                     Dengan opsi ini, Anda dapat menonaktifkan antarmuka pemrograman aplikasi (API) REST pada situs WordPress Anda. REST API memungkinkan aplikasi atau layanan eksternal untuk berkomunikasi dengan situs WordPress. Dengan mengaktifkan opsi ini, Anda dapat membatasi akses ke REST API untuk keperluan keamanan atau privasi.
@@ -151,7 +151,7 @@ class Custom_Admin_Option_Page
                     <tr>
                         <th scope="row">Standar Editor TinyMCE</th>
                         <td>
-                            <input type="checkbox" id="standar_editor_velocity" name="standar_editor_velocity" value="1" <?php checked(get_option('standar_editor_velocity', '0'), 1); ?>>
+                            <input type="checkbox" id="standar_editor_velocity" name="standar_editor_velocity" value="0" <?php checked(get_option('standar_editor_velocity', '0'), 1); ?>>
                             <label for="standar_editor_velocity">
                                 <small>
                                     Opsi untuk menggunakan pengaturan dasar Editor TinyMCE
@@ -162,7 +162,7 @@ class Custom_Admin_Option_Page
                     <tr>
                         <th scope="row">Remove Slug Category</th>
                         <td>
-                            <input type="checkbox" id="remove_slug_category_velocity" name="remove_slug_category_velocity" value="1" <?php checked(get_option('remove_slug_category_velocity', '1'), 1); ?>>
+                            <input type="checkbox" id="remove_slug_category_velocity" name="remove_slug_category_velocity" value="0" <?php checked(get_option('remove_slug_category_velocity', '1'), 1); ?>>
                             <label for="remove_slug_category_velocity">
                                 <small>
                                     Opsi ini untuk hapus /category/ dari URL
