@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Fired during plugin activation
  *
@@ -10,18 +9,6 @@
  * @subpackage Velocity_Addons/includes
  */
 
-/**
- * Fired during plugin activation.
- *
- * This class defines all code necessary to run during the plugin's activation.
- *
- * @since      1.0.0
- * @package    Velocity_Addons
- * @subpackage Velocity_Addons/includes
- * @author     Velocity <bantuanvelocity@gmail.com>
- */
-
- // Fungsi untuk memblokir akses berdasarkan negara
 class Velocity_Addons_Block_Wp_Login {
     public function __construct() {
         if (get_option('block_wp_login')) {
@@ -32,15 +19,12 @@ class Velocity_Addons_Block_Wp_Login {
     public function block_wp_login() {
         if ('wp-login.php' === $GLOBALS['pagenow']) {
             $ip = $_SERVER['REMOTE_ADDR'];
-            $country_code = $this->get_country_code($ip);
+            $country_code = $this->get_country_code($ip, "Country Code");
 
-            // Debugging: Cek nilai country_code
-            error_log('Country Code: ' . $country_code);
-
-            $whitelist_countries = get_option('whitelist_country', 'ID');
+            $whitelist_countries = get_option('whitelist_country','ID');
             $whitelist_countries = array_map('trim', explode(',', $whitelist_countries));
 
-            if (!empty($country_code) && !in_array($country_code, $whitelist_countries)) {
+            if (!in_array($country_code, $whitelist_countries)) {
                 $redirect_to = get_option('redirect_to');
                 wp_redirect($redirect_to);
                 exit;
@@ -48,11 +32,7 @@ class Velocity_Addons_Block_Wp_Login {
         }
     }
 
-    private function get_country_code($ip = NULL) {
-        $output = NULL;
-        if (filter_var($ip, FILTER_VALIDATE_IP) === FALSE) {
-            $ip = $_SERVER["REMOTE_ADDR"];
-        }
+    private function get_country_code($ip = NULL, $purpose = "location", $deep_detect = TRUE) {
         $output = NULL;
         if (filter_var($ip, FILTER_VALIDATE_IP) === FALSE) {
             $ip = $_SERVER["REMOTE_ADDR"];
@@ -100,14 +80,10 @@ class Velocity_Addons_Block_Wp_Login {
                         $output = @$ipdat->geoplugin_city;
                         break;
                     case "state":
-                        $output = @$ipdat->geoplugin_regionName;
-                        break;
                     case "region":
                         $output = @$ipdat->geoplugin_regionName;
                         break;
                     case "country":
-                        $output = @$ipdat->geoplugin_countryName;
-                        break;
                     case "countrycode":
                         $output = @$ipdat->geoplugin_countryCode;
                         break;

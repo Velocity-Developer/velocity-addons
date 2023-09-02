@@ -22,6 +22,9 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+= 1.0.5 =
+- Perbaikan bug block wp-admin
+
 = 1.0.4 =
 - Perbaikan bug Permalink
 - Exclude halaman myaccount dari maintenance mode
