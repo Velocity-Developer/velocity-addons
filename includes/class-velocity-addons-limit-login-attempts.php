@@ -32,7 +32,7 @@
         }
     }
 
-    public function limit_login_attempts($username, $error) {
+    public function limit_login_attempts($username = null, $error = null) {
         $login_attempts = get_option('login_attempts', array());
 
         if (!is_array($login_attempts)) {
