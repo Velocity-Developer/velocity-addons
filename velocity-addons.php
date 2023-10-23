@@ -9,7 +9,7 @@
  * that starts the plugin.
  *
  * @link              https://velocitydeveloper.com
- * @since             1.0.4
+ * @since             1.0.5
  * @package           Velocity_Addons
  *
  * @wordpress-plugin
