@@ -173,6 +173,11 @@ class Velocity_Addons
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-remove-slug-category.php';
 
+		/**
+		 * Berisi Class untuk handle statistic
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-statistic.php';
+
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.

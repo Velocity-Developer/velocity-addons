@@ -16,7 +16,7 @@
  * Plugin Name:       Velocity Security
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Addon plugin for Velocitydeveloper Client
- * Version:           1.0.5
+ * Version:           1.0.6
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
