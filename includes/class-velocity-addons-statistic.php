@@ -25,6 +25,10 @@
  class Velocity_Addons_Statistic {
     public function __construct() {
 
+        $statistik_velocity = get_option('statistik_velocity','1');
+        if($statistik_velocity !== '1')
+        return false;
+
         // Inisialisasi sesi jika belum diinisialisasi
         if (session_id() === '') {
             session_start();
@@ -96,7 +100,14 @@
         );
     }
     public function add_admin_menu() {
-        add_menu_page('Statistik', 'Statistik', 'manage_options', 'statistik-kunjungan', array($this, 'display_admin_page'));
+        add_menu_page(
+            'Statistik', 
+            'Statistik', 
+            'manage_options', 
+            'statistik-kunjungan', 
+            array($this, 'display_admin_page'),
+            'dashicons-chart-pie',
+        );
     }
 
     public function display_admin_page() {
