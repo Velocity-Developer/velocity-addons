@@ -46,7 +46,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'block_wp_login');
         register_setting('custom_admin_options_group', 'whitelist_country');
         register_setting('custom_admin_options_group', 'redirect_to');
-        register_setting('custom_admin_options_group', 'standar_editor_velocity');
+        // register_setting('custom_admin_options_group', 'standar_editor_velocity');
         register_setting('custom_admin_options_group', 'classic_widget_velocity');
         register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
     }
@@ -148,7 +148,7 @@ class Custom_Admin_Option_Page
                             </label>
                         </td>
                     </tr>
-                    <tr>
+                    <tr style="display: none;">
                         <th scope="row">Standar Editor TinyMCE</th>
                         <td>
                             <input type="checkbox" id="standar_editor_velocity" name="standar_editor_velocity" value="0" <?php checked(get_option('standar_editor_velocity', '0'), 1); ?>>

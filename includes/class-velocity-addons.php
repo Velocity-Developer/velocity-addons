@@ -166,7 +166,7 @@ class Velocity_Addons
 		/**
 		 * Berisi Class untuk standar Editor
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-standar-editor.php';
+		// require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-standar-editor.php';
 
 		/**
 		 * Berisi Class untuk hapus slug category
