@@ -43,6 +43,15 @@
 
         // Tambahkan shortcode
         add_shortcode('statistik_kunjungan', array($this, 'display_statistik_kunjungan'));
+
+        // Tambahkan count hit di kolom post
+        add_filter('manage_post_posts_columns', array($this, 'statistik_posts_columns'));
+        add_action('manage_post_posts_custom_column', array($this, 'statistik_posts_column'), 10, 2);
+        add_filter('manage_page_posts_columns', array($this, 'statistik_posts_columns'));
+        add_action('manage_page_posts_custom_column', array($this, 'statistik_posts_column'), 10, 2);
+        
+        // Tambahkan action update meta 'hit'
+        add_action('wp_head', array($this, 'post_single_update_hit'));
     }
 
     private function check_and_create_table() {
@@ -77,9 +86,9 @@
     public function record_page_visit() {
         // Mendapatkan data kunjungan
         global $post;
-        $sesi = session_id();
-        $post_id = $post->ID;
-        $timestamp = current_time('mysql');
+        $sesi       = session_id();
+        $post_id    = isset($post->ID)?$post->ID:'';
+        $timestamp  = current_time('mysql');
 
         // Memasukkan data kunjungan ke dalam tabel database
         global $wpdb;
@@ -99,6 +108,7 @@
             )
         );
     }
+
     public function add_admin_menu() {
         add_menu_page(
             'Statistik', 
@@ -326,6 +336,56 @@
     
         return $online_visitors;
     }
+
+    public function get_count_post($post_id) {                     
+        global $wpdb;
+            
+        // Nama tabel
+        $table_name = $wpdb->prefix . 'vd_statistic';
+        
+        // Query untuk mendapatkan jumlah pengunjung berdasarkan ID Post
+        $totals = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM $table_name WHERE post_id = %s",
+                $post_id
+            )
+        );
+
+        return $totals;
+    }
+
+    public function statistik_posts_columns($columns) {
+        $columns['statistik'] = __('Hits', 'velocity-addons');
+        return $columns;
+    }
+
+    public function statistik_posts_column($column, $post_id) {        
+        switch ($column) {
+            case 'statistik':             
+                echo $this->get_count_post($post_id);
+            break;
+        }
+    }
+
+    //update meta hit untuk post 
+    public function post_single_update_hit(){        
+        if (is_singular('post')) {
+            global $post;
+            $postID     = $post->ID;
+            $countKey   = 'hit';
+            $count      = get_post_meta($postID, $countKey, true);
+            $newcount   = $this->get_count_post($postID);
+
+            if ($count == '') {
+                delete_post_meta($postID, $countKey);
+                add_post_meta($postID, $countKey, $newcount);
+            } else {
+                update_post_meta($postID, $countKey, $newcount);
+            }
+
+        }
+    }
+
 
 }
 
