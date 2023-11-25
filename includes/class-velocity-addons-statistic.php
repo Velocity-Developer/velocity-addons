@@ -49,7 +49,7 @@
         global $wpdb;
 
         $version_db = get_option('version_db', 1);
-        $current_version = 3.2;
+        $current_version = 3.3;
 
         // Cek apakah versi database lebih kecil dari versi sekarang
         if ($version_db < $current_version) {
@@ -113,83 +113,124 @@
     public function display_admin_page() {
         // Tampilkan konten halaman admin di sini
         echo '<div class="wrap">';
-        echo '<h1>Statistik Kunjungan</h1>';
-        
-        // Tampilkan tabel statistik
-        echo '<table class="widefat striped">';
-        echo '<thead>';
-        echo '<tr>';
-        echo '<th>Statistik</th>';
-        echo '<th>Jumlah</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
+            echo '<h1>Statistik Kunjungan</h1><br>';
+            
+            // Tampilkan tabel statistik
+            echo '<table class="widefat striped">';
+                echo '<thead>';
+                    echo '<tr>';
+                        echo '<th>Statistik</th>';
+                        echo '<th>Jumlah</th>';
+                        echo '<th>Shortcode</th>';
+                    echo '</tr>';
+                echo '</thead>';
+                echo '<tbody>';
 
-        // Tampilkan statistik kunjungan
-        $today_unique_visitors = $this->get_today_unique_visitors();
-        $today_visits = $this->get_today_visits();
-        $unique_visitors = $this->get_unique_visitors();
-        $total_visits = $this->get_total_visits();
-        $online_visitors = $this->get_online_visitors();
+                    // Tampilkan statistik kunjungan
+                    $today_unique_visitors = $this->get_today_unique_visitors();
+                    $today_visits = $this->get_today_visits();
+                    $unique_visitors = $this->get_unique_visitors();
+                    $total_visits = $this->get_total_visits();
+                    $online_visitors = $this->get_online_visitors();
 
-        echo '<tr>';
-        echo '<td>Pengunjung Hari Ini</td>';
-        echo '<td>' . $today_unique_visitors . ' Pengunjung</td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Kunjungan Hari Ini</td>';
-        echo '<td>' . $today_visits . ' Kunjungan</td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Total Pengunjung</td>';
-        echo '<td>' . $unique_visitors . ' Pengunjung</td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Total Kunjungan</td>';
-        echo '<td>' . $total_visits . ' Kunjungan</td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Pengunjung Online</td>';
-        echo '<td>' . $online_visitors . ' Pengunjung</td>';
-        echo '</tr>';
+                    echo '<tr>';
+                        echo '<td>Pengunjung Hari Ini</td>';
+                        echo '<td>' . $today_unique_visitors . ' Pengunjung</td>';
+                        echo '<td><code>[statistik_kunjungan stat=today_visitors]</code></td>';
+                    echo '</tr>';
+                    echo '<tr>';
+                        echo '<td>Kunjungan Hari Ini</td>';
+                        echo '<td>' . $today_visits . ' Kunjungan</td>';
+                        echo '<td><code>[statistik_kunjungan stat=today_visits]</code></td>';
+                    echo '</tr>';
+                    echo '<tr>';
+                        echo '<td>Total Pengunjung</td>';
+                        echo '<td>' . $unique_visitors . ' Pengunjung</td>';
+                        echo '<td><code>[statistik_kunjungan stat=total_visitors]</code></td>';
+                    echo '</tr>';
+                    echo '<tr>';
+                        echo '<td>Total Kunjungan</td>';
+                        echo '<td>' . $total_visits . ' Kunjungan</td>';
+                        echo '<td><code>[statistik_kunjungan stat=total_visits]</code></td>';
+                    echo '</tr>';
+                    echo '<tr>';
+                        echo '<td>Pengunjung Online</td>';
+                        echo '<td>' . $online_visitors . ' Pengunjung</td>';
+                        echo '<td><code>[statistik_kunjungan stat=online]</code></td>';
+                    echo '</tr>';
 
-        echo '</tbody>';
-        echo '</table>';
+                echo '</tbody>';
+            echo '</table>';
+
+            echo '<div style="margin-top: 2rem;">';
+                echo '<strong>Shortcode lengkap :</strong> <code>[statistik_kunjungan]</code>';
+            echo '</div>';
+
         echo '</div>';
 
     }
-    public function display_statistik_kunjungan() {
+
+    /// [statistik_kunjungan]
+    public function display_statistik_kunjungan($atts) {
         ob_start(); // Mulai buffering output
 
-        // Tampilkan list group statistik
-        echo '<ul class="list-group">';
-        
-        // Tampilkan statistik kunjungan
-        $today_unique_visitors = $this->get_today_unique_visitors();
-        $today_visits = $this->get_today_visits();
-        $unique_visitors = $this->get_unique_visitors();
-        $total_visits = $this->get_total_visits();
-        $online_visitors = $this->get_online_visitors();
+        ///attribut shortcode
+        $atribut = shortcode_atts(array(
+            'stat' => '',
+        ), $atts);
+        $stat = $atribut['stat'];
 
-        $stats = array(
-            'Pengunjung Hari Ini' => $today_unique_visitors,
-            'Kunjungan Hari Ini' => $today_visits,
-            'Total Pengunjung' => $unique_visitors,
-            'Total Kunjungan' => $total_visits,
-            'Pengunjung Online' => $online_visitors,
-        );
+        if($stat){
 
-        foreach ($stats as $label => $value) {
-            echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
-            echo $label;
-            echo '<span class="badge bg-secondary rounded-pill">' . $value . '</span>';
-            echo '</li>';
+            switch ($stat) {
+                case 'today_visits':
+                    echo $this->get_today_visits();
+                    break;   
+                case 'totat_visitors':
+                    echo $this->get_today_visits();
+                    break;    
+                case 'totat_visits':
+                    echo $this->get_today_visits();
+                    break;     
+                case 'online':
+                    echo $this->get_online_visitors();
+                    break;              
+                default:
+                    echo $this->get_total_visits();
+                    break;
+            }
+
+        } else {
+
+            // Tampilkan list group statistik
+            echo '<ul class="list-group list-group-flush" style="--bs-list-group-bg: transparent;">';
+            
+            // Tampilkan statistik kunjungan
+            $today_unique_visitors = $this->get_today_unique_visitors();
+            $today_visits = $this->get_today_visits();
+            $unique_visitors = $this->get_unique_visitors();
+            $total_visits = $this->get_total_visits();
+            $online_visitors = $this->get_online_visitors();
+
+            $stats = array(
+                'Pengunjung Hari Ini' => $today_unique_visitors,
+                'Kunjungan Hari Ini' => $today_visits,
+                'Total Pengunjung' => $unique_visitors,
+                'Total Kunjungan' => $total_visits,
+                'Pengunjung Online' => $online_visitors,
+            );
+
+            foreach ($stats as $label => $value) {
+                echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                echo $label;
+                echo '<span class="badge bg-secondary rounded-pill">' . $value . '</span>';
+                echo '</li>';
+            }
+
+            echo '</ul>';
         }
 
-        echo '</ul>';
-
-        $output = ob_get_clean(); // Ambil output dari buffer
-        return $output;
+        return ob_get_clean();
     }
 
     private function get_today_visits() {

@@ -9,7 +9,7 @@
  * that starts the plugin.
  *
  * @link              https://velocitydeveloper.com
- * @since             1.0.5
+ * @since             1.0.6
  * @package           Velocity_Addons
  *
  * @wordpress-plugin
@@ -35,12 +35,12 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('VELOCITY_ADDONS_VERSION', '1.0.5');
+define('VELOCITY_ADDONS_VERSION', '1.0.6');
 
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
 define('PLUGIN_FILE', plugin_basename(__FILE__));
 define('PLUGIN_BASE_NAME', plugin_basename(__DIR__));
-define('SWEETADDON_PLUGIN_DIR_URL', plugin_dir_url(__FILE__));
+define('VELOCITY_ADDONS_PLUGIN_DIR_URL', plugin_dir_url(__FILE__));
 
 /**
  * The code that runs during plugin activation.
