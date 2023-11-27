@@ -59,8 +59,15 @@
             // Panggil fungsi untuk memvalidasi reCaptcha saat proses submit komentar
             add_action('pre_comment_on_post', array($this, 'verify_comment_form'), 10, 1);
 
+            if (class_exists('WPCF7') ){
+                add_action('wpcf7_init', array($this, 'wpcf7_form_captcha'));
+            }
         }
         
+    }
+
+    public function wpcf7_form_captcha(){
+        wpcf7_add_form_tag('velocity_captcha', array($this, 'wpcf7_display_captcha'));
     }
 
     public function display(){
