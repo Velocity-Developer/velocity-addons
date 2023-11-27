@@ -50,6 +50,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'classic_widget_velocity');
         register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
         register_setting('custom_admin_options_group', 'statistik_velocity');
+        register_setting('custom_admin_options_group', 'captcha_velocity');
     }
 
     public function options_page_callback()
@@ -198,11 +199,43 @@ class Custom_Admin_Option_Page
                             <input type="text" id="redirect_to" name="redirect_to" value="<?php echo esc_attr(get_option('redirect_to', 'http://127.0.0.1')); ?>">
                             <label for="redirect_to">
                                 <small>
-                                    Fungsi ini hanya berjalan jika Block wp-login.php aktif. BVerfungsi untuk redirect wp-login.php
+                                    Fungsi ini hanya berjalan jika Block wp-login.php aktif. Berfungsi untuk redirect wp-login.php
                                 </small>
                             </label>
                         </td>
                     </tr>
+
+                    <?php
+                    $captcha_velocity   = get_option( 'captcha_velocity', ['aktif' => 1] );
+                    $captcha_aktif      = isset($captcha_velocity['aktif'])?esc_attr($captcha_velocity['aktif']):'';
+                    ?>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Captcha</th>
+                        <td>
+                            <input type="checkbox" id="captcha_velocity" name="captcha_velocity[aktif]" value="1" <?php checked($captcha_aktif, 1); ?>>
+                            <label for="captcha_velocity">
+                                <small>
+                                    Aktifkan Google reCaptcha v2
+                                </small>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Sitekey reCAPTCHA</th>
+                        <td>
+                            <input type="text" id="recaptcha_sitekey" name="captcha_velocity[sitekey]" class="regular-text code" value="<?php echo isset($captcha_velocity['sitekey'])?esc_attr($captcha_velocity['sitekey']):''; ?>">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Secretkey reCAPTCHA</th>
+                        <td>
+                            <input type="text" id="recaptcha_secretkey" name="captcha_velocity[secretkey]" class="regular-text code" value="<?php echo isset($captcha_velocity['secretkey'])?esc_attr($captcha_velocity['secretkey']):''; ?>">
+                        </td>
+                    </tr>
+
                 </table>
                 <?php submit_button(); ?>
             </form>
