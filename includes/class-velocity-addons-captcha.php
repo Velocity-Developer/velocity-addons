@@ -63,6 +63,15 @@
             // Panggil fungsi untuk memvalidasi reCaptcha saat proses submit komentar
             add_action('pre_comment_on_post', array($this, 'verify_comment_form'), 10, 1);
 
+            // Panggil fungsi untuk menambahkan reCaptcha ke kolom lostpassword
+            add_action('lostpassword_form', array($this, 'display'));
+            add_action('lostpassword_post', array($this, 'lostpassword_post'));
+
+            // Panggil fungsi untuk menambahkan reCaptcha ke kolom register
+            add_action('register_form', array($this, 'display'));
+            add_action('signup_extra_fields', array($this, 'display'));
+            add_filter('registration_errors', array($this, 'verify_register_form'), 10, 3);
+
             if (class_exists('WPCF7') ){
                 add_action('wpcf7_init', array($this, 'wpcf7_form_captcha'));
             }
@@ -189,6 +198,27 @@
         return $comment_data;
     }
 
+    public function lostpassword_post(){
+        // Periksa apakah reCaptcha valid saat proses submit lostpassword
+        $verify = $this->verify($_POST['g-recaptcha-response']);
+        
+        if (!$verify['success']) {
+            // Jika reCaptcha tidak valid, hentikan proses submit
+            wp_die($verify['message']);
+        }
+    }
+
+    public function verify_register_form($errors, $sanitized_user_login, $user_email){
+
+        if (isset($_POST['register']) && !empty($_POST['g-recaptcha-response'])) {
+            $verify = $this->verify($_POST['g-recaptcha-response']);
+            if (!$verify['success']) {
+                $errors->add('recaptcha_error', __($verify['message']));
+            }
+        }
+
+        return $errors;
+    }
 
  }
 
