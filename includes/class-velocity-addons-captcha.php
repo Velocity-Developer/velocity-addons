@@ -40,6 +40,8 @@
     */
     private $size;
 
+    private $active = false;
+
     public function __construct() {
         $captcha_velocity   = get_option('captcha_velocity',[]);
         $captcha_aktif      = isset($captcha_velocity['aktif'])?$captcha_velocity['aktif']:'';
@@ -48,6 +50,8 @@
         $this->size         = wp_is_mobile()?'compact':'normal';
 
         if($captcha_aktif && $this->sitekey && $this->secretkey) {
+
+            $this->active = true;
 
             // Tambahkan action captcha ke login_form
             add_action('login_form', array($this, 'display'));
@@ -69,17 +73,53 @@
     public function wpcf7_form_captcha(){
         wpcf7_add_form_tag('velocity_captcha', array($this, 'wpcf7_display_captcha'));
     }
+    public function wpcf7_display_captcha(){
+        ob_start();
+        echo $this->display();
+        return ob_get_clean();
+    }
+
+    public function isActive(){ 
+        return $this->active;
+    }
 
     public function display(){
-        if($this->sitekey && $this->secretkey){
-            wp_enqueue_script( 'g-recaptcha', 'https://www.google.com/recaptcha/api.js', array(), 1, true );
-            echo '<div class="g-recaptcha" data-sitekey="'.$this->sitekey.'" data-size="'.$this->size.'" style="transform: scale(0.9);transform-origin: 0 0;">Load reCaptcha</div>';
+        if($this->active){
+            $node = 'rr'.uniqid();
+            echo '<div class="'.$node.'">';
+                echo '<div id="g'.$node.'" data-size="'.$this->size.'" style="transform: scale(0.9);transform-origin: 0 0;"></div>';
+                ?>
+                <script type="text/javascript">
+                    function onloadCallback<?php echo $node;?>() {
+                        grecaptcha.render('g<?php echo $node;?>', {
+                            'sitekey' : '<?php echo $this->sitekey;?>',
+                            'callback': callback<?php echo $node;?>
+                        });
+                    };
+                    function callback<?php echo $node;?>() {
+                        (function ($) {
+                            var form = $('.<?php echo $node;?>').parent().closest('form');
+                            form.find('input[type="submit"]').attr('disabled', false);
+                            form.find('button[type="submit"]').attr('disabled', false);
+                        })(jQuery);
+                    };
+                    (function ($) {
+                        $( document ).ready(function() {
+                            var form = $('.<?php echo $node;?>').parent().closest('form');
+                            form.find('input[type="submit"]').attr('disabled', 'disabled');
+                            form.find('button[type="submit"]').attr('disabled', 'disabled');
+                        });
+                    })(jQuery);
+                </script>
+                <?php
+                echo '<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback'.$node.'&render=explicit" async defer></script>'; 
+            echo '</div>';
         }
     }
 
     public function verify($gresponse = null){        
         
-        if($this->sitekey && $this->secretkey){
+        if($this->active){
 
             $gresponse = $gresponse?$gresponse:$_POST['g-recaptcha-response'];
 
@@ -104,6 +144,7 @@
                     ];
                 }
             }
+            
         } else {
             
             $result = [
