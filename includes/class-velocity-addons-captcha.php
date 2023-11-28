@@ -93,7 +93,8 @@
                     function onloadCallback<?php echo $node;?>() {
                         grecaptcha.render('g<?php echo $node;?>', {
                             'sitekey' : '<?php echo $this->sitekey;?>',
-                            'callback': callback<?php echo $node;?>
+                            'callback': callback<?php echo $node;?>,
+                            'expired-callback' : expired<?php echo $node;?>
                         });
                     };
                     function callback<?php echo $node;?>() {
@@ -110,6 +111,9 @@
                             form.find('button[type="submit"]').attr('disabled', 'disabled');
                         });
                     })(jQuery);
+                    function expired<?php echo $node;?>() {
+                        alert('Captcha Kadaluarsa, silahkan refresh halaman');
+                    };
                 </script>
                 <?php
                 echo '<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback'.$node.'&render=explicit" async defer></script>'; 
