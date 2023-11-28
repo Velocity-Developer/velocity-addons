@@ -221,6 +221,12 @@ class Custom_Admin_Option_Page
                                     Aktifkan Google reCaptcha v2
                                 </small>
                             </label>
+                            <div>
+                                <small>
+                                    Gunakan reCaptcha v2 di Form Login, Komentar dan Velocity Toko <br>
+                                    Untuk <strong>Contact Form 7</strong> gunakan <code>[velocity_captcha]</code>
+                                </small>
+                            </div>
                         </td>
                     </tr>
                     <tr>
