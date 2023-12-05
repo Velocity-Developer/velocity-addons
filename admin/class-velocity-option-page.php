@@ -40,6 +40,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'hide_admin_notice');
         register_setting('custom_admin_options_group', 'limit_login_attempts');
         register_setting('custom_admin_options_group', 'maintenance_mode');
+        register_setting('custom_admin_options_group', 'maintenance_mode_data');
         register_setting('custom_admin_options_group', 'disable_xmlrpc');
         register_setting('custom_admin_options_group', 'disable_rest_api');
         register_setting('custom_admin_options_group', 'disable_gutenberg');
@@ -68,6 +69,10 @@ class Custom_Admin_Option_Page
             $name   = $id.'['.$sub.']';
         }
 
+        if($std && empty($value)){
+            $value = $std;
+        }
+
         //jika field checkbox
         if($type == 'checkbox'){
             $checked = ($value == 1)?'checked':'';
@@ -75,7 +80,15 @@ class Custom_Admin_Option_Page
         }
         //jika field text
         if($type == 'text'){
-            echo '<div><input type="text" id="'.$id.'" name="'.$name.'" value="'.$value.'" class="regular-text code"></div>';
+            echo '<div><input type="text" id="'.$id.'" name="'.$name.'" value="'.$value.'" class="regular-text"></div>';
+        }
+        //jika field textarea
+        if($type == 'textarea'){
+            echo '<div>';
+                echo '<textarea id="'.$id.'" name="'.$name.'" rows="6" cols="50" class="large-text">';
+                    echo $value;
+                echo '</textarea>';
+            echo '</div>';
         }
 
         ///tampil label
@@ -215,6 +228,20 @@ class Custom_Admin_Option_Page
                     'title' => 'Maintenance Mode',
                     'std'   => 1,
                     'label' => 'Aktifkan mode perawatan pada situs. Saat mode perawatan diaktifkan, pengunjung situs akan melihat halaman pemberitahuan perawatan yang menunjukkan bahwa situs sedang dalam perbaikan atau tidak tersedia sementara waktu.',
+                ],
+                [
+                    'id'    => 'maintenance_mode_data',
+                    'sub'   => 'header',
+                    'type'  => 'text',
+                    'title' => 'Header',
+                    'std'   => 'Maintenance Mode',
+                ],
+                [
+                    'id'    => 'maintenance_mode_data',
+                    'sub'   => 'body',
+                    'type'  => 'textarea',
+                    'title' => 'Body',
+                    'std'   => 'We are currently performing maintenance. Please check back later.',
                 ]
             ],
         ],

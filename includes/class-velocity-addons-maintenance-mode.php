@@ -33,7 +33,11 @@ class Velocity_Addons_Maintenance_Mode
     public function check_maintenance_mode()
     {
         if (!current_user_can('manage_options') && !is_admin() && !is_page('myaccount')) {
-            wp_die('<h1>Maintenance Mode</h1><p>We are currently performing maintenance. Please check back later.</p>', 'Maintenance Mode');
+            $opt    = get_option('maintenance_mode_data',[]);
+            $hd     = isset($opt['header'])&&!empty($opt['header'])?$opt['header']:'Maintenance Mode';
+            $bd     = isset($opt['body'])&&!empty($opt['body'])?$opt['body']:'';
+
+            wp_die('<h1>'.$hd.'</h1><p>'.$bd.'</p>', 'Maintenance Mode');
         }
     }
 }
