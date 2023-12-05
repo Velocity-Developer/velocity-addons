@@ -168,13 +168,25 @@
                         echo '<td>' . $online_visitors . ' Pengunjung</td>';
                         echo '<td><code>[statistik_kunjungan stat=online]</code></td>';
                     echo '</tr>';
-
                 echo '</tbody>';
             echo '</table>';
 
-            echo '<div style="margin-top: 2rem;">';
-                echo '<strong>Shortcode lengkap :</strong> <code>[statistik_kunjungan]</code>';
-            echo '</div>';
+            echo '<br><h3>Shortcode</h3>';
+            echo '<table class="widefat striped">';
+                echo '<tr>';
+                    echo '<td>Shortcode lengkap</td>';
+                    echo '<td><code>[statistik_kunjungan]</code></td>';
+                echo '</tr>';
+                echo '<tr>';
+                    echo '<td>Shortcode Per Post/Page</td>';
+                    echo '<td>';
+                        echo '<code>[statistik_kunjungan stat:post]</code>';
+                        echo '<div>Untuk ID Post akan diambil dari global $post;</div>';
+                        echo '<div>atau jia ingin set id post gunakan</div>';
+                        echo '<code>[statistik_kunjungan stat:post id:50]</code>';
+                    echo '</td>';
+                echo '</tr>';
+            echo '</table>';
 
         echo '</div>';
 
@@ -186,9 +198,11 @@
 
         ///attribut shortcode
         $atribut = shortcode_atts(array(
-            'stat' => '',
+            'stat'  => '',
+            'id'    => '',
         ), $atts);
-        $stat = $atribut['stat'];
+        $stat   = $atribut['stat'];
+        $postID = $atribut['id'];
 
         if($stat){
 
@@ -204,6 +218,13 @@
                     break;     
                 case 'online':
                     echo $this->get_online_visitors();
+                    break;     
+                case 'post':
+                    if(empty($postID)){
+                        global $post;
+                        $postID = $post->ID;
+                    }
+                    echo $this->get_count_post($postID);
                     break;              
                 default:
                     echo $this->get_total_visits();
@@ -367,9 +388,9 @@
         }
     }
 
-    //update meta hit untuk post 
+    //update meta hit untuk post & page
     public function post_single_update_hit(){        
-        if (is_singular('post')) {
+        if (is_singular('post') || is_page()) {
             global $post;
             $postID     = $post->ID;
             $countKey   = 'hit';
