@@ -69,7 +69,7 @@ class Custom_Admin_Option_Page
             $name   = $id.'['.$sub.']';
         }
 
-        if($std && empty($value)){
+        if($std && empty($value) && $type != 'checkbox'){
             $value = $std;
         }
 
