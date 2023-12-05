@@ -163,6 +163,13 @@ class Custom_Admin_Option_Page
                     'label' => 'Aktifkan untuk menggunakan widget klasik.',
                 ],
                 [
+                    'id'    => 'statistik_velocity',
+                    'type'  => 'checkbox',
+                    'title' => 'Statistik Pengunjung',
+                    'std'   => 1,
+                    'label' => 'Aktifkan gunakan Statistik Pengunjung dari Velocity.',
+                ],
+                [
                     'id'    => 'remove_slug_category_velocity',
                     'type'  => 'checkbox',
                     'title' => 'Remove Slug Category',
