@@ -211,7 +211,7 @@
                     echo $this->get_today_visits();
                     break;   
                 case 'total_visitors':
-                    echo $this->unique_visitors();
+                    echo $this->get_unique_visitors();
                     break;    
                 case 'total_visits':
                     echo $this->get_total_visits();
