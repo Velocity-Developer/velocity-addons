@@ -210,11 +210,11 @@
                 case 'today_visits':
                     echo $this->get_today_visits();
                     break;   
-                case 'totat_visitors':
-                    echo $this->get_today_visits();
+                case 'total_visitors':
+                    echo $this->unique_visitors();
                     break;    
-                case 'totat_visits':
-                    echo $this->get_today_visits();
+                case 'total_visits':
+                    echo $this->get_total_visits();
                     break;     
                 case 'online':
                     echo $this->get_online_visitors();
@@ -227,7 +227,7 @@
                     echo $this->get_count_post($postID);
                     break;              
                 default:
-                    echo $this->get_total_visits();
+                    echo $this->get_today_unique_visitors();
                     break;
             }
 
