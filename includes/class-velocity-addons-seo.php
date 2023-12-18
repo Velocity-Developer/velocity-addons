@@ -107,6 +107,12 @@
          $home_keywords = get_option('home_keywords');
          $share_image = get_option('share_image');
  
+         // Mendapatkan ID gambar berdasarkan kondisi yang dijelaskan
+         $image_id = $this->get_seo_image_id();
+ 
+         // Mendapatkan URL gambar
+         $image_url = $image_id ? wp_get_attachment_url($image_id) : $share_image;
+ 
          // Menampilkan meta tag untuk SEO
          echo '<meta name="description" content="' . esc_attr($home_description) . '" />' . "\n";
          echo '<meta name="keywords" content="' . esc_attr($home_keywords) . '" />' . "\n";
@@ -114,7 +120,55 @@
          // Menampilkan og tags untuk Facebook
          echo '<meta property="og:title" content="' . esc_attr($home_title) . '" />' . "\n";
          echo '<meta property="og:description" content="' . esc_attr($home_description) . '" />' . "\n";
-         echo '<meta property="og:image" content="' . esc_url($share_image) . '" />' . "\n";
+         echo '<meta property="og:image" content="' . esc_url($image_url) . '" />' . "\n";
+     }
+ 
+     // Function untuk mendapatkan ID gambar berdasarkan kondisi
+     private function get_seo_image_id() {
+         global $post;
+ 
+         if (is_page()) {
+             // Jika post type page, ambil dari featured image, jika tidak ada, ambil dari share image, jika tidak ada, ambil dari gambar pertama di konten
+             $image_id = get_post_thumbnail_id();
+            //  if (!$image_id) {
+            //      $image_id = $this->get_first_image_id_from_content($post->post_content);
+            //  }
+         } else {
+             // Selain page, ambil dari featured image, jika tidak ada, ambil dari post pertama, jika tidak ada, ambil dari share image
+             $image_id = get_post_thumbnail_id();
+             if (!$image_id) {
+                 $args = array(
+                     'post_type' => 'post',
+                     'posts_per_page' => 1,
+                 );
+                 $recent_posts = get_posts($args);
+                 if ($recent_posts) {
+                     $image_id = get_post_thumbnail_id($recent_posts[0]->ID);
+                 }
+             }
+             if (!$image_id) {
+                 $image_id = $this->get_first_image_id_from_content($recent_posts[0]->post_content);
+             }
+         }
+ 
+         return $image_id;
+     }
+ 
+     // Function untuk mendapatkan ID gambar pertama dari konten
+     private function get_first_image_id_from_content($content) {
+         $first_image_id = 0;
+ 
+         preg_match_all('/<img[^>]+>/', $content, $matches);
+ 
+         if (isset($matches[0][0])) {
+             preg_match_all('/src=[\'"]([^\'"]+)[\'"]/i', $matches[0][0], $image);
+             if (isset($image[1][0])) {
+                 $image_url = $image[1][0];
+                 $first_image_id = attachment_url_to_postid($image_url);
+             }
+         }
+ 
+         return $first_image_id;
      }
 
  }
