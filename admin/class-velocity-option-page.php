@@ -51,6 +51,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'classic_widget_velocity');
         register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
         register_setting('custom_admin_options_group', 'statistik_velocity');
+        register_setting('custom_admin_options_group', 'seo_velocity');
         register_setting('custom_admin_options_group', 'captcha_velocity');
     }
 
@@ -168,6 +169,13 @@ class Custom_Admin_Option_Page
                     'title' => 'Statistik Pengunjung',
                     'std'   => 1,
                     'label' => 'Aktifkan gunakan Statistik Pengunjung dari Velocity.',
+                ],
+                [
+                    'id'    => 'seo_velocity',
+                    'type'  => 'checkbox',
+                    'title' => 'SEO',
+                    'std'   => 1,
+                    'label' => 'Aktifkan gunakan SEO dari Velocity.',
                 ],
                 [
                     'id'    => 'remove_slug_category_velocity',

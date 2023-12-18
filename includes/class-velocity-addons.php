@@ -179,6 +179,11 @@ class Velocity_Addons
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-statistic.php';
 
 		/**
+		 * Berisi Class untuk handle seo
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-seo.php';
+
+		/**
 		 * Berisi Class untuk handle captcha
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-captcha.php';
