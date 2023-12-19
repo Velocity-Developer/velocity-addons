@@ -36,7 +36,7 @@
 
         // Panggil fungsi untuk cek dan buat tabel database jika perlu
         $this->check_and_create_table();
-        add_action('wp', array($this, 'record_page_visit'));    
+        add_action('wp_head', array($this, 'record_page_visit'));    
 
         // Tambahkan submenu di dasbor admin
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -117,6 +117,7 @@
             'statistik-kunjungan', 
             array($this, 'display_admin_page'),
             'dashicons-chart-pie',
+            30
         );
     }
 

@@ -26,13 +26,13 @@
      public function add_seo_menu()
      {
          add_menu_page(
-             'SEO Settings',
-             'SEO Settings',
+             'SEO',
+             'SEO',
              'manage_options',
              'velocity_seo_settings',
              array($this, 'render_seo_settings_page'),
              'dashicons-search',
-             20
+             30
          );
      }
  
@@ -82,15 +82,8 @@
                          <td>
                              <input type="text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
                              <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
-                             <div>
-                                <ul>
-                                    <li><span class="dashicons dashicons-marker"></span> Dimensi gambar minimum yang diizinkan adalah 200 x 200 piksel.</li>
-                                    <li><span class="dashicons dashicons-marker"></span> Ukuran file gambar tidak boleh lebih dari 8 MB.</li>
-                                    <li><span class="dashicons dashicons-marker"></span> Gunakan gambar berukuran minimal 1200 x 630 piksel untuk tampilan terbaik pada perangkat beresolusi tinggi. Minimal, Anda harus menggunakan gambar berukuran 600 x 315 piksel untuk menampilkan postingan halaman tautan dengan gambar yang lebih besar.</li>
-                                    <li><span class="dashicons dashicons-marker"></span> Jika gambar Anda lebih kecil dari 600 x 315 piksel, gambar akan tetap ditampilkan di postingan halaman tautan, tetapi ukurannya akan jauh lebih kecil.</li>
-                                    <li><span class="dashicons dashicons-marker"></span> Kami juga telah mendesain ulang postingan halaman tautan sehingga rasio aspek untuk gambar sama di seluruh Kabar desktop dan seluler. Coba sebisa mungkin untuk mempertahankan rasio aspek gambar mendekati 1,91:1 untuk menampilkan gambar penuh di Kabar tanpa pemotongan.</li>
-                                </ul>
-                             </div>
+                             <br>
+                             <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar">Pelajari tentang praktik terbaik untuk menerapkan Berbagi Facebook</a>
                          </td>
                      </tr>
                  </table>
