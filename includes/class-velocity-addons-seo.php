@@ -20,7 +20,7 @@
          add_action('admin_menu', array($this, 'add_seo_menu'));
          add_action('admin_init', array($this, 'register_seo_settings'));
          add_action('admin_enqueue_scripts', array($this, 'enqueue_media_uploader'));
-         add_action('wp_head', array($this, 'output_seo_meta_tags'));
+         add_action('wp_head', array($this, 'output_seo_meta_tags'), 2);
      }
  
      public function add_seo_menu()
@@ -67,21 +67,29 @@
                  <table class="form-table">
                      <tr valign="top">
                          <th scope="row">Home Title</th>
-                         <td><input type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" /></td>
+                         <td><input class="regular-text" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" /></td>
                      </tr>
                      <tr valign="top">
                          <th scope="row">Home Description</th>
-                         <td><textarea name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea></td>
+                         <td><textarea class="large-text" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea></td>
                      </tr>
                      <tr valign="top">
                          <th scope="row">Home Keywords</th>
-                         <td><textarea name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea></td>
+                         <td><textarea class="large-text" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea></td>
                      </tr>
                      <tr valign="top">
                          <th scope="row">Share Image</th>
                          <td>
-                             <input type="text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
+                             <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
                              <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
+                             <br>
+                             <div class="preview_share_image">
+                                <?php if(get_option('share_image')): ?>
+                                    <br>
+                                    <img id="preview_image" width="300" src="<?php echo esc_attr(get_option('share_image')); ?>" />
+                                    <span class="delete_share_image button">Delete</span>
+                                <?php endif; ?>
+                             </div>
                              <br>
                              <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar">Pelajari tentang praktik terbaik untuk menerapkan Berbagi Facebook</a>
                          </td>
@@ -99,6 +107,9 @@
          $home_description = get_option('home_description');
          $home_keywords = get_option('home_keywords');
          $share_image = get_option('share_image');
+
+         // Basic Metadata
+         echo '<meta property="og:type" content="website" />' . "\n";
  
          // Mendapatkan ID gambar berdasarkan kondisi yang dijelaskan
          $image_id = $this->get_seo_image_id();
