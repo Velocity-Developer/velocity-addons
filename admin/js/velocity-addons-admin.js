@@ -27,13 +27,13 @@ jQuery(document).ready(function ($) {
         .first()
         .toJSON();
       $("#share_image").val(attachment.url);
-      $(".preview_share_image").html('<br><img src="'+attachment.url+'" width="300" /><span class="delete_share_image button">Delete</span>');
+      $(".preview_share_image").html('<br><img src="'+attachment.url+'" width="300" /><br><span class="delete_share_image button">Delete</span>');
     });
 
     // Open the uploader dialog
     custom_uploader.open();
   });
-  $(".delete_share_image").click(function (e) {
+  $(document).on('click','.delete_share_image', function (e) {
     $("#share_image").val('');
     $(".preview_share_image").html('');
   });

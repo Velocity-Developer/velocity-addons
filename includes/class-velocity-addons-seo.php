@@ -48,7 +48,6 @@
      {
          if (isset($_GET['page']) && $_GET['page'] == 'velocity_seo_settings') {
              wp_enqueue_media();
-             wp_enqueue_script('velocity-seo-script', plugin_dir_url(__FILE__) . 'velocity-seo-script.js', array('jquery'), '1.0', true);
          }
      }
  
@@ -87,11 +86,11 @@
                                 <?php if(get_option('share_image')): ?>
                                     <br>
                                     <img id="preview_image" width="300" src="<?php echo esc_attr(get_option('share_image')); ?>" />
-                                    <span class="delete_share_image button">Delete</span>
+                                    <br><span class="delete_share_image button">Delete</span>
                                 <?php endif; ?>
                              </div>
                              <br>
-                             <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar">Pelajari tentang praktik terbaik untuk menerapkan Berbagi Facebook</a>
+                             <span class="dashicons dashicons-info-outline"></span> <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari tentang praktik terbaik untuk menerapkan <strong>"Berbagi di Facebook"</strong></a>
                          </td>
                      </tr>
                  </table>
@@ -103,13 +102,14 @@
      public function output_seo_meta_tags()
      {
          // Mendapatkan nilai dari pengaturan SEO
-         $home_title = get_option('home_title');
-         $home_description = get_option('home_description');
-         $home_keywords = get_option('home_keywords');
-         $share_image = get_option('share_image');
+         $home_title        = get_option('home_title');
+         $home_description  = get_option('home_description');
+         $home_keywords     = get_option('home_keywords');
+         $share_image       = get_option('share_image');
 
          // Basic Metadata
          echo '<meta property="og:type" content="website" />' . "\n";
+         echo '<meta property="og:site_name" content="'.get_bloginfo( 'name' ).'" />' . "\n";
  
          // Mendapatkan ID gambar berdasarkan kondisi yang dijelaskan
          $image_id = $this->get_seo_image_id();
@@ -132,11 +132,13 @@
             }
 
             // Menampilkan meta tag untuk SEO pada halaman selain home
+            echo '<meta property="url" content="' . esc_attr(get_the_permalink()) . '" />' . "\n";
             echo '<meta name="description" content="' . esc_attr($page_excerpt) . '" />' . "\n";
             echo '<meta property="og:title" content="' . esc_attr($page_title) . '" />' . "\n";
             echo '<meta property="og:description" content="' . esc_attr($page_excerpt) . '" />' . "\n";
         } else {
             // Menampilkan meta tag untuk SEO
+            echo '<meta property="url" content="' . esc_attr(get_home_url()) . '" />' . "\n";
             echo '<meta name="description" content="' . esc_attr($home_description) . '" />' . "\n";
             echo '<meta name="keywords" content="' . esc_attr($home_keywords) . '" />' . "\n";
     
