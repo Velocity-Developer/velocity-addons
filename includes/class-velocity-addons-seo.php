@@ -101,6 +101,8 @@
      }
      public function output_seo_meta_tags()
      {
+        echo "\n".' <!-- SEO by Velocity Developer -->' . "\n";
+
          // Mendapatkan nilai dari pengaturan SEO
          $home_title        = get_option('home_title');
          $home_description  = get_option('home_description');
@@ -120,7 +122,7 @@
          echo '<meta property="og:image" content="' . esc_url($image_url) . '" />' . "\n";
 
         // Memeriksa apakah halaman bukan halaman home
-        if (!is_home()) {
+        if (!is_home() && !is_front_page()) {
             // Mendapatkan judul dan ringkasan untuk halaman selain home
             $page_title = get_the_title();
             $page_excerpt = get_the_excerpt();
@@ -146,6 +148,7 @@
             echo '<meta property="og:title" content="' . esc_attr($home_title) . '" />' . "\n";
             echo '<meta property="og:description" content="' . esc_attr($home_description) . '" />' . "\n";
         }
+        echo ' <!-- / SEO by Velocity Developer -->' . "\n\n";
      }
  
      // Function untuk mendapatkan ID gambar berdasarkan kondisi

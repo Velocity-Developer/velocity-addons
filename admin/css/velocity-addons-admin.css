@@ -1,4 +1,12 @@
 /**
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
- */
+*/
+
+ .vdaddons-notice {
+    background-color: #fff4bd;
+    display: block;
+    padding: .5rem 1rem;
+    border-left: .25rem solid #ffaf09;
+    margin: .25rem 0;
+}
