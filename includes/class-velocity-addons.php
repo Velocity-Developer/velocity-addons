@@ -184,6 +184,11 @@ class Velocity_Addons
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-seo.php';
 
 		/**
+		 * Berisi Class untuk handle auto resize
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-auto-resize-image.php';
+
+		/**
 		 * Berisi Class untuk handle captcha
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-captcha.php';
