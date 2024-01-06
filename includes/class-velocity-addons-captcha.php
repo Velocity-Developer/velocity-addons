@@ -55,6 +55,8 @@
 
             // Tambahkan action captcha ke login_form
             add_action('login_form', array($this, 'display'));
+            add_action('login_form_middle', array($this, 'display_login_form'));
+
             // Tambahkan Filter Auth untuk captcha
             add_filter( 'wp_authenticate_user', array($this, 'verify_login_form'), 10, 3 );
 
@@ -218,6 +220,20 @@
         }
 
         return $errors;
+    }
+    
+    public function display_login_form(){
+        if($this->active){
+            $html = '<div>';
+                $html .= '<div class="g-recaptcha" data-sitekey="'.$this->sitekey.'"></div>';
+                $html .= '<script src="https://www.google.com/recaptcha/api.js" async defer></script>'; 
+            $html .= '</div>';
+
+            return $html;
+
+        } else {
+            return '';
+        }
     }
 
  }
