@@ -103,51 +103,55 @@
      {
         echo "\n".' <!-- SEO by Velocity Developer -->' . "\n";
 
-         // Mendapatkan nilai dari pengaturan SEO
-         $home_title        = get_option('home_title');
-         $home_description  = get_option('home_description');
-         $home_keywords     = get_option('home_keywords');
-         $share_image       = get_option('share_image');
+            // Mendapatkan nilai dari pengaturan SEO
+            $home_title        = get_option('home_title');
+            $home_description  = get_option('home_description');
+            $home_keywords     = get_option('home_keywords');
+            $share_image       = get_option('share_image');
+      
+            // Mendapatkan ID gambar berdasarkan kondisi yang dijelaskan
+            $image_id = $this->get_seo_image_id();
+            // Mendapatkan URL gambar
+            $meta_img = $image_id ? wp_get_attachment_image_src($image_id, 'large')[0] : $share_image;
 
-         // Basic Metadata
-         echo '<meta property="og:type" content="website" />' . "\n";
-         echo '<meta property="og:site_name" content="'.get_bloginfo( 'name' ).'" />' . "\n";
- 
-         // Mendapatkan ID gambar berdasarkan kondisi yang dijelaskan
-         $image_id = $this->get_seo_image_id();
- 
-         // Mendapatkan URL gambar
-         $image_url = $image_id ? wp_get_attachment_url($image_id) : $share_image;
- 
-         echo '<meta property="og:image" content="' . esc_url($image_url) . '" />' . "\n";
+            ///jika halaman HOME
+            if ( is_home() || is_front_page() ) {
+                $meta_url       = get_home_url();
+                $meta_title     = $home_title;
+                $meta_desc      = $home_description;
+                $meta_type      = 'website';
+            } else if(is_archive()) { 
+                //jika halaman ARCHIVE
+                $meta_url       = get_the_permalink();
+                $meta_title     = get_the_archive_title();
+                $meta_desc      = get_the_archive_description();
+                $meta_desc      = $meta_desc?$meta_desc:$home_description;
+                $meta_img       = $share_image;
+                $meta_type      = 'article';
+            } else {
+                $meta_url       = get_permalink();
+                $meta_title     = get_the_title();
+                $meta_desc      = get_the_excerpt();
+                $meta_type      = 'article';
 
-        // Memeriksa apakah halaman bukan halaman home
-        if (!is_home() && !is_front_page()) {
-            // Mendapatkan judul dan ringkasan untuk halaman selain home
-            $page_title = get_the_title();
-            $page_excerpt = get_the_excerpt();
-
-            // Jika excerpt kosong, potong dari konten
-            if (empty($page_excerpt)) {
-                $content = get_the_content();
-                $page_excerpt = wp_trim_words($content, 20); // Ganti 20 dengan jumlah kata yang diinginkan
+                // Jika excerpt kosong, potong dari konten
+                if (empty($meta_desc)) {
+                    $meta_desc = wp_trim_words(get_the_content(), 20);
+                }
             }
 
-            // Menampilkan meta tag untuk SEO pada halaman selain home
-            echo '<meta property="url" content="' . esc_attr(get_the_permalink()) . '" />' . "\n";
-            echo '<meta name="description" content="' . esc_attr($page_excerpt) . '" />' . "\n";
-            echo '<meta property="og:title" content="' . esc_attr($page_title) . '" />' . "\n";
-            echo '<meta property="og:description" content="' . esc_attr($page_excerpt) . '" />' . "\n";
-        } else {
-            // Menampilkan meta tag untuk SEO
-            echo '<meta property="url" content="' . esc_attr(get_home_url()) . '" />' . "\n";
-            echo '<meta name="description" content="' . esc_attr($home_description) . '" />' . "\n";
+            // Menampilkan og tags
+            echo '<meta property="og:type" content="'.$meta_type.'" />' . "\n";
+            echo '<meta property="og:site_name" content="'.get_bloginfo( 'name' ).'" />' . "\n";
+
+            echo '<meta property="url" content="' . esc_attr($meta_url) . '" />' . "\n";
+            echo '<meta name="description" content="' . esc_attr($meta_desc) . '" />' . "\n";
             echo '<meta name="keywords" content="' . esc_attr($home_keywords) . '" />' . "\n";
-    
-            // Menampilkan og tags untuk Facebook
-            echo '<meta property="og:title" content="' . esc_attr($home_title) . '" />' . "\n";
-            echo '<meta property="og:description" content="' . esc_attr($home_description) . '" />' . "\n";
-        }
+
+            echo '<meta property="og:image" content="' . esc_url($meta_img) . '" />' . "\n";
+            echo '<meta property="og:title" content="' . esc_attr($meta_title) . '" />' . "\n";
+            echo '<meta property="og:description" content="' . esc_attr($meta_desc) . '" />' . "\n";
+
         echo ' <!-- / SEO by Velocity Developer -->' . "\n\n";
      }
  
@@ -156,11 +160,8 @@
          global $post;
  
          if (is_page()) {
-             // Jika post type page, ambil dari featured image, jika tidak ada, ambil dari share image, jika tidak ada, ambil dari gambar pertama di konten
+             // Jika post type page, ambil dari featured image,
              $image_id = get_post_thumbnail_id();
-            //  if (!$image_id) {
-            //      $image_id = $this->get_first_image_id_from_content($post->post_content);
-            //  }
          } else {
              // Selain page, ambil dari featured image, jika tidak ada, ambil dari post pertama, jika tidak ada, ambil dari share image
              $image_id = get_post_thumbnail_id();
