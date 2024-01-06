@@ -136,7 +136,10 @@
         
         if($this->active){
 
-            $gresponse = $gresponse?$gresponse:$_POST['g-recaptcha-response'];
+            $gresponse = $gresponse?$gresponse:'0';
+            if(empty($gresponse) && isset($_POST['g-recaptcha-response'])){
+                $gresponse = $_POST['g-recaptcha-response'];
+            }
 
             $result = [
                 'success' => false,
@@ -175,7 +178,8 @@
     public function verify_login_form($user, $password){
 
         // Periksa apakah reCaptcha valid saat proses login
-        $verify = $this->verify($_POST['g-recaptcha-response']);
+        $respon = isset($_POST['g-recaptcha-response'])?$_POST['g-recaptcha-response']:'0';
+        $verify = $this->verify($respon);
         
         if (!$verify['success']) {
             // Jika reCaptcha tidak valid, hentikan proses login
