@@ -136,7 +136,7 @@
 
                 // Jika excerpt kosong, potong dari konten
                 if (empty($meta_desc)) {
-                    $meta_desc = wp_trim_words(get_the_content(), 20);
+                    $meta_desc = wp_trim_words(wp_strip_all_tags(get_the_content()), 20);
                 }
             }
 
