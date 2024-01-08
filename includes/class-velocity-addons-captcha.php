@@ -77,6 +77,8 @@
             if (class_exists('WPCF7') ){
                 add_action('wpcf7_init', array($this, 'wpcf7_form_captcha'));
             }
+            
+            add_shortcode('velocity_recaptcha', array($this, 'display_login_form'));
         }
         
     }
