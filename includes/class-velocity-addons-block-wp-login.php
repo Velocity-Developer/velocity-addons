@@ -30,7 +30,7 @@
                 }
             }
 
-            if($ip_white){
+            if(!$ip_white){
                 $ipdat = $this->get_country_code($_SERVER['REMOTE_ADDR'], $whitelist_countries);
                 if ($ipdat) {
                     $country_code = $ipdat;
