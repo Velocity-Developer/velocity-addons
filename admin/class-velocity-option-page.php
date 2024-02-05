@@ -47,6 +47,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'disable_rest_api');
         register_setting('custom_admin_options_group', 'disable_gutenberg');
         register_setting('custom_admin_options_group', 'block_wp_login');
+        register_setting('custom_admin_options_group', 'whitelist_block_wp_login');
         register_setting('custom_admin_options_group', 'whitelist_country');
         register_setting('custom_admin_options_group', 'redirect_to');
         // register_setting('custom_admin_options_group', 'standar_editor_velocity');
@@ -200,6 +201,13 @@ class Custom_Admin_Option_Page
                         'title' => 'Block wp-login.php',
                         'std'   => 1,
                         'label' => 'Aktifkan pemblokiran akses ke file wp-login.php pada situs.',
+                    ],
+                    [
+                        'id'    => 'whitelist_block_wp_login',
+                        'type'  => 'text',
+                        'title' => 'Whitelist IP Block wp-login.php',
+                        'std'   => '',
+                        'label' => 'Tambahkan daftar IP yang di Whitelist proses pemblokiran akses ke file wp-login.php.',
                     ],
                     [
                         'id'    => 'whitelist_country',
