@@ -25,7 +25,7 @@
 
             if($whitelist_ip){
                 $whitelist_ip = array_map('trim', explode(',', $whitelist_ip));
-                if (!in_array($ip, $whitelist_ip)) {
+                if (in_array($ip, $whitelist_ip)) {
                     $ip_white = true;
                 }
             }
