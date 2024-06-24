@@ -86,27 +86,36 @@
     public function record_page_visit() {
         // Mendapatkan data kunjungan
         global $post;
-        $sesi       = session_id();
-        $post_id    = isset($post->ID)?$post->ID:'';
-        $timestamp  = current_time('mysql');
+        $sesi           = session_id();
+        $post_id        = isset($post->ID)?$post->ID:'';
+        $timestamp      = current_time('mysql');
+        $transient_name = 'velocity_statistic_'.$sesi.$post_id;
 
-        // Memasukkan data kunjungan ke dalam tabel database
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'vd_statistic';
+        // Cek apakah transient sudah expired
+        if ( false == get_transient( $transient_name ) ) {
 
-        $wpdb->insert(
-            $table_name,
-            array(
-                'sesi' => $sesi,
-                'post_id' => $post_id,
-                'timestamp' => $timestamp,
-            ),
-            array(
-                '%s',
-                '%d',
-                '%s',
-            )
-        );
+            // Memasukkan data kunjungan ke dalam tabel database
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'vd_statistic';
+
+            $wpdb->insert(
+                $table_name,
+                array(
+                    'sesi' => $sesi,
+                    'post_id' => $post_id,
+                    'timestamp' => $timestamp,
+                ),
+                array(
+                    '%s',
+                    '%d',
+                    '%s',
+                )
+            );
+
+            // Set transient untuk mencegah penghitungan views yang berulang dalam 4 menit
+            set_transient( $transient_name, 1, 4 * MINUTE_IN_SECONDS );
+
+        } 
     }
 
     public function add_admin_menu() {
