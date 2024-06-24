@@ -136,7 +136,7 @@ class Custom_Admin_Option_Page
                         'id'    => 'hide_admin_notice',
                         'type'  => 'checkbox',
                         'title' => 'Hide Admin Notice',
-                        'std'   => 1,
+                        'std'   => 0,
                         'label' => 'Sembunyikan pemberitahuan admin di halaman admin. Pemberitahuan admin seringkali muncul untuk memberikan informasi atau peringatan kepada admin situs.',
                     ],
                     [
@@ -199,7 +199,7 @@ class Custom_Admin_Option_Page
                         'id'    => 'block_wp_login',
                         'type'  => 'checkbox',
                         'title' => 'Block wp-login.php',
-                        'std'   => 1,
+                        'std'   => 0,
                         'label' => 'Aktifkan pemblokiran akses ke file wp-login.php pada situs.',
                     ],
                     [
