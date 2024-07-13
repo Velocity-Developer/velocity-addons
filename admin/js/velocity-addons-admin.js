@@ -1,8 +1,8 @@
 jQuery(document).ready(function ($) {
-  var custom_uploader;
+    var custom_uploader;
 
-  $("#upload_image_button").click(function (e) {
-    e.preventDefault();
+    $("#upload_image_button").click(function (e) {
+        e.preventDefault();
 
     // If the uploader object has already been created, reopen the dialog
     if (custom_uploader) {
@@ -37,8 +37,28 @@ jQuery(document).ready(function ($) {
     // Open the uploader dialog
     custom_uploader.open();
   });
-  $(document).on('click','.delete_share_image', function (e) {
-    $("#share_image").val('');
-    $(".preview_share_image").html('');
-  });
+    $(document).on('click','.delete_share_image', function (e) {
+        $("#share_image").val('');
+        $(".preview_share_image").html('');
+    });
+
+    $('#reset-data').click(function() {
+        $.ajax({
+            url: ajaxurl,
+            type: 'post',
+            data: {
+                action: 'reset_data',
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#reset-message').html('<div class="notice notice-success is-dismissible"><p>' + response.data + '</p></div>');
+                } else {
+                    $('#reset-message').html('<div class="notice notice-error is-dismissible"><p>Terjadi kesalahan saat mereset data.</p></div>');
+                }
+            },
+            error: function() {
+                $('#reset-message').html('<div class="notice notice-error is-dismissible"><p>Terjadi kesalahan saat mengirim permintaan AJAX.</p></div>');
+            }
+        });
+    });
 });

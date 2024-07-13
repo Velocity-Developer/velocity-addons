@@ -13,7 +13,7 @@
  * @package           Velocity_Addons
  *
  * @wordpress-plugin
- * Plugin Name:       Velocity Security
+ * Plugin Name:       Velocity Addons
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Addon plugin for Velocitydeveloper Client
  * Version:           1.1.2
@@ -27,7 +27,7 @@
 
 // If this file is called directly, abort.
 if (!defined('WPINC')) {
-	die;
+    die;
 }
 
 /**
@@ -47,8 +47,8 @@ define('VELOCITY_ADDONS_PLUGIN_DIR_URL', plugin_dir_url(__FILE__));
  */
 function activate_velocity_addons()
 {
-	require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-activator.php';
-	Velocity_Addons_Activator::activate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-activator.php';
+    Velocity_Addons_Activator::activate();
 }
 
 /**
@@ -57,8 +57,8 @@ function activate_velocity_addons()
  */
 function deactivate_velocity_addons()
 {
-	require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-deactivator.php';
-	Velocity_Addons_Deactivator::deactivate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-deactivator.php';
+    Velocity_Addons_Deactivator::deactivate();
 }
 
 register_activation_hook(__FILE__, 'activate_velocity_addons');
@@ -78,9 +78,9 @@ require 'lib/plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $myUpdateChecker = PucFactory::buildUpdateChecker(
-	'https://velocitydeveloper.id/auto-update/plugins/velocity-addons/info.json',
-	__FILE__, //Full path to the main plugin file or functions.php.
-	'velocity-addons'
+    'https://velocitydeveloper.id/auto-update/plugins/velocity-addons/info.json',
+    __FILE__, //Full path to the main plugin file or functions.php.
+    'velocity-addons'
 );
 
 /**
@@ -95,7 +95,7 @@ $myUpdateChecker = PucFactory::buildUpdateChecker(
 function run_velocity_addons()
 {
 
-	$plugin = new Velocity_Addons();
-	$plugin->run();
+    $plugin = new Velocity_Addons();
+    $plugin->run();
 }
 run_velocity_addons();

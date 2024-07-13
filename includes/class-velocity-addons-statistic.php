@@ -22,12 +22,14 @@
  * @author     Velocity <bantuanvelocity@gmail.com>
  */
 
- class Velocity_Addons_Statistic {
-    public function __construct() {
+class Velocity_Addons_Statistic
+{
+    public function __construct()
+    {
 
-        $statistik_velocity = get_option('statistik_velocity','1');
-        if($statistik_velocity !== '1')
-        return false;
+        $statistik_velocity = get_option('statistik_velocity', '1');
+        if ($statistik_velocity !== '1')
+            return false;
 
         // Inisialisasi sesi jika belum diinisialisasi
         if (session_id() === '') {
@@ -36,7 +38,7 @@
 
         // Panggil fungsi untuk cek dan buat tabel database jika perlu
         $this->check_and_create_table();
-        add_action('wp_head', array($this, 'record_page_visit'));    
+        add_action('wp_head', array($this, 'record_page_visit'));
 
         // Tambahkan submenu di dasbor admin
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -49,12 +51,19 @@
         add_action('manage_post_posts_custom_column', array($this, 'statistik_posts_column'), 10, 2);
         add_filter('manage_page_posts_columns', array($this, 'statistik_posts_columns'));
         add_action('manage_page_posts_custom_column', array($this, 'statistik_posts_column'), 10, 2);
-        
+
         // Tambahkan action update meta 'hit'
         add_action('wp_head', array($this, 'post_single_update_hit'));
+
+        //Tambahkan aksi saat tombol reset ditekan
+        // add_action('admin_post_reset_table', array($this, 'reset_statistik'));
+
+        // Tambahkan aksi untuk AJAX
+        add_action('wp_ajax_reset_data', array($this, 'reset_statistik'));
     }
 
-    private function check_and_create_table() {
+    private function check_and_create_table()
+    {
         global $wpdb;
 
         $version_db = get_option('version_db', 1);
@@ -83,16 +92,17 @@
         }
     }
 
-    public function record_page_visit() {
+    public function record_page_visit()
+    {
         // Mendapatkan data kunjungan
         global $post;
         $sesi           = session_id();
-        $post_id        = isset($post->ID)?$post->ID:'';
+        $post_id        = isset($post->ID) ? $post->ID : '';
         $timestamp      = current_time('mysql');
-        $transient_name = 'velocity_statistic_'.$sesi.$post_id;
+        $transient_name = 'velocity_statistic_' . $sesi . $post_id;
 
         // Cek apakah transient sudah expired
-        if ( false == get_transient( $transient_name ) ) {
+        if (false == get_transient($transient_name)) {
 
             // Memasukkan data kunjungan ke dalam tabel database
             global $wpdb;
@@ -113,97 +123,104 @@
             );
 
             // Set transient untuk mencegah penghitungan views yang berulang dalam 4 menit
-            set_transient( $transient_name, 1, 4 * MINUTE_IN_SECONDS );
-
-        } 
+            set_transient($transient_name, 1, 4 * MINUTE_IN_SECONDS);
+        }
     }
 
-    public function add_admin_menu() {
+    public function add_admin_menu()
+    {
         add_menu_page(
-            'Statistik', 
-            'Statistik', 
-            'manage_options', 
-            'statistik-kunjungan', 
+            'Statistik',
+            'Statistik',
+            'manage_options',
+            'statistik-kunjungan',
             array($this, 'display_admin_page'),
             'dashicons-chart-pie',
             30
         );
     }
 
-    public function display_admin_page() {
+    public function display_admin_page()
+    {
         // Tampilkan konten halaman admin di sini
         echo '<div class="wrap">';
-            echo '<h1>Statistik Kunjungan</h1><br>';
-            
-            // Tampilkan tabel statistik
-            echo '<table class="widefat striped">';
-                echo '<thead>';
-                    echo '<tr>';
-                        echo '<th>Statistik</th>';
-                        echo '<th>Jumlah</th>';
-                        echo '<th>Shortcode</th>';
-                    echo '</tr>';
-                echo '</thead>';
-                echo '<tbody>';
+        echo '<h1>Statistik Kunjungan</h1><br>';
 
-                    // Tampilkan statistik kunjungan
-                    $today_unique_visitors = $this->get_today_unique_visitors();
-                    $today_visits = $this->get_today_visits();
-                    $unique_visitors = $this->get_unique_visitors();
-                    $total_visits = $this->get_total_visits();
-                    $online_visitors = $this->get_online_visitors();
+        // Tampilkan tabel statistik
+        echo '<table class="widefat striped">';
+        echo '<thead>';
+        echo '<tr>';
+        echo '<th>Statistik</th>';
+        echo '<th>Jumlah</th>';
+        echo '<th>Shortcode</th>';
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
 
-                    echo '<tr>';
-                        echo '<td>Pengunjung Hari Ini</td>';
-                        echo '<td>' . $today_unique_visitors . ' Pengunjung</td>';
-                        echo '<td><code>[statistik_kunjungan stat=today_visitors]</code></td>';
-                    echo '</tr>';
-                    echo '<tr>';
-                        echo '<td>Kunjungan Hari Ini</td>';
-                        echo '<td>' . $today_visits . ' Kunjungan</td>';
-                        echo '<td><code>[statistik_kunjungan stat=today_visits]</code></td>';
-                    echo '</tr>';
-                    echo '<tr>';
-                        echo '<td>Total Pengunjung</td>';
-                        echo '<td>' . $unique_visitors . ' Pengunjung</td>';
-                        echo '<td><code>[statistik_kunjungan stat=total_visitors]</code></td>';
-                    echo '</tr>';
-                    echo '<tr>';
-                        echo '<td>Total Kunjungan</td>';
-                        echo '<td>' . $total_visits . ' Kunjungan</td>';
-                        echo '<td><code>[statistik_kunjungan stat=total_visits]</code></td>';
-                    echo '</tr>';
-                    echo '<tr>';
-                        echo '<td>Pengunjung Online</td>';
-                        echo '<td>' . $online_visitors . ' Pengunjung</td>';
-                        echo '<td><code>[statistik_kunjungan stat=online]</code></td>';
-                    echo '</tr>';
-                echo '</tbody>';
-            echo '</table>';
+        // Tampilkan statistik kunjungan
+        $today_unique_visitors = $this->get_today_unique_visitors();
+        $today_visits = $this->get_today_visits();
+        $unique_visitors = $this->get_unique_visitors();
+        $total_visits = $this->get_total_visits();
+        $online_visitors = $this->get_online_visitors();
 
-            echo '<br><h3>Shortcode</h3>';
-            echo '<table class="widefat striped">';
-                echo '<tr>';
-                    echo '<td>Shortcode lengkap</td>';
-                    echo '<td><code>[statistik_kunjungan]</code></td>';
-                echo '</tr>';
-                echo '<tr>';
-                    echo '<td>Shortcode Per Post/Page</td>';
-                    echo '<td>';
-                        echo '<code>[statistik_kunjungan stat:post]</code>';
-                        echo '<div>Untuk ID Post akan diambil dari global $post;</div>';
-                        echo '<div>atau jia ingin set id post gunakan</div>';
-                        echo '<code>[statistik_kunjungan stat:post id:50]</code>';
-                    echo '</td>';
-                echo '</tr>';
-            echo '</table>';
+        echo '<tr>';
+        echo '<td>Pengunjung Hari Ini</td>';
+        echo '<td>' . $today_unique_visitors . ' Pengunjung</td>';
+        echo '<td><code>[statistik_kunjungan stat=today_visitors]</code></td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>Kunjungan Hari Ini</td>';
+        echo '<td>' . $today_visits . ' Kunjungan</td>';
+        echo '<td><code>[statistik_kunjungan stat=today_visits]</code></td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>Total Pengunjung</td>';
+        echo '<td>' . $unique_visitors . ' Pengunjung</td>';
+        echo '<td><code>[statistik_kunjungan stat=total_visitors]</code></td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>Total Kunjungan</td>';
+        echo '<td>' . $total_visits . ' Kunjungan</td>';
+        echo '<td><code>[statistik_kunjungan stat=total_visits]</code></td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>Pengunjung Online</td>';
+        echo '<td>' . $online_visitors . ' Pengunjung</td>';
+        echo '<td><code>[statistik_kunjungan stat=online]</code></td>';
+        echo '</tr>';
+        echo '</tbody>';
+        echo '</table>';
 
+        echo '<br><h3>Shortcode</h3>';
+        echo '<table class="widefat striped">';
+        echo '<tr>';
+        echo '<td>Shortcode lengkap</td>';
+        echo '<td><code>[statistik_kunjungan]</code></td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>Shortcode Per Post/Page</td>';
+        echo '<td>';
+        echo '<code>[statistik_kunjungan stat:post]</code>';
+        echo '<div>Untuk ID Post akan diambil dari global $post;</div>';
+        echo '<div>atau jia ingin set id post gunakan</div>';
+        echo '<code>[statistik_kunjungan stat:post id:50]</code>';
+        echo '</td>';
+        echo '</tr>';
+        echo '</table>';
+
+        // reset statistik
+        echo '<div class="wrap">';
+        echo '<h2><strong>Reset Data Statistik</strong></h2>';
+        echo '<button id="reset-data" class="button-primary">Reset Statistik</button>';
+        echo '<div id="reset-message"></div>';
         echo '</div>';
-
+        echo '</div>';
     }
 
     /// [statistik_kunjungan]
-    public function display_statistik_kunjungan($atts) {
+    public function display_statistik_kunjungan($atts)
+    {
         ob_start(); // Mulai buffering output
 
         ///attribut shortcode
@@ -214,38 +231,37 @@
         $stat   = $atribut['stat'];
         $postID = $atribut['id'];
 
-        if($stat){
+        if ($stat) {
 
             switch ($stat) {
                 case 'today_visits':
                     echo $this->get_today_visits();
-                    break;   
+                    break;
                 case 'total_visitors':
                     echo $this->get_unique_visitors();
-                    break;    
+                    break;
                 case 'total_visits':
                     echo $this->get_total_visits();
-                    break;     
+                    break;
                 case 'online':
                     echo $this->get_online_visitors();
-                    break;     
+                    break;
                 case 'post':
-                    if(empty($postID)){
+                    if (empty($postID)) {
                         global $post;
                         $postID = $post->ID;
                     }
                     echo $this->get_count_post($postID);
-                    break;              
+                    break;
                 default:
                     echo $this->get_today_unique_visitors();
                     break;
             }
-
         } else {
 
             // Tampilkan list group statistik
             echo '<ul class="list-group list-group-flush" style="--bs-list-group-bg: transparent;">';
-            
+
             // Tampilkan statistik kunjungan
             $today_unique_visitors = $this->get_today_unique_visitors();
             $today_visits = $this->get_today_visits();
@@ -274,15 +290,16 @@
         return ob_get_clean();
     }
 
-    private function get_today_visits() {
+    private function get_today_visits()
+    {
         global $wpdb;
-    
+
         // Nama tabel
         $table_name = $wpdb->prefix . 'vd_statistic';
-    
+
         // Mendapatkan tanggal hari ini
         $today_date = date('Y-m-d');
-    
+
         // Query untuk mendapatkan jumlah kunjungan hari ini
         $today_visits = $wpdb->get_var(
             $wpdb->prepare(
@@ -290,19 +307,20 @@
                 $today_date
             )
         );
-    
+
         return $today_visits;
     }
 
-    private function get_today_unique_visitors() {
+    private function get_today_unique_visitors()
+    {
         global $wpdb;
-    
+
         // Nama tabel
         $table_name = $wpdb->prefix . 'vd_statistic';
-    
+
         // Mendapatkan tanggal hari ini
         $today_date = date('Y-m-d');
-    
+
         // Query untuk mendapatkan jumlah pengunjung unik hari ini
         $today_unique_visitors = $wpdb->get_var(
             $wpdb->prepare(
@@ -310,53 +328,56 @@
                 $today_date
             )
         );
-    
+
         return $today_unique_visitors;
     }
 
-    private function get_unique_visitors() {
+    private function get_unique_visitors()
+    {
         global $wpdb;
-    
+
         // Nama tabel
         $table_name = $wpdb->prefix . 'vd_statistic';
-    
+
         // Query untuk mendapatkan jumlah pengunjung unik
         $unique_visitors = $wpdb->get_var(
             "SELECT COUNT(DISTINCT sesi) FROM $table_name"
         );
-    
+
         return $unique_visitors;
     }
 
-    private function get_total_visits() {
+    private function get_total_visits()
+    {
         global $wpdb;
-    
+
         // Nama tabel
         $table_name = $wpdb->prefix . 'vd_statistic';
-    
+
         // Query untuk mendapatkan total kunjungan
         $total_visits = $wpdb->get_var(
             "SELECT COUNT(*) FROM $table_name"
         );
-    
+
         return $total_visits;
     }
 
-    private function get_online_visitors() {
+    private function get_online_visitors()
+    {
         global $wpdb;
-    
+
         // Nama tabel
         $table_name = $wpdb->prefix . 'vd_statistic';
-    
+
         // Interval waktu untuk dianggap sebagai "online" (dalam menit)
         $online_interval = 5; // Anda dapat mengganti sesuai kebutuhan
-    
+
         // Waktu saat ini
         $current_time = current_time('mysql');
-    
+
         // Waktu beberapa menit yang lalu
         $online_threshold = date('Y-m-d H:i:s', strtotime("-$online_interval minutes", strtotime($current_time)));
-    
+
         // Query untuk mendapatkan jumlah pengunjung online
         $online_visitors = $wpdb->get_var(
             $wpdb->prepare(
@@ -364,16 +385,17 @@
                 $online_threshold
             )
         );
-    
+
         return $online_visitors;
     }
 
-    public function get_count_post($post_id) {                     
+    public function get_count_post($post_id)
+    {
         global $wpdb;
-            
+
         // Nama tabel
         $table_name = $wpdb->prefix . 'vd_statistic';
-        
+
         // Query untuk mendapatkan jumlah pengunjung berdasarkan ID Post
         $totals = $wpdb->get_var(
             $wpdb->prepare(
@@ -385,21 +407,24 @@
         return $totals;
     }
 
-    public function statistik_posts_columns($columns) {
+    public function statistik_posts_columns($columns)
+    {
         $columns['statistik'] = __('Hits', 'velocity-addons');
         return $columns;
     }
 
-    public function statistik_posts_column($column, $post_id) {        
+    public function statistik_posts_column($column, $post_id)
+    {
         switch ($column) {
-            case 'statistik':             
+            case 'statistik':
                 echo $this->get_count_post($post_id);
-            break;
+                break;
         }
     }
 
     //update meta hit untuk post & page
-    public function post_single_update_hit(){        
+    public function post_single_update_hit()
+    {
         if (is_singular('post') || is_page()) {
             global $post;
             $postID     = $post->ID;
@@ -413,11 +438,30 @@
             } else {
                 update_post_meta($postID, $countKey, $newcount);
             }
-
         }
     }
 
+    public function reset_statistik()
+    {
+        global $wpdb;
+        // Nama tabel
+        $table_name = $wpdb->prefix . 'vd_statistic';
 
+        // Perintah SQL untuk menghapus semua data dari tabel
+        $wpdb->query("TRUNCATE TABLE $table_name");
+
+        // Query untuk mengambil semua post dan page
+        $posts = $wpdb->get_results("SELECT ID FROM {$wpdb->posts} WHERE post_type IN ('post', 'page')");
+
+        // Loop melalui setiap post dan page
+        foreach ($posts as $post) {
+            // Hapus meta hit
+            delete_post_meta($post->ID, 'hit');
+        }
+
+        // Kembalikan respons JSON
+        wp_send_json_success('Semua data di tabel database dan meta post hit telah berhasil direset.');
+    }
 }
 
 $statistics_handler = new Velocity_Addons_Statistic();
