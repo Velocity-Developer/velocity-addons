@@ -16,7 +16,7 @@
  * Plugin Name:       Velocity Addons
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Addon plugin for Velocitydeveloper Client
- * Version:           1.1.2
+ * Version:           1.1.3
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
