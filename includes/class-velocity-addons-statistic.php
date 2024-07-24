@@ -278,7 +278,7 @@ class Velocity_Addons_Statistic
             );
 
             foreach ($stats as $label => $value) {
-                echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                echo '<li class="list-group-item bg-transparent px-0 d-flex justify-content-between align-items-center">';
                 echo $label;
                 echo '<span class="badge bg-secondary rounded-pill">' . $value . '</span>';
                 echo '</li>';
