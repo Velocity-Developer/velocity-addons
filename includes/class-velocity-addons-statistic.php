@@ -432,12 +432,7 @@ class Velocity_Addons_Statistic
             $count      = get_post_meta($postID, $countKey, true);
             $newcount   = $this->get_count_post($postID);
 
-            if ($count == '') {
-                delete_post_meta($postID, $countKey);
-                add_post_meta($postID, $countKey, $newcount);
-            } else {
-                update_post_meta($postID, $countKey, $newcount);
-            }
+            update_post_meta($postID, $countKey, $newcount);
         }
     }
 
