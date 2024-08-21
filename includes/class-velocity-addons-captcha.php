@@ -207,13 +207,18 @@
     }
 
     public function lostpassword_post(){
-        // Periksa apakah reCaptcha valid saat proses submit lostpassword
-        $verify = $this->verify($_POST['g-recaptcha-response']);
-        
-        if (!$verify['success']) {
-            // Jika reCaptcha tidak valid, hentikan proses submit
-            wp_die($verify['message']);
-        }
+     
+       //jika user belum login
+     		if ( !is_user_logged_in() ) {
+             // Periksa apakah reCaptcha valid saat proses submit lostpassword
+             $verify = $this->verify($_POST['g-recaptcha-response']);
+             
+             if (!$verify['success']) {
+                 // Jika reCaptcha tidak valid, hentikan proses submit
+                 wp_die($verify['message']);
+             }
+       }
+     
     }
 
     public function verify_register_form($errors, $sanitized_user_login, $user_email){
