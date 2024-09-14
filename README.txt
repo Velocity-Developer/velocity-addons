@@ -22,6 +22,9 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+= 1.1.5 =
+- Perbaikan bug recaptcha 'lost_password' & tampilan shortcode
+
 = 1.1.4 =
 - Perbaikan bug dan perapian tampilan
 
