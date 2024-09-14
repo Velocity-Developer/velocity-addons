@@ -201,10 +201,10 @@ class Velocity_Addons_Statistic
         echo '<tr>';
         echo '<td>Shortcode Per Post/Page</td>';
         echo '<td>';
-        echo '<code>[statistik_kunjungan stat:post]</code>';
+        echo '<code>[statistik_kunjungan stat=post]</code>';
         echo '<div>Untuk ID Post akan diambil dari global $post;</div>';
         echo '<div>atau jia ingin set id post gunakan</div>';
-        echo '<code>[statistik_kunjungan stat:post id:50]</code>';
+        echo '<code>[statistik_kunjungan stat=post id=50]</code>';
         echo '</td>';
         echo '</tr>';
         echo '</table>';
