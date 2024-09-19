@@ -42,10 +42,9 @@ class Velocity_Addons_News
         $url        = 'https://api.velocitydeveloper.id/wp-json/news/v1/cat';
         
         $response   = wp_remote_get( $url );
-        return $response; // Mengembalikan data dalam bentuk array
         $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : $response->get_error_message();
         
-        
+        return $response; // Mengembalikan data dalam bentuk array
     }
 
     public function fetch_news_scraper($target, $category, $count, $status) {
@@ -146,7 +145,6 @@ class Velocity_Addons_News
         }
         // Mengambil kategori dan post
         $categories = $this->fetch_category();
-        print_r($categories);
         ?>
         <div class="wrap">
             <h2>News Scraper</h2>
