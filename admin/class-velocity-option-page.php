@@ -41,6 +41,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'limit_login_attempts');
         register_setting('custom_admin_options_group', 'maintenance_mode');
         register_setting('custom_admin_options_group', 'maintenance_mode_data');
+        register_setting('custom_admin_options_group', 'license_key');
         register_setting('custom_admin_options_group', 'auto_resize_mode');
         register_setting('custom_admin_options_group', 'auto_resize_mode_data');
         register_setting('custom_admin_options_group', 'disable_xmlrpc');
@@ -91,6 +92,10 @@ class Custom_Admin_Option_Page
             echo '<div><input type="text" id="' . $id . '" name="' . $name . '" value="' . $value . '" class="regular-text"></div>';
         }
 
+        if ($type == 'password') {
+            echo '<div><input type="password" id="' . $id . '" name="' . $name . '" value="' . $value . '" class="regular-text"></div>';
+        }
+
         //jika field number
         if ($type == 'number') {
             echo '<div><input type="number" step="' . $step . '" min="0" id="' . $id . '" name="' . $name . '" value="' . $value . '" class="small-text"></div>';
@@ -121,7 +126,6 @@ class Custom_Admin_Option_Page
 
     public function options_page_callback()
     {
-
         $pages = [
             'umum' => [
                 'title'     => 'Umum',
@@ -286,6 +290,19 @@ class Custom_Admin_Option_Page
                     ]
                 ],
             ],
+            'license' => [
+                'title'     => 'License',
+                'fields'    => [
+                    [
+                        'id'    => 'license_key',
+                        'sub'   => 'header',
+                        'type'  => 'password',
+                        'title' => 'License Key',
+                        'std'   => '',
+                        'label' => '<a class="check-license button button-primary">Check License</a><br><span class="license-status"></span>',
+                    ]
+                ],
+            ],
             'auto_resize' => [
                 'title'     => 'Auto Resize Image',
                 'fields'    => [
@@ -359,7 +376,38 @@ class Custom_Admin_Option_Page
                 </div>
 
                 <script>
-                    jQuery(function($) {
+                    jQuery(document).ready(function($) {
+                        $('.check-license').click(function(e) {
+                            e.preventDefault();
+
+                            var licenseKey = $('#license_key').val();
+                            
+                            // Check if license key is not empty
+                            if (licenseKey === '') {
+                                alert('Please enter a license key.');
+                                return;
+                            }
+
+                            $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: {
+                                    action: 'check_license',
+                                    license_key: licenseKey
+                                },
+                                success: function(response) {
+                                    if (response.success) {
+                                        $('.license-status').html('License verified');
+                                    } else {
+                                        $('.license-status').html(response.data);
+                                    }
+                                },
+                                error: function() {
+                                    $('.license-status').html('Server not reachable');
+                                }
+                            });
+                        });
+
                         function activeTab(id) {
                             $('.vd-ons .nav-tab').removeClass('nav-tab-active');
                             $('.vd-ons .nav-tab[href="' + id + '"]').addClass('nav-tab-active');
