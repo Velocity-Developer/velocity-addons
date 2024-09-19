@@ -57,6 +57,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'seo_velocity');
         register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
         register_setting('custom_admin_options_group', 'captcha_velocity');
+        register_setting('custom_admin_options_group', 'news_generate');
     }
 
     public function field($data)
@@ -222,7 +223,14 @@ class Custom_Admin_Option_Page
                         'title' => 'Redirect To',
                         'std'   => 'http://127.0.0.1',
                         'label' => 'Tujuan redirect wp-login.php, jika Block wp-login.php aktif.',
-                    ]
+                    ],
+                    [
+                        'id'    => 'news_generate',
+                        'type'  => 'checkbox',
+                        'title' => 'News Generate',
+                        'std'   => 0,
+                        'label' => 'Aktifkan gunakan untuk generate post.',
+                    ],
                 ],
             ],
             'captcha' => [

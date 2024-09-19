@@ -193,6 +193,11 @@ class Velocity_Addons
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-captcha.php';
 
+        /**
+         * Class untuk menambah option page generate post
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-option-news-generate.php';
+
 
         /**
          * The class responsible for defining all actions that occur in the admin area.
@@ -203,7 +208,6 @@ class Velocity_Addons
          * Class untuk menambah option page untuk Admin Option
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-option-page.php';
-
 
         /**
          * The class responsible for defining all actions that occur in the public-facing
