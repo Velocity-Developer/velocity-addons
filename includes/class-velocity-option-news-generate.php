@@ -48,6 +48,7 @@ class Velocity_Addons_News
     }
 
     public function fetch_news_scraper($target, $category, $count, $status) {
+        ob_start();
         // Mengambil kategori dan post
         $posts_datas = $this->fetch_post('posts',$target, $count);
         
@@ -56,16 +57,21 @@ class Velocity_Addons_News
             $content = (string) $posts_data['content'];
             $thumbnail = (string) $posts_data['thumb_url'] ?? '';
 
-            $this->save_news_post($title, $content, $thumbnail, $category, $status);
+            echo $this->save_news_post($title, $content, $thumbnail, $category, $status);
         endforeach;
+
+        return ob_get_clean();
     }
 
     // Fungsi untuk menyimpan artikel sebagai post di WordPress
     public function save_news_post($title, $content, $thumbnail, $category, $status) {
+        ob_start();
         $existing_post = get_page_by_title($title, OBJECT, 'post');
         if ($existing_post) {
             // Jika post sudah ada, tampilkan pesan
-            echo '<p>Gagal import! Post dengan judul "' . esc_html($title) . '" sudah ada.</p>';
+            echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                </svg> Gagal import! Post dengan judul "' . esc_html($title) . '" sudah ada.</p>';
         } else {
             $post_data = array(
                 'post_title'    => wp_strip_all_tags($title),
@@ -91,12 +97,19 @@ class Velocity_Addons_News
             // Mengecek apakah post berhasil disisipkan
             if (!is_wp_error($post_id)) {
                 // Jika berhasil, tampilkan judul
-                echo '<div class="updated"><p>Success import posts dengan judul: ' . esc_html(get_the_title($post_id)).'</p></div>';
+                echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#51b20c" class="bi bi-check-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                    <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                    </svg> Success import posts dengan judul: ' . esc_html(get_the_title($post_id)).'</p>';
             } else {
                 // Jika gagal, tampilkan pesan error
-                echo 'Gagal import post: ' . $post_id->get_error_message();
+                echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                    </svg> Gagal import post: ' . $post_id->get_error_message().'</p>';
             }
         }
+
+        return ob_get_clean();
     }
 
     // Fungsi untuk menetapkan featured image dari URL
@@ -136,13 +149,6 @@ class Velocity_Addons_News
 
     public function render_news_settings_page()
     {
-        if (isset($_POST['category']) && isset($_POST['jml_target'])) {
-            $target = sanitize_text_field($_POST['target']);
-            $category = sanitize_text_field($_POST['category']);
-            $count = intval($_POST['jml_target']);
-            $status = sanitize_text_field($_POST['status']);
-            $this->fetch_news_scraper($target, $category, $count, $status);
-        }
         // Mengambil kategori dan post
         $categories = $this->fetch_category();
         ?>
@@ -194,6 +200,13 @@ class Velocity_Addons_News
             </form>
         </div>
         <?php
+        if (isset($_POST['category']) && isset($_POST['jml_target'])) {
+            $target = sanitize_text_field($_POST['target']);
+            $category = sanitize_text_field($_POST['category']);
+            $count = intval($_POST['jml_target']);
+            $status = sanitize_text_field($_POST['status']);
+            echo '<div class="vdaddons-notice">'.$this->fetch_news_scraper($target, $category, $count, $status).'</div>';
+        }
     }
 }
 
