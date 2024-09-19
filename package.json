@@ -1,0 +1,18 @@
+{
+  "name": "velocity-addons",
+  "version": "1.1.51",
+  "description": "Addon plugin for Velocitydeveloper Client",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run zip",
+    "zip": "node ./src/zip.js"
+  },
+  "author": "Velocity",
+  "license": "GPL-2.0+",
+  "devDependencies": {
+    "archiver": "^5.3.0"
+  },
+  "dependencies": {
+    "fs-extra": "^11.2.0"
+  }
+}
