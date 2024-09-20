@@ -232,7 +232,7 @@ class Custom_Admin_Option_Page
                         'id'    => 'news_generate',
                         'type'  => 'checkbox',
                         'title' => 'News Generate',
-                        'std'   => 0,
+                        'std'   => 1,
                         'label' => 'Aktifkan gunakan untuk generate post.',
                     ],
                 ],

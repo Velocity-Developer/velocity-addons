@@ -27,6 +27,7 @@ class Velocity_Addons_Maintenance_Mode
     {
         if (get_option('maintenance_mode')) {
             add_action('wp', array($this, 'check_maintenance_mode'));
+            add_action('admin_notices', [$this, 'qc_maintenance']);
         }
     }
 
@@ -37,8 +38,100 @@ class Velocity_Addons_Maintenance_Mode
             $hd     = isset($opt['header'])&&!empty($opt['header'])?$opt['header']:'Maintenance Mode';
             $bd     = isset($opt['body'])&&!empty($opt['body'])?$opt['body']:'';
 
-            wp_die('<h1>'.$hd.'</h1><p>'.$bd.'</p>', 'Maintenance Mode');
+            wp_die('<h1>'.$hd.'</h1><p>'.$bd.'</p><p>'.$permalinks.'</p>', 'Maintenance Mode');
         }
+    }
+
+    public function qc_maintenance(){
+        echo '<div class="notice notice-warning notice-alt">';
+            echo $this->check_permalink_settings();
+            echo $this->check_site_icon();
+            echo $this->check_recaptcha();
+            echo $this->check_seo();
+            echo $this->check_domain_extension();
+        echo '</div>';
+    }
+
+    public function check_domain_extension(){
+        ob_start();
+        // Mendapatkan URL situs saat ini
+        $site_url = get_site_url();
+        
+        // Menghapus skema (http:// atau https://) dari URL
+        $domain = parse_url($site_url, PHP_URL_HOST);
+
+        // Memisahkan nama domain menjadi bagian-bagian
+        $domain_parts = explode('.', $domain);
+        
+        // Mengambil ekstensi domain (bagian terakhir)
+        $extension = array_pop($domain_parts);
+        
+        // Memeriksa sub-ekstensi
+        $sub_extension = array_pop($domain_parts); // Ambil bagian sebelum ekstensi
+
+        // Daftar ekstensi yang valid
+        $valid_extensions = ['go.id', 'desa.id', 'sch.id', 'ac.id'];
+
+        // Memeriksa apakah domain berakhir dengan ekstensi yang valid
+        if (in_array($sub_extension . '.' . $extension, $valid_extensions)) {
+            echo '<p>Setting Desain By Velocity => Open New Tab. Linknya Di Warna Sesuai Background, Rata Kiri (Pojok), Saat Hover Jangan Icon Tangan Tapi Icon Panah Sprti Pada Saat Tanpa Hover.</p>';
+        }
+
+        return ob_get_clean();
+    }
+
+    public function check_permalink_settings() {
+        ob_start();
+        // Mendapatkan pengaturan permalink
+        $permalinks = get_option('permalink_structure');
+        $linksetting = admin_url('options-permalink.php');
+
+        // Memeriksa apakah permalink tidak diatur
+        if (empty($permalinks) || $permalinks != '/%category%/%postname%/') {
+            // Menambahkan log peringatan
+            echo '<p>Peringatan: Permalink belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
+        }
+
+        return ob_get_clean();
+    }
+
+    public function check_site_icon(){
+        ob_start();
+        $site_icon = get_site_icon_url();
+        $linksetting = admin_url('customize.php');
+
+        if(empty($site_icon)) {
+            echo '<p>Peringatan: Favicon belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
+        }
+        return ob_get_clean();
+    }
+
+    public function check_recaptcha(){
+        ob_start();
+        $linksetting    = admin_url('options-general.php?page=custom_admin_options');
+        $check_recaptcha = get_option('captcha_velocity');
+        $aktif  = $check_recaptcha['aktif'];
+        $sitekey    = $check_recaptcha['sitekey'];
+        $secretkey  = $check_recaptcha['secretkey'];
+
+        if($aktif == false || empty($sitekey) || empty($secretkey)){
+            echo '<p>Peringatan: Recaptcha belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
+        }
+
+        return ob_get_clean();
+    }
+
+    public function check_seo(){
+        ob_start();
+        $linksetting    = admin_url('admin.php?page=velocity_seo_settings');
+        $home_keywords  = get_option('home_keywords');
+        $share_image    = get_option('share_image');
+
+        if(empty($home_keywords) || empty($share_image)){
+            echo '<p>Peringatan: SEO belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
+        }
+
+        return ob_get_clean();
     }
 }
 
