@@ -21,6 +21,10 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+= 1.1.51 =
+- Tambah fitur import artikel dari API Velocity
+- Tambah fitur lisence (tahap pembuatan)
+- Tambah fitur QC Checker saat Maintenance Mode
 
 = 1.1.5 =
 - Perbaikan bug recaptcha 'lost_password' & tampilan shortcode
