@@ -49,6 +49,7 @@ class Velocity_Addons_Maintenance_Mode
             echo $this->check_recaptcha();
             echo $this->check_seo();
             echo $this->check_domain_extension();
+            echo $this->check_installed_plugins($excluded_plugins);
         echo '</div>';
     }
 
@@ -76,6 +77,7 @@ class Velocity_Addons_Maintenance_Mode
         if (in_array($sub_extension . '.' . $extension, $valid_extensions)) {
             echo '<p>Setting Desain By Velocity => Open New Tab. Linknya Di Warna Sesuai Background, Rata Kiri (Pojok), Saat Hover Jangan Icon Tangan Tapi Icon Panah Sprti Pada Saat Tanpa Hover.</p>';
         }
+        echo '<p>Pastikan Copy Right Sesuai Tahun!</p>';
 
         return ob_get_clean();
     }
@@ -129,6 +131,32 @@ class Velocity_Addons_Maintenance_Mode
 
         if(empty($home_keywords) || empty($share_image)){
             echo '<p>Peringatan: SEO belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
+        }
+
+        return ob_get_clean();
+    }
+
+    public function check_installed_plugins($excluded_plugins = []) {
+        ob_start();
+
+        // Mendapatkan semua plugin yang terinstal
+        $plugins = get_plugins();
+
+        // Mendapatkan pengaturan auto-update untuk plugin
+        $auto_update_plugins = get_site_option( 'auto_update_plugins', [] );
+
+        // Plugin yang dikecualikan
+        $excluded_plugins = ['bb-ultimate-addon/bb-ultimate-addon.php', 'velocity-toko/velocity-toko.php'];
+
+        foreach ( $plugins as $plugin_file => $plugin_data ) {
+            // Mengambil slug dari plugin
+            $plugin_slug = $plugin_file; // Contoh: 'plugin-directory/plugin-file.php'
+            if(!in_array($plugin_slug, $excluded_plugins)) {
+                if (!in_array($plugin_slug, $auto_update_plugins) ) {
+                    echo '<p>'.$plugin_data['Name'] . ' belum diaktifkan untuk pembaruan otomatis.</p>';
+                }
+            }
+            
         }
 
         return ob_get_clean();
