@@ -49,7 +49,7 @@ class Velocity_Addons_Maintenance_Mode
             echo $this->check_recaptcha();
             echo $this->check_seo();
             echo $this->check_domain_extension();
-            echo $this->check_installed_plugins($excluded_plugins);
+            echo $this->check_installed_plugins();
         echo '</div>';
     }
 
@@ -136,7 +136,7 @@ class Velocity_Addons_Maintenance_Mode
         return ob_get_clean();
     }
 
-    public function check_installed_plugins($excluded_plugins = []) {
+    public function check_installed_plugins() {
         ob_start();
 
         // Mendapatkan semua plugin yang terinstal
