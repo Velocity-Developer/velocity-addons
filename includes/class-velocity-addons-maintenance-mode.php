@@ -38,7 +38,7 @@ class Velocity_Addons_Maintenance_Mode
             $hd     = isset($opt['header'])&&!empty($opt['header'])?$opt['header']:'Maintenance Mode';
             $bd     = isset($opt['body'])&&!empty($opt['body'])?$opt['body']:'';
 
-            wp_die('<h1>'.$hd.'</h1><p>'.$bd.'</p><p>'.$permalinks.'</p>', 'Maintenance Mode');
+            wp_die('<h1>'.$hd.'</h1><p>'.$bd.'</p>', 'Maintenance Mode');
         }
     }
 
