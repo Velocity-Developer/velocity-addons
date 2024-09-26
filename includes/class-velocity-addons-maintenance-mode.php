@@ -38,7 +38,7 @@ class Velocity_Addons_Maintenance_Mode
             $hd     = isset($opt['header'])&&!empty($opt['header'])?$opt['header']:'Maintenance Mode';
             $bd     = isset($opt['body'])&&!empty($opt['body'])?$opt['body']:'';
 
-            wp_die('<h1>'.$hd.'</h1><p>'.$bd.'</p>', 'Maintenance Mode');
+            wp_die('<h1>'.$hd.'</h1><p>'.$bd.'</p><p>'.$permalinks.'</p>', 'Maintenance Mode');
         }
     }
 
@@ -146,7 +146,16 @@ class Velocity_Addons_Maintenance_Mode
         $auto_update_plugins = get_site_option( 'auto_update_plugins', [] );
 
         // Plugin yang dikecualikan
-        $excluded_plugins = ['bb-ultimate-addon/bb-ultimate-addon.php', 'velocity-toko/velocity-toko.php'];
+        $excluded_plugins = [
+            'bb-ultimate-addon/bb-ultimate-addon.php',
+            'velocity-toko/velocity-toko.php',
+            'velocity-expedisi/velocity-expedisi.php',
+            'velocity-donasi/velocity-donasi.php',
+            'velocity-produk/velocity-produk.php',
+            'vd-gallery/vd-gallery.php',
+            'velocity-toko-kursus/velocity-kursus.php',
+            'custom-plugin/custom-plugin.php',
+            ];
 
         foreach ( $plugins as $plugin_file => $plugin_data ) {
             // Mengambil slug dari plugin
