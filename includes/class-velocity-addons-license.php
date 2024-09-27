@@ -1,12 +1,13 @@
 <?php
-
 class Velocity_Addons_License
 {
     private $api_url;
+    private $option_name;
 
     public function __construct()
     {
         $this->api_url = 'https://api.velocitydeveloper.id/wp-json/api/v1/license';
+        $this->option_name = 'velocity_license';
 
         // Schedule a weekly check for license status
         if (!wp_next_scheduled('check_license_status')) {
@@ -17,30 +18,14 @@ class Velocity_Addons_License
         add_action('wp_ajax_check_license', array($this, 'ajax_check_license'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
-
-    public function activate_license($license_key)
-    {
-        $response = $this->send_request($license_key);
-    
-        if ($response && $response['success'] === true) {
-            $this->store_license_data($response['data']['data']); // Akses data yang benar
-            return true;
-        } else {
-            if ($response) {
-                $this->handle_license_error($response['data']['message']); // Akses message yang benar
-            } else {
-                $this->handle_server_error();
-            }
-            return false;
-        }
-    }
-
+   
     private function send_request($license_key)
     {
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
                 'license_key' => $license_key,
+                'source' => parse_url(get_site_url(), PHP_URL_HOST),
             ),
         );
     
@@ -62,18 +47,20 @@ class Velocity_Addons_License
         return $data;
     }
 
-    private function store_license_data($data)
+    private function store_license_data($license_key,$status,$expire_date)
     {
         // Save license data in WordPress options
-        update_option('license_id', $data['license_id']);
-        update_option('license_key', $data['license_key']);
-        update_option('license_status', $data['status']);
-        update_option('license_expire_date', $data['expire_date']);
+        $data = [
+            'key' => $license_key,
+            'expire_date' => $expire_date,
+            'status' => $status,
+        ];
+        update_option($this->option_name, $data);
     }
 
     public function check_license()
     {
-        $license_key = get_option('license_key');
+        $license_key = get_option($this->option_name)['key'];
         $response = $this->send_request($license_key);
 
         if ($response) {
@@ -91,7 +78,7 @@ class Velocity_Addons_License
         // Check if license key is provided
         if (isset($_POST['license_key'])) {
             $license_key = sanitize_text_field($_POST['license_key']);
-            $response = $this->send_request($license_key);
+            $response = $this->activate_license($license_key);
 
             if ($response && $response['status'] === 200) {
                 // Success response
@@ -102,6 +89,24 @@ class Velocity_Addons_License
             }
         }
         wp_die(); // Required to properly terminate AJAX requests
+    }
+
+    public function activate_license($license_key)
+    {
+        $response = $this->send_request($license_key);
+    
+        if ($response && isset($response['status']) && $response['status'] === 200) {
+            $this->store_license_data($license_key,$response['data']['status'],$response['data']['exp']); // Akses data yang benar
+            return $response;
+        } else {
+            if ($response && isset($response['data']['message'])) {
+                $this->handle_license_error($response['data']['message']); // Akses message yang benar
+            } else {
+                $this->handle_server_error();
+            }
+            delete_option( $this->option_name );
+            return false;
+        }
     }
 
     private function handle_license_error($message)

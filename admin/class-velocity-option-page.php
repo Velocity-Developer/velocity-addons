@@ -76,6 +76,7 @@ class Custom_Admin_Option_Page
             $sub    = $data['sub'];
             $value  = isset($value[$sub]) ? $value[$sub] : '';
             $name   = $id . '[' . $sub . ']';
+            $id     = $id . '__' . $sub;
         }
 
         if ($std && empty($value) && $type != 'checkbox') {
@@ -294,12 +295,12 @@ class Custom_Admin_Option_Page
                 'title'     => 'License',
                 'fields'    => [
                     [
-                        'id'    => 'license_key',
-                        'sub'   => 'header',
+                        'id'    => 'velocity_license',
+                        'sub'   => 'key',
                         'type'  => 'password',
                         'title' => 'License Key',
                         'std'   => '',
-                        'label' => '<a class="check-license button button-primary">Check License</a><br><span class="license-status"></span>',
+                        'label' => '<br><a class="check-license button button-primary">Check License</a><br><span class="license-status"></span>',
                     ]
                 ],
             ],
@@ -380,13 +381,15 @@ class Custom_Admin_Option_Page
                         $('.check-license').click(function(e) {
                             e.preventDefault();
 
-                            var licenseKey = $('#license_key').val();
+                            var licenseKey = $('#velocity_license__key').val();
                             
                             // Check if license key is not empty
                             if (licenseKey === '') {
                                 alert('Please enter a license key.');
                                 return;
                             }
+
+                            $('.check-license.button').html('Loading..');
 
                             $.ajax({
                                 url: '<?php echo admin_url('admin-ajax.php'); ?>',
@@ -400,10 +403,14 @@ class Custom_Admin_Option_Page
                                         $('.license-status').html('License verified');
                                     } else {
                                         $('.license-status').html(response.data);
+                                        $('#velocity_license__key').val('');
                                     }
+                                    $('.check-license.button').html('License Aktif');
                                 },
                                 error: function() {
                                     $('.license-status').html('Server not reachable');
+                                    $('#velocity_license__key').val('');
+                                    $('.check-license.button').html('Check License');
                                 }
                             });
                         });
