@@ -12,10 +12,13 @@
 
 class Velocity_Addons_News
 {
+
+    protected $api_url;
     
     public function __construct()
     {
 
+        $this->api_url = 'https://api.velocitydeveloper.id/wp-json/news/v1';
         $news_generate = get_option('news_generate', '1');
 
         if ($news_generate !== '1')
@@ -26,47 +29,112 @@ class Velocity_Addons_News
 
     // Mengambil data dari API
     private function fetch_post($item=null, $cat_id=null, $count=5) {
-        $data   = [
+        $license = new Velocity_Addons_License;
+        $args = array(
+            'headers' => $license->headers_api(),
+        );
+        $data = [
             'cat='.$cat_id,
             'number='.$count,
         ];
-        $url        = 'https://api.velocitydeveloper.id/wp-json/news/v1/'.$item.'?'.implode("&",$data);
+        $url = $this->api_url.'/'.$item.'?'.implode("&",$data);
         
-        $response   = wp_remote_get( $url );
+        $response   = wp_remote_get( $url,$args );
         $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : [];
         
         return $response; // Mengembalikan data dalam bentuk array
     }
 
     private function fetch_category() {
-        $url        = 'https://api.velocitydeveloper.id/wp-json/news/v1/cat';
-        
-        $response   = wp_remote_get( $url );
-        $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : $response->get_error_message();
-        
-        return $response; // Mengembalikan data dalam bentuk array
+        // Mengambil data dari transient cache
+        $name_cache = 'vd_api_news_category';
+        $cached_data = get_transient($name_cache);
+
+        if ($cached_data === false) {
+            $license = new Velocity_Addons_License;
+            $args = array(
+                'headers' => $license->headers_api(),
+            );
+            $url        = $this->api_url.'/cat';
+            
+            $response   = wp_remote_get( $url,$args );
+            $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : $response->get_error_message();
+            
+            // jika sukses Simpan data dalam transient selama 5 menit (300 detik)
+            if(isset($response['status']) && $response['status'] == true){
+                set_transient($name_cache, $response, 300); // 300 detik = 5 menit
+            }
+
+            return $response; // Mengembalikan data dalam bentuk array
+        }
+
+        // Jika ada cache, kembalikan data cache
+        return $cached_data;
     }
 
     public function fetch_news_scraper($target, $category, $count, $status) {
         ob_start();
         // Mengambil kategori dan post
-        $posts_datas = $this->fetch_post('posts',$target, $count);
-        
-        foreach($posts_datas as $posts_data):
-            $title = (string) $posts_data['title'];
-            $content = (string) $posts_data['content'];
-            $thumbnail = (string) $posts_data['thumb_url'] ?? '';
+        $get_datas = $this->fetch_post('posts',$target, $count);
 
-            echo $this->save_news_post($title, $content, $thumbnail, $category, $status);
-        endforeach;
+        if(isset($get_datas['status']) && $get_datas['status'] == true ){
+
+            $posts_datas = $get_datas['data'];
+
+            // Mengatur jumlah menit yang ingin dikurangi
+            $num_time = 1;
+
+            foreach($posts_datas as $posts_data):
+                $title = (string) $posts_data['title'];
+                $content = (string) $posts_data['content'];
+                $thumbnail = (string) $posts_data['thumb_url'] ?? '';
+                $thumbcaption = (string) $posts_data['thumb_caption'] ?? '';
+                $tags = (string) $posts_data['post_tag'] ?? '';
+
+            // Mendapatkan waktu sekarang (local time) dikurangi 1 menit
+            $current_time = current_time('mysql');
+            $date = date('Y-m-d H:i:s', strtotime($current_time . " -{$num_time} minute"));
+
+                echo $this->save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date);
+
+                $num_time++;
+            endforeach;
+        } else {
+            echo '<p><svg xmlns="XXXXXXXXXXXXXXXXXXXXXXXXXX" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                </svg> Gagal import! '.$get_datas['message'].'</p>';
+        }
 
         return ob_get_clean();
     }
 
+    //fungsi cek posts by title
+    public function cek_posts_by_title($title) {
+        global $wpdb;
+
+        // Prepare the SQL query
+        $query = $wpdb->prepare("
+            SELECT ID 
+            FROM $wpdb->posts 
+            WHERE post_title = %s 
+            AND post_type = 'post' 
+            AND post_status = 'publish'
+        ", $title);
+
+        // Execute the query and get the result
+        $post_id = $wpdb->get_var($query);
+
+        if ($post_id) {
+            return $post_id;
+        } else {
+            return false;
+        }
+    }
+
     // Fungsi untuk menyimpan artikel sebagai post di WordPress
-    public function save_news_post($title, $content, $thumbnail, $category, $status) {
+    public function save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date) {
         ob_start();
-        $existing_post = get_page_by_title($title, OBJECT, 'post');
+        $existing_post = $this->cek_posts_by_title($title);
         if ($existing_post) {
             // Jika post sudah ada, tampilkan pesan
             echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
@@ -81,6 +149,9 @@ class Velocity_Addons_News
                 'meta_input'    => array(
                     'thumbnail'   => esc_url($thumbnail),
                 ),
+                'post_date'     => $date,
+                'post_date_gmt' => get_gmt_from_date($date),
+                'tags_input'    => $tags,
             );
 
             // Insert post ke dalam WordPress
@@ -91,7 +162,7 @@ class Velocity_Addons_News
             }
             // Jika ada thumbnail, set sebagai featured image
             if (!empty($thumbnail)) {
-                $this->set_featured_image_from_url($post_id, $thumbnail);
+                $this->set_featured_image_from_url($post_id, $thumbnail, $thumbcaption);
             }
 
             // Mengecek apakah post berhasil disisipkan
@@ -113,7 +184,7 @@ class Velocity_Addons_News
     }
 
     // Fungsi untuk menetapkan featured image dari URL
-    public function set_featured_image_from_url($post_id, $image_url) {
+    public function set_featured_image_from_url($post_id, $image_url, $caption) {
         $upload_dir = wp_upload_dir();
         $image_data = file_get_contents($image_url);
         $filename = basename($image_url);
@@ -124,7 +195,8 @@ class Velocity_Addons_News
         $attachment = array(
             'post_mime_type' => $wp_filetype['type'],
             'post_title'     => sanitize_file_name($filename),
-            'post_content'   => '',
+            'post_content'   => $caption,
+            'post_excerpt'   => $caption,
             'post_status'    => 'inherit',
         );
 
@@ -149,8 +221,6 @@ class Velocity_Addons_News
 
     public function render_news_settings_page()
     {
-        // Mengambil kategori dan post
-        $categories = $this->fetch_category();
         ?>
         <div class="wrap">
             <h2>News Scraper</h2>
@@ -160,6 +230,18 @@ class Velocity_Addons_News
                     <tr>
                         <th scope="row">Ambil Target</th>
                         <td>
+                            <?php
+                            // Mengambil kategori dan post
+                            $get_categories = $this->fetch_category();
+                            
+                            //jika tidak sukses, tampilkan pesan
+                            if(isset($get_categories['status']) && $get_categories['status'] == true){
+                                $categories = $get_categories['data']??[];
+                            } else {
+                                echo '<p>'.$get_categories['message'].'</p>';
+                                $categories = [];
+                            }
+                            ?>
                             <select name="target" id="target">
                                 <option>Pilih Target</option>
                                 <?php foreach($categories as $category):

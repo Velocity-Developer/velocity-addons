@@ -18,6 +18,15 @@ class Velocity_Addons_License
         add_action('wp_ajax_check_license', array($this, 'ajax_check_license'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
+
+    public function headers_api(){
+        $license_key = get_option($this->option_name)['key'];
+        return [
+            'Content-Type' => 'application/json',
+            'license_key' => $license_key,
+            'source' => parse_url(get_site_url(), PHP_URL_HOST),
+        ];
+    }
    
     private function send_request($license_key)
     {
