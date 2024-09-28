@@ -89,7 +89,7 @@ class Velocity_Addons_License
             $license_key = sanitize_text_field($_POST['license_key']);
             $response = $this->activate_license($license_key);
 
-            if ($response && $response['status'] === 200) {
+            if ($response && $response['status'] == true) {
                 // Success response
                 wp_send_json_success($response);
             } else {
@@ -104,7 +104,7 @@ class Velocity_Addons_License
     {
         $response = $this->send_request($license_key);
     
-        if ($response && isset($response['status']) && $response['status'] === 200) {
+        if ($response && isset($response['status']) && $response['status']) {
             $this->store_license_data($license_key,$response['data']['status'],$response['data']['exp']); // Akses data yang benar
             return $response;
         } else {
