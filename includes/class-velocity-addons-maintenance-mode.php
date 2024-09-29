@@ -100,7 +100,7 @@ class Velocity_Addons_Maintenance_Mode
     public function check_site_icon(){
         ob_start();
         $site_icon = get_site_icon_url();
-        $linksetting = admin_url('customize.php');
+        $linksetting = admin_url('options-general.php?page=custom_admin_options');
 
         if(empty($site_icon)) {
             echo '<p>Peringatan: Favicon belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
