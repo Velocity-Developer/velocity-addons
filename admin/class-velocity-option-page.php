@@ -23,8 +23,19 @@
 
 class Custom_Admin_Option_Page
 {
+    private $status_lisensi;
+
     public function __construct()
     {
+        // Ambil data lisensi dari option
+        $this->status_lisensi = get_option('velocity_license', ['status' => false]);
+    
+        // Pastikan key 'status' ada, dan set default 'Check License' jika tidak ada atau tidak aktif
+        $this->status_lisensi = !empty($this->status_lisensi['status']) && $this->status_lisensi['status'] === 'active' 
+            ? 'License Verified!' 
+            : 'Check License';
+    
+        // Daftarkan menu dan settings di admin
         add_action('admin_menu', array($this, 'add_options_page'));
         add_action('admin_init', array($this, 'register_settings'));
     }
@@ -146,27 +157,6 @@ class Custom_Admin_Option_Page
                         'label' => 'Sembunyikan pemberitahuan admin di halaman admin. Pemberitahuan admin seringkali muncul untuk memberikan informasi atau peringatan kepada admin situs.',
                     ],
                     [
-                        'id'    => 'limit_login_attempts',
-                        'type'  => 'checkbox',
-                        'title' => 'Limit Login Attempts',
-                        'std'   => 1,
-                        'label' => 'Batasi jumlah percobaan login yang diizinkan untuk pengguna, ketika pengguna melakukan percobaan login yang melebihi 5X dalam 24 Jam, mereka akan diblokir untuk sementara waktu sebagai tindakan keamanan.',
-                    ],
-                    [
-                        'id'    => 'disable_xmlrpc',
-                        'type'  => 'checkbox',
-                        'title' => 'Disable XML-RPC',
-                        'std'   => 1,
-                        'label' => 'Nonaktifkan protokol XML-RPC pada situs. XML-RPC digunakan oleh beberapa aplikasi atau layanan pihak ketiga untuk berinteraksi dengan situs WordPress.',
-                    ],
-                    [
-                        'id'    => 'disable_rest_api',
-                        'type'  => 'checkbox',
-                        'title' => 'Disable REST API / JSON',
-                        'std'   => 0,
-                        'label' => 'Nonaktifkan akses ke REST API untuk keperluan keamanan atau privasi.',
-                    ],
-                    [
                         'id'    => 'disable_gutenberg',
                         'type'  => 'checkbox',
                         'title' => 'Disable Gutenberg',
@@ -200,34 +190,6 @@ class Custom_Admin_Option_Page
                         'title' => 'Remove Slug Category',
                         'std'   => 0,
                         'label' => 'Aktifkan untuk hapus slug /category/ dari URL.',
-                    ],
-                    [
-                        'id'    => 'block_wp_login',
-                        'type'  => 'checkbox',
-                        'title' => 'Block wp-login.php',
-                        'std'   => 0,
-                        'label' => 'Aktifkan pemblokiran akses ke file wp-login.php pada situs.',
-                    ],
-                    [
-                        'id'    => 'whitelist_block_wp_login',
-                        'type'  => 'text',
-                        'title' => 'Whitelist IP Block wp-login.php',
-                        'std'   => '',
-                        'label' => 'Tambahkan daftar IP yang di Whitelist proses pemblokiran akses ke file wp-login.php.',
-                    ],
-                    [
-                        'id'    => 'whitelist_country',
-                        'type'  => 'text',
-                        'title' => 'Whitelist Country',
-                        'std'   => 'ID',
-                        'label' => 'Batasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.',
-                    ],
-                    [
-                        'id'    => 'redirect_to',
-                        'type'  => 'text',
-                        'title' => 'Redirect To',
-                        'std'   => 'http://127.0.0.1',
-                        'label' => 'Tujuan redirect wp-login.php, jika Block wp-login.php aktif.',
                     ],
                     [
                         'id'    => 'news_generate',
@@ -300,8 +262,62 @@ class Custom_Admin_Option_Page
                         'type'  => 'password',
                         'title' => 'License Key',
                         'std'   => '',
-                        'label' => '<br><a class="check-license button button-primary">Check License</a><br><span class="license-status"></span>',
+                        'label' => '<br><a class="check-license button button-primary">'.$this->status_lisensi.'</a><br><span class="license-status"></span>',
                     ]
+                ],
+            ],
+            'security' => [
+                'title'     => 'Security',
+                'fields'    => [
+                    [
+                        'id'    => 'limit_login_attempts',
+                        'type'  => 'checkbox',
+                        'title' => 'Limit Login Attempts',
+                        'std'   => 1,
+                        'label' => 'Batasi jumlah percobaan login yang diizinkan untuk pengguna, ketika pengguna melakukan percobaan login yang melebihi 5X dalam 24 Jam, mereka akan diblokir untuk sementara waktu sebagai tindakan keamanan.',
+                    ],
+                    [
+                        'id'    => 'disable_xmlrpc',
+                        'type'  => 'checkbox',
+                        'title' => 'Disable XML-RPC',
+                        'std'   => 1,
+                        'label' => 'Nonaktifkan protokol XML-RPC pada situs. XML-RPC digunakan oleh beberapa aplikasi atau layanan pihak ketiga untuk berinteraksi dengan situs WordPress.',
+                    ],
+                    [
+                        'id'    => 'disable_rest_api',
+                        'type'  => 'checkbox',
+                        'title' => 'Disable REST API / JSON',
+                        'std'   => 0,
+                        'label' => 'Nonaktifkan akses ke REST API untuk keperluan keamanan atau privasi.',
+                    ],
+                    [
+                        'id'    => 'block_wp_login',
+                        'type'  => 'checkbox',
+                        'title' => 'Block wp-login.php',
+                        'std'   => 0,
+                        'label' => 'Aktifkan pemblokiran akses ke file wp-login.php pada situs.',
+                    ],
+                    [
+                        'id'    => 'whitelist_block_wp_login',
+                        'type'  => 'text',
+                        'title' => 'Whitelist IP Block wp-login.php',
+                        'std'   => '',
+                        'label' => 'Tambahkan daftar IP yang di Whitelist proses pemblokiran akses ke file wp-login.php.',
+                    ],
+                    [
+                        'id'    => 'whitelist_country',
+                        'type'  => 'text',
+                        'title' => 'Whitelist Country',
+                        'std'   => 'ID',
+                        'label' => 'Batasi akses ke situs WordPress hanya untuk negara-negara tertentu dengan menggunakan ID negara sebagai pemisah, seperti contoh ID,MY,US.',
+                    ],
+                    [
+                        'id'    => 'redirect_to',
+                        'type'  => 'text',
+                        'title' => 'Redirect To',
+                        'std'   => 'http://127.0.0.1',
+                        'label' => 'Tujuan redirect wp-login.php, jika Block wp-login.php aktif.',
+                    ],
                 ],
             ],
             'auto_resize' => [
@@ -333,7 +349,6 @@ class Custom_Admin_Option_Page
                 ],
             ],
         ];
-
 ?>
         <div class="wrap vd-ons">
             <h1>Pengaturan Admin</h1>
@@ -400,12 +415,11 @@ class Custom_Admin_Option_Page
                                 },
                                 success: function(response) {
                                     if (response.success) {
-                                        $('.license-status').html('License verified');
                                     } else {
                                         $('.license-status').html(response.data);
                                         $('#velocity_license__key').val('');
                                     }
-                                    $('.check-license.button').html('License Aktif');
+                                    $('.check-license.button').html('License Verified!');
                                 },
                                 error: function() {
                                     $('.license-status').html('Server not reachable');
