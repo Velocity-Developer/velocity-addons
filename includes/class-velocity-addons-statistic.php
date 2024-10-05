@@ -37,11 +37,8 @@ class Velocity_Addons_Statistic
         }
 
         // Panggil fungsi untuk cek dan buat tabel database jika perlu
-        $this->check_and_create_table();
+        self::check_and_create_table();
         add_action('wp_head', array($this, 'record_page_visit'));
-
-        // Tambahkan submenu di dasbor admin
-        add_action('admin_menu', array($this, 'add_admin_menu'));
 
         // Tambahkan shortcode
         add_shortcode('statistik_kunjungan', array($this, 'display_statistik_kunjungan'));
@@ -62,7 +59,7 @@ class Velocity_Addons_Statistic
         add_action('wp_ajax_reset_data', array($this, 'reset_statistik'));
     }
 
-    private function check_and_create_table()
+    public static function check_and_create_table()
     {
         global $wpdb;
 
@@ -92,7 +89,7 @@ class Velocity_Addons_Statistic
         }
     }
 
-    public function record_page_visit()
+    public static function record_page_visit()
     {
         // Mendapatkan data kunjungan
         global $post;
@@ -127,20 +124,7 @@ class Velocity_Addons_Statistic
         }
     }
 
-    public function add_admin_menu()
-    {
-        add_menu_page(
-            'Statistik',
-            'Statistik',
-            'manage_options',
-            'statistik-kunjungan',
-            array($this, 'display_admin_page'),
-            'dashicons-chart-pie',
-            30
-        );
-    }
-
-    public function display_admin_page()
+    public static function display_admin_page()
     {
         // Tampilkan konten halaman admin di sini
         echo '<div class="wrap">';
@@ -158,11 +142,11 @@ class Velocity_Addons_Statistic
         echo '<tbody>';
 
         // Tampilkan statistik kunjungan
-        $today_unique_visitors = $this->get_today_unique_visitors();
-        $today_visits = $this->get_today_visits();
-        $unique_visitors = $this->get_unique_visitors();
-        $total_visits = $this->get_total_visits();
-        $online_visitors = $this->get_online_visitors();
+        $today_unique_visitors = self::get_today_unique_visitors();
+        $today_visits = self::get_today_visits();
+        $unique_visitors = self::get_unique_visitors();
+        $total_visits = self::get_total_visits();
+        $online_visitors = self::get_online_visitors();
 
         echo '<tr>';
         echo '<td>Pengunjung Hari Ini</td>';
@@ -219,7 +203,7 @@ class Velocity_Addons_Statistic
     }
 
     /// [statistik_kunjungan]
-    public function display_statistik_kunjungan($atts)
+    public static function display_statistik_kunjungan($atts)
     {
         ob_start(); // Mulai buffering output
 
@@ -235,26 +219,26 @@ class Velocity_Addons_Statistic
 
             switch ($stat) {
                 case 'today_visits':
-                    echo $this->get_today_visits();
+                    echo self::get_today_visits();
                     break;
                 case 'total_visitors':
-                    echo $this->get_unique_visitors();
+                    echo self::get_unique_visitors();
                     break;
                 case 'total_visits':
-                    echo $this->get_total_visits();
+                    echo self::get_total_visits();
                     break;
                 case 'online':
-                    echo $this->get_online_visitors();
+                    echo self::get_online_visitors();
                     break;
                 case 'post':
                     if (empty($postID)) {
                         global $post;
                         $postID = $post->ID;
                     }
-                    echo $this->get_count_post($postID);
+                    echo self::get_count_post($postID);
                     break;
                 default:
-                    echo $this->get_today_unique_visitors();
+                    echo self::get_today_unique_visitors();
                     break;
             }
         } else {
@@ -263,11 +247,11 @@ class Velocity_Addons_Statistic
             echo '<ul class="list-group list-group-flush" style="--bs-list-group-bg: transparent;">';
 
             // Tampilkan statistik kunjungan
-            $today_unique_visitors = $this->get_today_unique_visitors();
-            $today_visits = $this->get_today_visits();
-            $unique_visitors = $this->get_unique_visitors();
-            $total_visits = $this->get_total_visits();
-            $online_visitors = $this->get_online_visitors();
+            $today_unique_visitors = self::get_today_unique_visitors();
+            $today_visits = self::get_today_visits();
+            $unique_visitors = self::get_unique_visitors();
+            $total_visits = self::get_total_visits();
+            $online_visitors = self::get_online_visitors();
 
             $stats = array(
                 'Pengunjung Hari Ini' => $today_unique_visitors,
@@ -290,7 +274,7 @@ class Velocity_Addons_Statistic
         return ob_get_clean();
     }
 
-    private function get_today_visits()
+    public static function get_today_visits()
     {
         global $wpdb;
 
@@ -311,7 +295,7 @@ class Velocity_Addons_Statistic
         return $today_visits;
     }
 
-    private function get_today_unique_visitors()
+    public static function get_today_unique_visitors()
     {
         global $wpdb;
 
@@ -332,7 +316,7 @@ class Velocity_Addons_Statistic
         return $today_unique_visitors;
     }
 
-    private function get_unique_visitors()
+    public static function get_unique_visitors()
     {
         global $wpdb;
 
@@ -347,7 +331,7 @@ class Velocity_Addons_Statistic
         return $unique_visitors;
     }
 
-    private function get_total_visits()
+    public static function get_total_visits()
     {
         global $wpdb;
 
@@ -362,7 +346,7 @@ class Velocity_Addons_Statistic
         return $total_visits;
     }
 
-    private function get_online_visitors()
+    public static function get_online_visitors()
     {
         global $wpdb;
 
@@ -389,7 +373,7 @@ class Velocity_Addons_Statistic
         return $online_visitors;
     }
 
-    public function get_count_post($post_id)
+    public static function get_count_post($post_id)
     {
         global $wpdb;
 
@@ -407,36 +391,36 @@ class Velocity_Addons_Statistic
         return $totals;
     }
 
-    public function statistik_posts_columns($columns)
+    public static function statistik_posts_columns($columns)
     {
         $columns['statistik'] = __('Hits', 'velocity-addons');
         return $columns;
     }
 
-    public function statistik_posts_column($column, $post_id)
+    public static function statistik_posts_column($column, $post_id)
     {
         switch ($column) {
             case 'statistik':
-                echo $this->get_count_post($post_id);
+                echo self::get_count_post($post_id);
                 break;
         }
     }
 
     //update meta hit untuk post & page
-    public function post_single_update_hit()
+    public static function post_single_update_hit()
     {
         if (is_singular('post') || is_page()) {
             global $post;
             $postID     = $post->ID;
             $countKey   = 'hit';
             $count      = get_post_meta($postID, $countKey, true);
-            $newcount   = $this->get_count_post($postID);
+            $newcount   = self::get_count_post($postID);
 
             update_post_meta($postID, $countKey, $newcount);
         }
     }
 
-    public function reset_statistik()
+    public static function reset_statistik()
     {
         global $wpdb;
         // Nama tabel

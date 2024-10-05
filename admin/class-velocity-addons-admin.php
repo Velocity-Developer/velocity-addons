@@ -98,6 +98,19 @@ class Velocity_Addons_Admin {
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/velocity-addons-admin.js', array( 'jquery' ), $this->version, false );
 
+		$page = isset($_GET['page']) ? $_GET['page'] : '';    
+		if ($page == 'admin_velocity_addons') {
+			
+			if (file_exists(get_template_directory() . '/js/theme.min.js')) {            
+				$the_theme     	= wp_get_theme();
+				$theme_version 	= $the_theme->get( 'Version' );
+				wp_enqueue_style( 'justg-styles', get_template_directory_uri() . '/css/theme.min.css', array(), $theme_version );
+				wp_enqueue_script( 'justg-scripts', get_template_directory_uri() . '/js/theme.min.js', array(), $theme_version, true );
+				wp_enqueue_script( 'chartjs-scripts', 'https://cdn.jsdelivr.net/npm/chart.js', array( 'jquery' ), $this->version, false );
+			}
+
+			wp_enqueue_script( array( 'jquery','jquery-ui-datepicker','jquery-ui-tooltip' ) );
+		}
 	}
 
 }

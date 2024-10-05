@@ -34,15 +34,88 @@ class Custom_Admin_Option_Page
         $this->status_lisensi = !empty($this->status_lisensi['status']) && $this->status_lisensi['status'] === 'active' 
             ? 'License Verified!' 
             : 'Check License';
-    
+            
         // Daftarkan menu dan settings di admin
-        add_action('admin_menu', array($this, 'add_options_page'));
+        add_action('admin_menu', array($this, 'add_menu_page'));
         add_action('admin_init', array($this, 'register_settings'));
     }
 
-    public function add_options_page()
+    public function add_menu_page()
     {
-        add_options_page('Pengaturan Admin', 'Pengaturan Admin', 'manage_options', 'custom_admin_options', array($this, 'options_page_callback'));
+        add_menu_page(
+            'Velocity Addons',
+            'Velocity Addons',
+            'manage_options',
+            'admin_velocity_addons',
+            array($this, 'page_velocity_addons'),
+            'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-wide-connected" viewBox="0 0 16 16"><path d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5m0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78zM5.048 3.967l-.087.065zm-.431.355A4.98 4.98 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8zm.344 7.646.087.065z"/></svg>'),
+            70
+        );
+
+        add_submenu_page(
+            'admin_velocity_addons',
+            'SEO',
+            'SEO',
+            'manage_options',
+            'velocity_seo_settings',
+            array($this, 'velocity_seo_page'),
+        );
+
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Floating Whatsapp',
+            'Floating Whatsapp',
+            'manage_options',
+            'velocity_floating_whatsapp',
+            [$this, 'velocity_floating_whatsapp_page'],
+        );
+
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Statistik',
+            'Statistik',
+            'manage_options',
+            'statistik-kunjungan',
+            array($this, 'velocity_statistic_page'),
+        );
+
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Import Artikel',
+            'Import Artikel',
+            'manage_options',
+            'velocity_news_settings',
+            array($this, 'velocity_news_page'),
+        );
+
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Pengaturan Admin',
+            'Pengaturan Admin',
+            'manage_options',
+            'custom_admin_options',
+            array($this, 'options_page_callback'),
+        );
+    }
+
+    public function velocity_seo_page(){
+        Velocity_Addons_SEO::render_seo_settings_page();
+    }
+
+    public function velocity_floating_whatsapp_page(){
+        Velocity_Addons_Floating_Whatsapp::floating_whatsapp_page();
+    }
+
+    public function velocity_news_page(){
+        Velocity_Addons_News::render_news_settings_page();
+    }
+
+    public function velocity_statistic_page(){
+        Velocity_Addons_Statistic::display_admin_page();
+    }
+
+    public function page_velocity_addons() {
+        Velocity_Addons_Dashboard::render_dashboard_page();
     }
 
     public function register_settings()
@@ -70,6 +143,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
         register_setting('custom_admin_options_group', 'captcha_velocity');
         register_setting('custom_admin_options_group', 'news_generate');
+        register_setting('custom_admin_options_group', 'floating_whatsapp');
     }
 
     public function field($data)
@@ -185,6 +259,13 @@ class Custom_Admin_Option_Page
                         'label' => 'Aktifkan gunakan SEO dari Velocity.',
                     ],
                     [
+                        'id'    => 'floating_whatsapp',
+                        'type'  => 'checkbox',
+                        'title' => 'Floating Whatsapp',
+                        'std'   => 1,
+                        'label' => 'Aktifkan gunakan untuk Whatsapp Floating pada halaman utama.',
+                    ],
+                    [
                         'id'    => 'remove_slug_category_velocity',
                         'type'  => 'checkbox',
                         'title' => 'Remove Slug Category',
@@ -194,9 +275,9 @@ class Custom_Admin_Option_Page
                     [
                         'id'    => 'news_generate',
                         'type'  => 'checkbox',
-                        'title' => 'News Generate',
+                        'title' => 'Import Artikel dari API',
                         'std'   => 1,
-                        'label' => 'Aktifkan gunakan untuk generate post.',
+                        'label' => 'Aktifkan gunakan untuk import artikel post.',
                     ],
                 ],
             ],

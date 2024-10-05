@@ -135,9 +135,9 @@ class Velocity_Addons_License
         // Enqueue jQuery
         wp_enqueue_script('jquery');
         // Enqueue your custom script
-        wp_enqueue_script('license-check', plugin_dir_url(__FILE__) . 'js/license-check.js', array('jquery'), null, true);
+        // wp_enqueue_script('license-check', plugin_dir_url(__FILE__) . 'js/license-check.js', array('jquery'), null, true);
         // Localize script to pass the AJAX URL
-        wp_localize_script('license-check', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+        // wp_localize_script('license-check', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
     }
 }
 

@@ -21,6 +21,14 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+= 1.2.0 =
+- Perbaikan bug di versi sebelumnya
+- Tambah Fitur License
+- Tambah Fitur Floating Whatsapp 
+- Perapian dan Pengelompokan Menu
+- Tambah Dashboard Rangkuman Statistik, QC Check, dan Jumlah Page, Post, Media yang sudah diupload.
+
 = 1.1.51 =
 - Tambah fitur import artikel dari API Velocity
 - Tambah fitur lisence (tahap pembuatan)

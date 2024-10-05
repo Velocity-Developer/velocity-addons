@@ -31,7 +31,7 @@ class Velocity_Addons_Maintenance_Mode
         }
     }
 
-    public function check_maintenance_mode()
+    public static function check_maintenance_mode()
     {
         if (!current_user_can('manage_options') && !is_admin() && !is_page('myaccount')) {
             $opt    = get_option('maintenance_mode_data',[]);
@@ -42,18 +42,18 @@ class Velocity_Addons_Maintenance_Mode
         }
     }
 
-    public function qc_maintenance(){
+    public static function qc_maintenance(){
         echo '<div class="notice notice-warning notice-alt">';
-            echo $this->check_permalink_settings();
-            echo $this->check_site_icon();
-            echo $this->check_recaptcha();
-            echo $this->check_seo();
-            echo $this->check_domain_extension();
-            echo $this->check_installed_plugins();
+            echo self::check_permalink_settings();
+            echo self::check_site_icon();
+            echo self::check_recaptcha();
+            echo self::check_seo();
+            echo self::check_domain_extension();
+            echo self::check_installed_plugins();
         echo '</div>';
     }
 
-    public function check_domain_extension(){
+    public static function check_domain_extension(){
         ob_start();
         // Mendapatkan URL situs saat ini
         $site_url = get_site_url();
@@ -82,7 +82,7 @@ class Velocity_Addons_Maintenance_Mode
         return ob_get_clean();
     }
 
-    public function check_permalink_settings() {
+    public static function check_permalink_settings() {
         ob_start();
         // Mendapatkan pengaturan permalink
         $permalinks = get_option('permalink_structure');
@@ -97,10 +97,10 @@ class Velocity_Addons_Maintenance_Mode
         return ob_get_clean();
     }
 
-    public function check_site_icon(){
+    public static function check_site_icon(){
         ob_start();
         $site_icon = get_site_icon_url();
-        $linksetting = admin_url('options-general.php?page=custom_admin_options');
+        $linksetting = admin_url('options-general.php');
 
         if(empty($site_icon)) {
             echo '<p>Peringatan: Favicon belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
@@ -108,9 +108,9 @@ class Velocity_Addons_Maintenance_Mode
         return ob_get_clean();
     }
 
-    public function check_recaptcha(){
+    public static function check_recaptcha(){
         ob_start();
-        $linksetting    = admin_url('options-general.php?page=custom_admin_options');
+        $linksetting    = admin_url('admin.php?page=custom_admin_options');
         $check_recaptcha = get_option('captcha_velocity');
         $aktif  = $check_recaptcha['aktif']??'';
         $sitekey    = $check_recaptcha['sitekey'];
@@ -123,7 +123,7 @@ class Velocity_Addons_Maintenance_Mode
         return ob_get_clean();
     }
 
-    public function check_seo(){
+    public static function check_seo(){
         ob_start();
         $linksetting    = admin_url('admin.php?page=velocity_seo_settings');
         $home_keywords  = get_option('home_keywords');
@@ -136,7 +136,7 @@ class Velocity_Addons_Maintenance_Mode
         return ob_get_clean();
     }
 
-    public function check_installed_plugins() {
+    public static function check_installed_plugins() {
         ob_start();
 
         // Mendapatkan semua plugin yang terinstal

@@ -13,22 +13,24 @@
 class Velocity_Addons_News
 {
 
-    protected $api_url;
+    // Properti statis
+    protected static $api_url = 'https://api.velocitydeveloper.id/wp-json/news/v1';
     
     public function __construct()
     {
-
-        $this->api_url = 'https://api.velocitydeveloper.id/wp-json/news/v1';
         $news_generate = get_option('news_generate', '1');
 
         if ($news_generate !== '1')
             return false;
+    }
 
-        add_action('admin_menu', array($this, 'add_news_generate_menu'));
+    // Fungsi statis untuk mengakses $api_url
+    public static function get_api_url() {
+        return self::$api_url;  // Menggunakan self:: untuk mengakses properti statis
     }
 
     // Mengambil data dari API
-    private function fetch_post($item=null, $cat_id=null, $count=5) {
+    public static function fetch_post($item=null, $cat_id=null, $count=5) {
         $license = new Velocity_Addons_License;
         $args = array(
             'headers' => $license->headers_api(),
@@ -37,7 +39,7 @@ class Velocity_Addons_News
             'cat='.$cat_id,
             'number='.$count,
         ];
-        $url = $this->api_url.'/'.$item.'?'.implode("&",$data);
+        $url = self::$api_url.'/'.$item.'?'.implode("&",$data);
         
         $response   = wp_remote_get( $url,$args );
         $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : [];
@@ -45,7 +47,7 @@ class Velocity_Addons_News
         return $response; // Mengembalikan data dalam bentuk array
     }
 
-    private function fetch_category() {
+    public static function fetch_category() {
         // Mengambil data dari transient cache
         $name_cache = 'vd_api_news_category';
         $cached_data = get_transient($name_cache);
@@ -55,7 +57,7 @@ class Velocity_Addons_News
             $args = array(
                 'headers' => $license->headers_api(),
             );
-            $url        = $this->api_url.'/cat';
+            $url        = self::$api_url.'/cat';
             
             $response   = wp_remote_get( $url,$args );
             $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : $response->get_error_message();
@@ -72,10 +74,10 @@ class Velocity_Addons_News
         return $cached_data;
     }
 
-    public function fetch_news_scraper($target, $category, $count, $status) {
+    public static function fetch_news_scraper($target, $category, $count, $status) {
         ob_start();
         // Mengambil kategori dan post
-        $get_datas = $this->fetch_post('posts',$target, $count);
+        $get_datas = self::fetch_post('posts',$target, $count);
 
         if(isset($get_datas['status']) && $get_datas['status'] == true ){
 
@@ -95,7 +97,7 @@ class Velocity_Addons_News
             $current_time = current_time('mysql');
             $date = date('Y-m-d H:i:s', strtotime($current_time . " -{$num_time} minute"));
 
-                echo $this->save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date);
+                echo self::save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date);
 
                 $num_time++;
             endforeach;
@@ -109,7 +111,7 @@ class Velocity_Addons_News
     }
 
     //fungsi cek posts by title
-    public function cek_posts_by_title($title) {
+    public static function cek_posts_by_title($title) {
         global $wpdb;
 
         // Prepare the SQL query
@@ -132,9 +134,9 @@ class Velocity_Addons_News
     }
 
     // Fungsi untuk menyimpan artikel sebagai post di WordPress
-    public function save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date) {
+    public static function save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date) {
         ob_start();
-        $existing_post = $this->cek_posts_by_title($title);
+        $existing_post = self::cek_posts_by_title($title);
         if ($existing_post) {
             // Jika post sudah ada, tampilkan pesan
             echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
@@ -162,7 +164,7 @@ class Velocity_Addons_News
             }
             // Jika ada thumbnail, set sebagai featured image
             if (!empty($thumbnail)) {
-                $this->set_featured_image_from_url($post_id, $thumbnail, $thumbcaption);
+                self::set_featured_image_from_url($post_id, $thumbnail, $thumbcaption);
             }
 
             // Mengecek apakah post berhasil disisipkan
@@ -184,7 +186,7 @@ class Velocity_Addons_News
     }
 
     // Fungsi untuk menetapkan featured image dari URL
-    public function set_featured_image_from_url($post_id, $image_url, $caption) {
+    public static function set_featured_image_from_url($post_id, $image_url, $caption) {
         $upload_dir = wp_upload_dir();
         $image_data = file_get_contents($image_url);
         $filename = basename($image_url);
@@ -207,19 +209,7 @@ class Velocity_Addons_News
         set_post_thumbnail($post_id, $attach_id);
     }
 
-    public function add_news_generate_menu()
-    {
-        add_submenu_page(
-            'options-general.php',
-            'News Scraper',
-            'News Scraper',
-            'manage_options',
-            'velocity_news_settings',
-            array($this, 'render_news_settings_page'),
-        );
-    }
-
-    public function render_news_settings_page()
+    public static function render_news_settings_page()
     {
         ?>
         <div class="wrap">
@@ -232,7 +222,7 @@ class Velocity_Addons_News
                         <td>
                             <?php
                             // Mengambil kategori dan post
-                            $get_categories = $this->fetch_category();
+                            $get_categories = self::fetch_category();
                             
                             //jika tidak sukses, tampilkan pesan
                             if(isset($get_categories['status']) && $get_categories['status'] == true){
@@ -287,7 +277,7 @@ class Velocity_Addons_News
             $category = sanitize_text_field($_POST['category']);
             $count = intval($_POST['jml_target']);
             $status = sanitize_text_field($_POST['status']);
-            echo '<div class="vdaddons-notice">'.$this->fetch_news_scraper($target, $category, $count, $status).'</div>';
+            echo '<div class="vdaddons-notice">'.self::fetch_news_scraper($target, $category, $count, $status).'</div>';
         }
     }
 }

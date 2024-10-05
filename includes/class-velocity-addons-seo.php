@@ -11,30 +11,17 @@
 
  class Velocity_Addons_SEO
  {
-     public function __construct()
-     {
-        $seo_velocity = get_option('seo_velocity','1');
-        if($seo_velocity !== '1')
-        return false;
+    public function __construct()
+    {
+    $seo_velocity = get_option('seo_velocity','1');
+    if($seo_velocity !== '1')
+    return false;
 
-         add_action('admin_menu', array($this, 'add_seo_menu'));
-         add_action('admin_init', array($this, 'register_seo_settings'));
-         add_action('admin_enqueue_scripts', array($this, 'enqueue_media_uploader'));
-         add_action('wp_head', array($this, 'output_seo_meta_tags'), 2);
-     }
- 
-     public function add_seo_menu()
-     {
-         add_menu_page(
-             'SEO',
-             'SEO',
-             'manage_options',
-             'velocity_seo_settings',
-             array($this, 'render_seo_settings_page'),
-             'dashicons-search',
-             30
-         );
-     }
+    // Menambahkan submenu
+    add_action('admin_init', array($this, 'register_seo_settings'));
+    add_action('admin_enqueue_scripts', array($this, 'enqueue_media_uploader'));
+    add_action('wp_head', array($this, 'output_seo_meta_tags'), 2);
+    }
  
      public function register_seo_settings()
      {
@@ -51,54 +38,54 @@
          }
      }
  
-     public function render_seo_settings_page()
-     {
-         // Mendapatkan nilai default dari setting umum (general settings)
-         $default_title = get_bloginfo('name');
-         $default_description = get_bloginfo('description');
- 
-         ?>
-         <div class="wrap">
-             <h2>SEO Settings</h2>
-             <form method="post" action="options.php">
-                 <?php settings_fields('velocity_seo_group'); ?>
-                 <?php do_settings_sections('velocity_seo_group'); ?>
-                 <table class="form-table">
-                     <tr valign="top">
-                         <th scope="row">Home Title</th>
-                         <td><input class="regular-text" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" /></td>
-                     </tr>
-                     <tr valign="top">
-                         <th scope="row">Home Description</th>
-                         <td><textarea class="large-text" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea></td>
-                     </tr>
-                     <tr valign="top">
-                         <th scope="row">Home Keywords</th>
-                         <td><textarea class="large-text" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea></td>
-                     </tr>
-                     <tr valign="top">
-                         <th scope="row">Share Image</th>
-                         <td>
-                             <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
-                             <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
-                             <br>
-                             <div class="preview_share_image">
-                                <?php if(get_option('share_image')): ?>
-                                    <br>
-                                    <img id="preview_image" width="300" src="<?php echo esc_attr(get_option('share_image')); ?>" />
-                                    <br><span class="delete_share_image button">Delete</span>
-                                <?php endif; ?>
-                             </div>
-                             <br>
-                             <span class="dashicons dashicons-info-outline"></span> <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari tentang praktik terbaik untuk menerapkan <strong>"Berbagi di Facebook"</strong></a>
-                         </td>
-                     </tr>
-                 </table>
-                 <?php submit_button(); ?>
-             </form>
-         </div>
-         <?php
-     }
+    public static function render_seo_settings_page()
+    {
+        // Mendapatkan nilai default dari setting umum (general settings)
+        $default_title = get_bloginfo('name');
+        $default_description = get_bloginfo('description');
+
+        ?>
+        <div class="wrap">
+            <h2>SEO Settings</h2>
+            <form method="post" action="options.php">
+                <?php settings_fields('velocity_seo_group'); ?>
+                <?php do_settings_sections('velocity_seo_group'); ?>
+                <table class="form-table">
+                    <tr valign="top">
+                        <th scope="row">Home Title</th>
+                        <td><input class="regular-text" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" /></td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Home Description</th>
+                        <td><textarea class="large-text" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea></td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Home Keywords</th>
+                        <td><textarea class="large-text" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea></td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Share Image</th>
+                        <td>
+                            <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
+                            <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
+                            <br>
+                            <div class="preview_share_image">
+                            <?php if(get_option('share_image')): ?>
+                                <br>
+                                <img id="preview_image" width="300" src="<?php echo esc_attr(get_option('share_image')); ?>" />
+                                <br><span class="delete_share_image button">Delete</span>
+                            <?php endif; ?>
+                            </div>
+                            <br>
+                            <span class="dashicons dashicons-info-outline"></span> <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari tentang praktik terbaik untuk menerapkan <strong>"Berbagi di Facebook"</strong></a>
+                        </td>
+                    </tr>
+                </table>
+                <?php submit_button(); ?>
+            </form>
+        </div>
+        <?php
+    }
      public function output_seo_meta_tags()
      {
         echo "\n".' <!-- SEO by Velocity Developer -->' . "\n";
