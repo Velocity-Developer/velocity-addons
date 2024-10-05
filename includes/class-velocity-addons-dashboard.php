@@ -98,7 +98,7 @@ class Velocity_Addons_Dashboard
                 </div>
             </div>
 
-            <div class="accordion my-3" id="accordionDashboard">
+            <div class="accordion m-3" id="accordionDashboard">
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
