@@ -16,7 +16,7 @@
  * Plugin Name:       Velocity Addons
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Addon plugin for Velocitydeveloper Client
- * Version:           1.2.0
+ * Version:           1.2.1
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('VELOCITY_ADDONS_VERSION', '1.2.0');
+define('VELOCITY_ADDONS_VERSION', '1.2.1');
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
 define('PLUGIN_FILE', plugin_basename(__FILE__));
 define('PLUGIN_BASE_NAME', plugin_basename(__DIR__));
@@ -69,19 +69,6 @@ register_deactivation_hook(__FILE__, 'deactivate_velocity_addons');
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path(__FILE__) . 'includes/class-velocity-addons.php';
-
-/**
- * The core plugin class that is used to cek update and run auto update.
- */
-// require 'lib/plugin-update-checker/plugin-update-checker.php';
-
-// use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-
-// $myUpdateChecker = PucFactory::buildUpdateChecker(
-//     'https://velocitydeveloper.id/auto-update/plugins/velocity-addons/info.json',
-//     __FILE__, //Full path to the main plugin file or functions.php.
-//     'velocity-addons'
-// );
 
 /**
  * Begins execution of the plugin.

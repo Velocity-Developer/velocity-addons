@@ -28,6 +28,7 @@
         register_setting('velocity_floating_whatsapp_group', 'whatsapp_message');
         register_setting('velocity_floating_whatsapp_group', 'whatsapp_text');
         register_setting('velocity_floating_whatsapp_group', 'whatsapp_position');
+        register_setting('velocity_floating_whatsapp_group', 'floating_scroll_top');
     }
 
     public static function floating_whatsapp_page()
@@ -58,11 +59,20 @@
                     <tr valign="top">
                         <th scope="row">Whatsapp Position</th>
                         <td>
-                        <select name="whatsapp_position">
-                            <option value="right" <?php selected(get_option('whatsapp_position'), 'right'); ?>>Right</option>
-                            <option value="left" <?php selected(get_option('whatsapp_position'), 'left'); ?>>Left</option>
-                        </select>
-                    </td>
+                            <select name="whatsapp_position">
+                                <option value="right" <?php selected(get_option('whatsapp_position'), 'right'); ?>>Right</option>
+                                <option value="left" <?php selected(get_option('whatsapp_position'), 'left'); ?>>Left</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Floating Scroll Top</th>
+                        <td>
+                            <select name="floating_scroll_top">
+                                <option value="active" <?php selected(get_option('floating_scroll_top'), 'active'); ?>>Active</option>
+                                <option value="deactive" <?php selected(get_option('floating_scroll_top'), 'deactive'); ?>>Deactive</option>
+                            </select>
+                        </td>
                     </tr>
                 </table>
                 <?php submit_button(); ?>
@@ -74,8 +84,9 @@
     public function add_floating_whatsapp()
     {
         $whatsapp_position  = get_option('whatsapp_position', 'right');
-        echo '<div class="floating-footer float-wa-' . $whatsapp_position . '">';
+        echo '<div class="floating-footer float-wa-' . $whatsapp_position . ' float-scrolltop-' . $whatsapp_position . '">';
         return $this->justg_footer_whatsapp();
+        return $this->add_floating_scrolltop();
         echo '</div>';
     }
 
@@ -84,11 +95,9 @@
         $whatsapp_number        = get_option('nomor_whatsapp', '');
         $whatsapp_text          = get_option('whatsapp_text', 'Butuh Bantuan?');
         $whatsapp_message       = get_option('whatsapp_message', 'Halo..');
-        $whatsapp_enable        = get_option('whatsapp_enable', false);
         $whatsapp_position      = get_option('whatsapp_position', 'right');
-        $scroll_to_top_enable   = get_option('scroll_to_top_enable', true);
-        $scroll_to_top_position = get_option('scroll_to_top_position', 'right');
-        $scroll_to_top_enable   = $scroll_to_top_enable ? 'scroll-active scroll-' . $scroll_to_top_position : '';
+        $scroll_to_top_enable   = 'scroll-active scroll-' . $whatsapp_position;
+
         // replace all except numbers
         $whatsapp_number        = $whatsapp_number ? preg_replace('/[^0-9]/', '', $whatsapp_number) : $whatsapp_number;
         // replace 0 with 62 if first digit is 0
@@ -110,6 +119,20 @@
             </div>
         <?php
         }
+    }
+
+    public function add_floating_scrolltop() {
+        $enable_scrolltop       = get_option('floating_scroll_top','active');
+        $whatsapp_position      = get_option('whatsapp_position', 'right');
+
+        if($enable_scrolltop == 'active'):
+        ?>
+        <div class="scroll-to-top floating-button <?php echo $whatsapp_position; ?>" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+            </svg>
+        </div>
+        <?php endif;
     }
 }
 

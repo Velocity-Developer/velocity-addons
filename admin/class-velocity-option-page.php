@@ -52,41 +52,54 @@ class Custom_Admin_Option_Page
             70
         );
 
-        add_submenu_page(
-            'admin_velocity_addons',
-            'SEO',
-            'SEO',
-            'manage_options',
-            'velocity_seo_settings',
-            array($this, 'velocity_seo_page'),
-        );
+        $seo_velocity = get_option('seo_velocity','1');
+        if($seo_velocity == '1'){
+            add_submenu_page(
+                'admin_velocity_addons',
+                'SEO',
+                'SEO',
+                'manage_options',
+                'velocity_seo_settings',
+                array($this, 'velocity_seo_page'),
+            );
+        }
+        
 
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Floating Whatsapp',
-            'Floating Whatsapp',
-            'manage_options',
-            'velocity_floating_whatsapp',
-            [$this, 'velocity_floating_whatsapp_page'],
-        );
+        $floating_whatsapp = get_option('floating_whatsapp','1');
+        if($floating_whatsapp == '1'){
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Floating Whatsapp',
+                'Floating Whatsapp',
+                'manage_options',
+                'velocity_floating_whatsapp',
+                [$this, 'velocity_floating_whatsapp_page'],
+            );
+        }
 
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Statistik',
-            'Statistik',
-            'manage_options',
-            'statistik-kunjungan',
-            array($this, 'velocity_statistic_page'),
-        );
+        $statistik_velocity = get_option('statistik_velocity','1');
+        if($statistik_velocity == '1'){
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Statistik',
+                'Statistik',
+                'manage_options',
+                'statistik-kunjungan',
+                array($this, 'velocity_statistic_page'),
+            );
+        }
 
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Import Artikel',
-            'Import Artikel',
-            'manage_options',
-            'velocity_news_settings',
-            array($this, 'velocity_news_page'),
-        );
+        $news_generate = get_option('news_generate','1');
+        if($news_generate == '1'){
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Import Artikel',
+                'Import Artikel',
+                'manage_options',
+                'velocity_news_settings',
+                array($this, 'velocity_news_page'),
+            );
+        }
 
         add_submenu_page(
             'admin_velocity_addons',

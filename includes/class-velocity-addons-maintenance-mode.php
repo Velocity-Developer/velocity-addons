@@ -116,7 +116,8 @@ class Velocity_Addons_Maintenance_Mode
         $sitekey    = $check_recaptcha['sitekey'];
         $secretkey  = $check_recaptcha['secretkey'];
 
-        if($aktif == false || empty($sitekey) || empty($secretkey)){
+        // print_r($check_recaptcha);
+        if(empty($sitekey) || empty($secretkey)){
             echo '<p>Peringatan: Recaptcha belum disetting. Silakan setting <a href="'.$linksetting.'"><b> disini.</b></a></p>';
         }
 
@@ -152,6 +153,7 @@ class Velocity_Addons_Maintenance_Mode
             'velocity-expedisi/velocity-expedisi.php',
             'velocity-donasi/velocity-donasi.php',
             'velocity-produk/velocity-produk.php',
+            'velocity-addons/velocity-addons.php',
             'vd-gallery/vd-gallery.php',
             'velocity-toko-kursus/velocity-kursus.php',
             'custom-plugin/custom-plugin.php',
