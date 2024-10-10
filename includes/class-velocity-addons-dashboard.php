@@ -22,7 +22,7 @@ class Velocity_Addons_Dashboard
         // Menghitung jumlah post, page, dan media
         $post_count = wp_count_posts()->publish;
         $page_count = wp_count_posts('page')->publish;
-        $media_count = wp_count_posts('attachment')->publish;
+        $media_count = wp_count_posts('attachment')->inherit;
     ?>
         <div class="container ps-0 mt-3">
             <h4>Dashboard Velocity Addons</h4>
@@ -33,7 +33,7 @@ class Velocity_Addons_Dashboard
                             <div><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-file-post" viewBox="0 0 16 16"><path d="M4 3.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1"/></svg></div>
                             <div class="text-end">
                                 <strong class="h5 opacity-75">Jumlah Post</strong><br/>
-                                <h3><?php echo $page_count;?></h3>
+                                <h3><?php echo $post_count;?></h3>
                             </div>
                         </div>
                         <div class="card-body p-2 opacity-50">Total post yang dibuat</div>
