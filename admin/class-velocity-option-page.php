@@ -157,6 +157,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'captcha_velocity');
         register_setting('custom_admin_options_group', 'news_generate');
         register_setting('custom_admin_options_group', 'floating_whatsapp');
+        register_setting('custom_admin_options_group', 'floating_scrollTop');
     }
 
     public function field($data)
@@ -277,6 +278,13 @@ class Custom_Admin_Option_Page
                         'title' => 'Floating Whatsapp',
                         'std'   => 1,
                         'label' => 'Aktifkan gunakan untuk Whatsapp Floating pada halaman utama.',
+                    ],
+                    [
+                        'id'    => 'floating_scrollTop',
+                        'type'  => 'checkbox',
+                        'title' => 'Floating Scrolltop',
+                        'std'   => 1,
+                        'label' => 'Aktifkan untuk menambahkan scrollTop ke halaman utama.',
                     ],
                     [
                         'id'    => 'remove_slug_category_velocity',

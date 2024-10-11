@@ -2,3 +2,9 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+@media only screen and (max-width: 600px) {
+    .whatsapp-floating svg {
+        height: 30px;
+        width: 30px;
+    }
+}

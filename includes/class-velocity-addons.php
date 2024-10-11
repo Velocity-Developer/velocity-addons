@@ -80,6 +80,18 @@ class Velocity_Addons
         $this->set_locale();
         $this->define_admin_hooks();
         $this->define_public_hooks();
+
+        //Floating whatsapp
+        add_action('wp_footer', [$this, 'add_floating_whatsapp']);
+    }
+    
+    public function add_floating_whatsapp()
+    {
+        $whatsapp_position  = get_option('whatsapp_position', 'right');
+        echo '<div class="floating-footer float-wa-' . $whatsapp_position . ' float-scrolltop-' . $whatsapp_position . '">';
+            Velocity_Addons_Floating_Whatsapp::justg_footer_whatsapp();
+            Velocity_Addons_Floating_Whatsapp::add_floating_scrolltop();
+        echo '</div>';
     }
 
     /**
