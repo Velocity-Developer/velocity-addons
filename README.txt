@@ -22,6 +22,9 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.2.13=
+- Perbaikan Floating Whatsapp
+
 =1.2.12=
 - Perbaikan Floating Whatsapp & Scroll Top
 

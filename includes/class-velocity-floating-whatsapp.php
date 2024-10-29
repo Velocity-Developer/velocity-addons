@@ -85,7 +85,7 @@
             $whatsapp_number    = substr_replace($whatsapp_number, '62', 0, 1);
         }
         $floating_whatsapp = get_option('floating_whatsapp','1');
-        if($floating_whatsapp == '1'){
+        if($floating_whatsapp == '1' && !empty($whatsapp_number)) {
         ?>
             <div class="whatsapp-floating floating-button <?php echo $whatsapp_position . ' ' . $scroll_to_top_enable; ?> ">
                 <a href="https://wa.me/<?php echo $whatsapp_number; ?>?text=<?php echo $whatsapp_message; ?>" class="text-white d-flex align-items-center justify-content-center" title="Whatsapp" target="_blank">
