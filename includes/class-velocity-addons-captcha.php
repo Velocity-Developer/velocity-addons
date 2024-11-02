@@ -53,6 +53,9 @@
 
             $this->active = true;
 
+            // Tambahkan filter timeout
+            add_filter( 'http_request_timeout', function( $timeout ) { return 60; });
+
             // Tambahkan action captcha ke login_form
             add_action('login_form', array($this, 'display'));
             add_action('login_form_middle', array($this, 'display_login_form'));
