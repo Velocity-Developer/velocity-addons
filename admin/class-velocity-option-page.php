@@ -29,12 +29,12 @@ class Custom_Admin_Option_Page
     {
         // Ambil data lisensi dari option
         $this->status_lisensi = get_option('velocity_license', ['status' => false]);
-    
+
         // Pastikan key 'status' ada, dan set default 'Check License' jika tidak ada atau tidak aktif
-        $this->status_lisensi = !empty($this->status_lisensi['status']) && $this->status_lisensi['status'] === 'active' 
-            ? 'License Verified!' 
+        $this->status_lisensi = !empty($this->status_lisensi['status']) && $this->status_lisensi['status'] === 'active'
+            ? 'License Verified!'
             : 'Check License';
-            
+
         // Daftarkan menu dan settings di admin
         add_action('admin_menu', array($this, 'add_menu_page'));
         add_action('admin_init', array($this, 'register_settings'));
@@ -52,8 +52,8 @@ class Custom_Admin_Option_Page
             70
         );
 
-        $seo_velocity = get_option('seo_velocity','1');
-        if($seo_velocity == '1'){
+        $seo_velocity = get_option('seo_velocity', '1');
+        if ($seo_velocity == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
                 'SEO',
@@ -63,10 +63,10 @@ class Custom_Admin_Option_Page
                 array($this, 'velocity_seo_page'),
             );
         }
-        
 
-        $floating_whatsapp = get_option('floating_whatsapp','1');
-        if($floating_whatsapp == '1'){
+
+        $floating_whatsapp = get_option('floating_whatsapp', '1');
+        if ($floating_whatsapp == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
                 'Floating Whatsapp',
@@ -77,20 +77,8 @@ class Custom_Admin_Option_Page
             );
         }
 
-        $statistik_velocity = get_option('statistik_velocity','1');
-        if($statistik_velocity == '1'){
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Statistik',
-                'Statistik',
-                'manage_options',
-                'statistik-kunjungan',
-                array($this, 'velocity_statistic_page'),
-            );
-        }
-
-        $news_generate = get_option('news_generate','1');
-        if($news_generate == '1'){
+        $news_generate = get_option('news_generate', '1');
+        if ($news_generate == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
                 'Import Artikel',
@@ -111,23 +99,23 @@ class Custom_Admin_Option_Page
         );
     }
 
-    public function velocity_seo_page(){
+    public function velocity_seo_page()
+    {
         Velocity_Addons_SEO::render_seo_settings_page();
     }
 
-    public function velocity_floating_whatsapp_page(){
+    public function velocity_floating_whatsapp_page()
+    {
         Velocity_Addons_Floating_Whatsapp::floating_whatsapp_page();
     }
 
-    public function velocity_news_page(){
+    public function velocity_news_page()
+    {
         Velocity_Addons_News::render_news_settings_page();
     }
 
-    public function velocity_statistic_page(){
-        Velocity_Addons_Statistic::display_admin_page();
-    }
-
-    public function page_velocity_addons() {
+    public function page_velocity_addons()
+    {
         Velocity_Addons_Dashboard::render_dashboard_page();
     }
 
@@ -151,7 +139,6 @@ class Custom_Admin_Option_Page
         // register_setting('custom_admin_options_group', 'standar_editor_velocity');
         register_setting('custom_admin_options_group', 'classic_widget_velocity');
         register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
-        register_setting('custom_admin_options_group', 'statistik_velocity');
         register_setting('custom_admin_options_group', 'seo_velocity');
         register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
         register_setting('custom_admin_options_group', 'captcha_velocity');
@@ -259,13 +246,6 @@ class Custom_Admin_Option_Page
                         'label' => 'Aktifkan untuk menggunakan widget klasik.',
                     ],
                     [
-                        'id'    => 'statistik_velocity',
-                        'type'  => 'checkbox',
-                        'title' => 'Statistik Pengunjung',
-                        'std'   => 1,
-                        'label' => 'Aktifkan gunakan Statistik Pengunjung dari Velocity.',
-                    ],
-                    [
                         'id'    => 'seo_velocity',
                         'type'  => 'checkbox',
                         'title' => 'SEO',
@@ -364,7 +344,7 @@ class Custom_Admin_Option_Page
                         'type'  => 'password',
                         'title' => 'License Key',
                         'std'   => '',
-                        'label' => '<br><a class="check-license button button-primary">'.$this->status_lisensi.'</a><br><span class="license-status"></span>',
+                        'label' => '<br><a class="check-license button button-primary">' . $this->status_lisensi . '</a><br><span class="license-status"></span>',
                     ]
                 ],
             ],
@@ -499,7 +479,7 @@ class Custom_Admin_Option_Page
                             e.preventDefault();
 
                             var licenseKey = $('#velocity_license__key').val();
-                            
+
                             // Check if license key is not empty
                             if (licenseKey === '') {
                                 alert('Please enter a license key.');
@@ -516,8 +496,7 @@ class Custom_Admin_Option_Page
                                     license_key: licenseKey
                                 },
                                 success: function(response) {
-                                    if (response.success) {
-                                    } else {
+                                    if (response.success) {} else {
                                         $('.license-status').html(response.data);
                                         $('#velocity_license__key').val('');
                                     }

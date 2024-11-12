@@ -84,13 +84,13 @@ class Velocity_Addons
         //Floating whatsapp
         add_action('wp_footer', [$this, 'add_floating_whatsapp']);
     }
-    
+
     public function add_floating_whatsapp()
     {
         $whatsapp_position  = get_option('whatsapp_position', 'right');
         echo '<div class="floating-footer float-wa-' . $whatsapp_position . ' float-scrolltop-' . $whatsapp_position . '">';
-            Velocity_Addons_Floating_Whatsapp::justg_footer_whatsapp();
-            Velocity_Addons_Floating_Whatsapp::add_floating_scrolltop();
+        Velocity_Addons_Floating_Whatsapp::justg_footer_whatsapp();
+        Velocity_Addons_Floating_Whatsapp::add_floating_scrolltop();
         echo '</div>';
     }
 
@@ -188,7 +188,7 @@ class Velocity_Addons
         /**
          * Berisi Class untuk handle statistic
          */
-        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-statistic.php';
+        // require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-statistic.php';
 
         /**
          * Berisi Class untuk handle seo
@@ -209,7 +209,7 @@ class Velocity_Addons
          * Class untuk menambah option page generate post
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-option-news-generate.php';
-        
+
         /**
          * Class untuk menambah lisensi cecker
          */
