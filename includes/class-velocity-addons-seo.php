@@ -50,7 +50,16 @@
         // Mendapatkan nilai default dari setting umum (general settings)
         $default_title = get_bloginfo('name');
         $default_description = get_bloginfo('description');
-        $seo_post_types = get_option('seo_post_types', []);
+        $seo_post_types = get_option('seo_post_types');
+        
+        // Cek apakah kosong atau tidak valid
+        if (empty($seo_post_types) || !is_array($seo_post_types)) {
+            // Set nilai default
+            $seo_post_types = ['post', 'page'];
+
+            // Simpan ke database untuk penggunaan berikutnya
+            update_option('seo_post_types', $seo_post_types);
+        }
         
         // Ambil semua post type yang terdaftar
         $all_post_types = get_post_types();
@@ -101,10 +110,14 @@
                         <th scope="row">SEO Single</th>
                         <td>
                             <?php foreach ($post_types as $post_type) :?>
-                            <?php $label_post_type = str_replace('_', ' ', $post_type);;?>
+                            <?php $label_post_type = str_replace('_', ' ', $post_type);?>
                             <div style="padding: 5px 0;">
                                 <label>
-                                    <input type="checkbox" name="seo_post_types[]" value="<?php echo $post_type;?>" <?php echo in_array($post_type, $seo_post_types) ? 'checked' : ''; ?>>
+                                    <input type="checkbox" name="seo_post_types[]" value="<?php echo $post_type;?>"
+                                    <?php 
+                                    if(!empty($seo_post_types)) :
+                                        echo in_array($post_type, $seo_post_types) ? 'checked' : '';
+                                    endif; ?>>
                                     <span style="text-transform: capitalize;"><?php echo $label_post_type;?></span>
                                 </label>
                             </div>
@@ -126,7 +139,6 @@
             $home_description   = get_option('home_description');
             $home_keywords      = get_option('home_keywords');
             $share_image        = get_option('share_image');
-            $seo_post_types     = get_option('seo_post_types', ['post', 'page']);
       
             // Mendapatkan ID gambar berdasarkan kondisi yang dijelaskan
             $image_id = $this->get_seo_image_id();
@@ -235,7 +247,8 @@
      }
      
      public function custom_meta_seo(){
-         $seo_post_types     = get_option('seo_post_types', ['post', 'page']);
+         $seo_post_types = get_option('seo_post_types');
+
          // Untuk Post
         add_meta_box(
             'metabox_seo', // ID unik untuk metabox

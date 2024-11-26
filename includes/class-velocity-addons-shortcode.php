@@ -14,9 +14,16 @@ class Velocity_Addons_Shortcode {
      * Velocity_Addons_Shortcode constructor.
      */
     public function __construct() {
+        add_shortcode('vd-breadcrumbs', [$this,'vd_breadcrumbs']); //[vd-breadcrumbs]
         add_shortcode('velocity-sharepost', [$this,'velocity_sharepost']); // [velocity-sharepost]
     }
 
+    public function vd_breadcrumbs() {
+        ob_start();
+        echo justg_breadcrumb();
+        return ob_get_clean();
+    }
+    
     public function velocity_sharepost($atts) {
         ob_start();
         // Default values untuk atribut
