@@ -13,14 +13,20 @@
  {
     public function __construct()
     {
-    $seo_velocity = get_option('seo_velocity','1');
-    if($seo_velocity !== '1')
-    return false;
-
-    // Menambahkan submenu
-    add_action('admin_init', array($this, 'register_seo_settings'));
-    add_action('admin_enqueue_scripts', array($this, 'enqueue_media_uploader'));
-    add_action('wp_head', array($this, 'output_seo_meta_tags'), 2);
+        $seo_velocity = get_option('seo_velocity','1');
+        if($seo_velocity !== '1')
+        return false;
+    
+        // Menambahkan submenu
+        add_action('admin_init', [$this, 'register_seo_settings']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_media_uploader']);
+        add_action('wp_head', [$this, 'output_seo_meta_tags'], 2);
+        
+        // Tambahkan action untuk menambahkan metabox
+        add_action('add_meta_boxes', [$this, 'custom_meta_seo']);
+        
+        // Tambahkan action untuk menyimpan data
+        add_action('save_post', [$this, 'save_meta_box_data']);
     }
  
      public function register_seo_settings()
@@ -29,6 +35,7 @@
          register_setting('velocity_seo_group', 'home_description');
          register_setting('velocity_seo_group', 'home_keywords');
          register_setting('velocity_seo_group', 'share_image');
+         register_setting('velocity_seo_group', 'seo_post_types');
      }
  
      public function enqueue_media_uploader()
@@ -43,13 +50,23 @@
         // Mendapatkan nilai default dari setting umum (general settings)
         $default_title = get_bloginfo('name');
         $default_description = get_bloginfo('description');
-
+        $seo_post_types = get_option('seo_post_types', []);
+        
+        // Ambil semua post type yang terdaftar
+        $all_post_types = get_post_types();
+        
+        // Post type Beaver Builder yang perlu dikecualikan
+        $excluded_post_types = ['wp_block', 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation', 'wp_font_family', 'wp_font_face', 'fl-builder-template', 'fl-builder-history', 'fl-builder-template', 'fl-theme-layout', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request'];
+    
+        // Filter post type untuk menghapus Beaver Builder dan attachment
+        $post_types = array_diff($all_post_types, $excluded_post_types);
         ?>
         <div class="wrap">
             <h2>SEO Settings</h2>
             <form method="post" action="options.php">
                 <?php settings_fields('velocity_seo_group'); ?>
                 <?php do_settings_sections('velocity_seo_group'); ?>
+                
                 <table class="form-table">
                     <tr valign="top">
                         <th scope="row">Home Title</th>
@@ -80,21 +97,36 @@
                             <span class="dashicons dashicons-info-outline"></span> <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari tentang praktik terbaik untuk menerapkan <strong>"Berbagi di Facebook"</strong></a>
                         </td>
                     </tr>
+                    <tr valign="top">
+                        <th scope="row">SEO Single</th>
+                        <td>
+                            <?php foreach ($post_types as $post_type) :?>
+                            <?php $label_post_type = str_replace('_', ' ', $post_type);;?>
+                            <div style="padding: 5px 0;">
+                                <label>
+                                    <input type="checkbox" name="seo_post_types[]" value="<?php echo $post_type;?>" <?php echo in_array($post_type, $seo_post_types) ? 'checked' : ''; ?>>
+                                    <span style="text-transform: capitalize;"><?php echo $label_post_type;?></span>
+                                </label>
+                            </div>
+                            <?php endforeach;?>
+                        </td>
+                    </tr>
                 </table>
                 <?php submit_button(); ?>
             </form>
         </div>
         <?php
     }
-     public function output_seo_meta_tags()
-     {
+    
+    public function output_seo_meta_tags() {
         echo "\n".' <!-- SEO by Velocity Developer -->' . "\n";
 
             // Mendapatkan nilai dari pengaturan SEO
-            $home_title        = get_option('home_title');
-            $home_description  = get_option('home_description');
-            $home_keywords     = get_option('home_keywords');
-            $share_image       = get_option('share_image');
+            $home_title         = get_option('home_title');
+            $home_description   = get_option('home_description');
+            $home_keywords      = get_option('home_keywords');
+            $share_image        = get_option('share_image');
+            $seo_post_types     = get_option('seo_post_types', ['post', 'page']);
       
             // Mendapatkan ID gambar berdasarkan kondisi yang dijelaskan
             $image_id = $this->get_seo_image_id();
@@ -106,6 +138,7 @@
                 $meta_url       = get_home_url();
                 $meta_title     = $home_title;
                 $meta_desc      = $home_description;
+                $meta_keywords  = $home_keywords;
                 $meta_type      = 'website';
             } else if(is_archive()) { 
                 //jika halaman ARCHIVE
@@ -113,17 +146,31 @@
                 $meta_title     = get_the_archive_title();
                 $meta_desc      = get_the_archive_description();
                 $meta_desc      = $meta_desc?$meta_desc:$home_description;
+                $meta_keywords  = $home_keywords;
                 $meta_img       = $share_image;
                 $meta_type      = 'article';
             } else {
                 $meta_url       = get_permalink();
-                $meta_title     = get_the_title();
-                $meta_desc      = get_the_excerpt();
+                $meta_title     = get_post_meta(get_the_ID(), 'seo_post_title',true);
+                $meta_desc      = get_post_meta(get_the_ID(), 'seo_post_description',true);
+                $meta_keywords  = get_post_meta(get_the_ID(), 'seo_post_keyword',true);
                 $meta_type      = 'article';
-
+                $meta_excerpt   = get_the_excerpt();
+                
+                // Jika $meta_title kosong, ambil title post
+                if(empty($meta_title)) {
+                    $meta_title = get_the_title();
+                }
+                
+                // Jika $meta_keywords kosong, ambil home keywords
+                if(empty($meta_keywords)) {
+                    $meta_keywords = $home_keywords;
+                }
                 // Jika excerpt kosong, potong dari konten
                 if (empty($meta_desc)) {
-                    $meta_desc = wp_trim_words(wp_strip_all_tags(get_the_content()), 20);
+                    $meta_desc = $meta_excerpt;
+                } else if(empty($meta_excerpt)) {
+                    $meta_desc = wp_trim_words(wp_strip_all_tags(get_the_content()), 10);
                 }
             }
 
@@ -133,7 +180,7 @@
 
             echo '<meta property="url" content="' . esc_attr($meta_url) . '" />' . "\n";
             echo '<meta name="description" content="' . esc_attr($meta_desc) . '" />' . "\n";
-            echo '<meta name="keywords" content="' . esc_attr($home_keywords) . '" />' . "\n";
+            echo '<meta name="keywords" content="' . esc_attr($meta_keywords) . '" />' . "\n";
 
             echo '<meta property="og:image" content="' . esc_url($meta_img) . '" />' . "\n";
             echo '<meta property="og:title" content="' . esc_attr($meta_title) . '" />' . "\n";
@@ -186,6 +233,79 @@
  
          return $first_image_id;
      }
+     
+     public function custom_meta_seo(){
+         $seo_post_types     = get_option('seo_post_types', ['post', 'page']);
+         // Untuk Post
+        add_meta_box(
+            'metabox_seo', // ID unik untuk metabox
+            'Velocity Post SEO', // Judul metabox
+            [$this, 'seo_meta_box_callback'], // Fungsi callback untuk output
+            $seo_post_types, // Post types yang mendukung
+            'normal', // Lokasi (normal, side, atau advanced)
+            'high' // Prioritas,
+        );
+     }
+     
+     // Callback untuk menampilkan input di metabox
+    public function seo_meta_box_callback($post) {
+        global $post;
+        
+        // Ambil data meta jika tersedia
+        $post_title = get_post_meta($post->ID, 'seo_post_title', true);
+        $post_title = empty($post_title) ? get_the_title($post->ID) : $post_title;
+        $content = get_the_content($post->ID);
+        if (preg_match('/https?:\/\/(www\.)?youtube\.com|youtu\.be/', $content)) {
+            $content = ''; // Kosongkan konten jika ada link YouTube
+        }
+        $post_description   = get_post_meta($post->ID, 'seo_post_description', true);
+        $post_description   = empty($post_description) ? wp_trim_words( $content, 10, '' ) : $post_description;
+        
+        $post_keyword = get_post_meta($post->ID, 'seo_post_keyword', true);
+    
+        // Nonce untuk keamanan
+        wp_nonce_field('custom_meta_seo_nonce', 'custom_meta_seo_nonce_field');
+    
+        // Form input
+        echo '<p><label for="seo_post_title">Post Title</label></p>';
+        echo '<input type="text" id="seo_post_title" name="seo_post_title" value="' . esc_attr($post_title) . '" style="width:100%;"/>';
+        
+        echo '<p><label for="seo_post_description">Post Description</label></p>';
+        echo '<textarea id="seo_post_description" name="seo_post_description" style="width:100%;">' . esc_textarea($post_description) . '</textarea>';
+        
+        echo '<p><label for="seo_post_keyword">Post Keyword <br/><small>Pisahkan keyword dengan koma (,)</small></label></p>';
+        echo '<textarea type="text" id="seo_post_keyword" name="seo_post_keyword"style="width:100%;"/>' . esc_attr($post_keyword) . '</textarea>';
+    }
+    
+    // Simpan data dari custom fields
+    public function save_meta_box_data($post_id) {
+        // Verifikasi nonce
+        if (!isset($_POST['custom_meta_seo_nonce_field']) || 
+            !wp_verify_nonce($_POST['custom_meta_seo_nonce_field'], 'custom_meta_seo_nonce')) {
+            return;
+        }
+
+        // Jangan simpan jika autosave
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        // Periksa izin user
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+
+        // Simpan data meta
+        if (isset($_POST['seo_post_title'])) {
+            update_post_meta($post_id, 'seo_post_title', sanitize_text_field($_POST['seo_post_title']));
+        }
+        if (isset($_POST['seo_post_description'])) {
+            update_post_meta($post_id, 'seo_post_description', sanitize_textarea_field($_POST['seo_post_description']));
+        }
+        if (isset($_POST['seo_post_keyword'])) {
+            update_post_meta($post_id, 'seo_post_keyword', sanitize_text_field($_POST['seo_post_keyword']));
+        }
+    }
 
  }
  

@@ -28,6 +28,7 @@
  class Velocity_Addons_Hide_Admin_Notice {
     public function __construct() {
         add_action('admin_notices', array($this, 'hide_admin_notice'));
+        add_action('admin_head', array($this, 'hide_badge_update'));
     }
 
     public function hide_admin_notice() {
@@ -37,6 +38,19 @@
             global $wp_filter;
             remove_all_actions('admin_notices');
             echo '<style>.notice { display: none !important; }</style>';
+        }
+    }
+    
+    public function hide_badge_update(){
+        $hide_admin_notice_value = get_option('hide_admin_notice');
+        
+        if ($hide_admin_notice_value) {
+            echo '<style>
+                .update-plugins, .update-plugins span, .update-plugins .plugin-count, 
+                .update-plugins .update-count {
+                    display: none !important;
+                }
+            </style>';
         }
     }
 }

@@ -22,6 +22,17 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.3.0=
+- Tambah Fitur SEO di post/page
+- Tambah shortcode post/page
+- Hide badge count update
+
+=1.2.15=
+- Hapus Statistik
+
+=1.2.14=
+- Perbaikan Bug Recaptcha
+
 =1.2.13=
 - Perbaikan Floating Whatsapp
 
