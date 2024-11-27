@@ -24,11 +24,13 @@
 class Velocity_Addons_Auto_Updater
 {
   private $api_url = 'https://api.velocitydeveloper.id/wp-json/plugins/v1/velocity-addons';
-  private $license_key = 'C16208E74D1731132970';
-  private $source = 'sdsdsds.com';
+  private $license_key;
+  private $source;
 
   public function __construct()
   {
+    $this->license_key = get_option('velocity_license')['key'] !== '' ? get_option('velocity_license')['key'] : '';
+    $this->source = parse_url(get_site_url(), PHP_URL_HOST);
     add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
     add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
 
