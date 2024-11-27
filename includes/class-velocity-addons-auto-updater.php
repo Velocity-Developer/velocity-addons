@@ -35,7 +35,7 @@ class Velocity_Addons_Auto_Updater
     add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
 
     // Menambahkan tombol Enable Auto Update di halaman plugin
-    add_action('plugin_action_links', [$this, 'add_auto_update_button'], 10, 2);
+    add_action('plugin_action_links', [$this, 'add_link_to_settings'], 10, 2);
 
     // Menangani klik tombol Enable Auto Update
     add_action('admin_init', [$this, 'enable_auto_update']);
@@ -123,11 +123,11 @@ class Velocity_Addons_Auto_Updater
     return $plugin_data['Version'] ?? '0.0.0';
   }
 
-  public function add_auto_update_button($actions, $plugin_file)
+  public function add_link_to_settings($actions, $plugin_file)
   {
     if ($plugin_file === 'velocity-addons/velocity-addons.php') {
-      $url = wp_nonce_url(admin_url('admin.php?action=enable-auto-update&plugin=' . $plugin_file), 'enable_auto_update_' . $plugin_file);
-      $actions['enable_auto_update'] = '<a href="' . $url . '">Enable Auto Update</a>';
+      $url = admin_url('admin.php?page=custom_admin_options');
+      $actions['link_to_settings'] = '<a href="' . $url . '">Pengaturan Admin</a>';
     }
     return $actions;
   }
