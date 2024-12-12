@@ -265,8 +265,18 @@
         global $post;
         
         // Ambil data meta jika tersedia
-        $post_title = get_post_meta($post->ID, 'seo_post_title', true);
-        $post_title = empty($post_title) ? get_the_title($post->ID) : $post_title;
+        $post_meta_title = get_post_meta($post->ID, 'seo_post_title', true);
+
+        // Ambil judul post
+        $post_title = get_the_title($post->ID);
+
+        // Cek apakah judul kosong atau bernilai 'Auto Draft'
+        if (empty($post_title) || $post_title === 'Auto Draft') {
+            $post_title = ''; // Ambil nilai kosong
+        } else {
+            $post_title = $post_title; // Ambil nilai judul post
+        }
+        $post_title_new = empty($post_meta_title) ? $post_title : $post_meta_title;
         $content = get_the_content($post->ID);
         if (preg_match('/https?:\/\/(www\.)?youtube\.com|youtu\.be/', $content)) {
             $content = ''; // Kosongkan konten jika ada link YouTube
@@ -281,7 +291,7 @@
     
         // Form input
         echo '<p><label for="seo_post_title">Post Title</label></p>';
-        echo '<input type="text" id="seo_post_title" name="seo_post_title" value="' . esc_attr($post_title) . '" style="width:100%;"/>';
+        echo '<input type="text" id="seo_post_title" name="seo_post_title" value="' . esc_attr($post_title_new) . '" style="width:100%;"/>';
         
         echo '<p><label for="seo_post_description">Post Description</label></p>';
         echo '<textarea id="seo_post_description" name="seo_post_description" style="width:100%;">' . esc_textarea($post_description) . '</textarea>';

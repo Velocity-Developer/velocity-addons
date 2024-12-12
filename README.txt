@@ -22,6 +22,12 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.3.1=
+- Fix bug Setting SEO Single title
+
+=1.3.1=
+- Tambah Fitur Autoupdate Versi Beta
+
 =1.3.0=
 - Tambah Fitur SEO di post/page
 - Tambah shortcode post/page
