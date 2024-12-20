@@ -89,6 +89,18 @@ class Custom_Admin_Option_Page
             );
         }
 
+        $velocity_duitku = get_option('velocity_duitku', '1');
+        if ($velocity_duitku == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Duitku',
+                'Duitku',
+                'manage_options',
+                'velocity_duitku_settings',
+                array($this, 'velocity_duitku_page'),
+            );
+        }
+
         add_submenu_page(
             'admin_velocity_addons',
             'Pengaturan Admin',
@@ -112,6 +124,11 @@ class Custom_Admin_Option_Page
     public function velocity_news_page()
     {
         Velocity_Addons_News::render_news_settings_page();
+    }
+
+    public function velocity_duitku_page()
+    {
+        Velocity_Addons_Duitku::render_settings_page();
     }
 
     public function page_velocity_addons()
@@ -143,6 +160,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
         register_setting('custom_admin_options_group', 'captcha_velocity');
         register_setting('custom_admin_options_group', 'news_generate');
+        register_setting('custom_admin_options_group', 'velocity_duitku');
         register_setting('custom_admin_options_group', 'floating_whatsapp');
         register_setting('custom_admin_options_group', 'floating_scrollTop');
     }
@@ -279,6 +297,13 @@ class Custom_Admin_Option_Page
                         'title' => 'Import Artikel dari API',
                         'std'   => 1,
                         'label' => 'Aktifkan gunakan untuk import artikel post.',
+                    ],
+                    [
+                        'id'    => 'velocity_duitku',
+                        'type'  => 'checkbox',
+                        'title' => 'Payment Gateway Duitku',
+                        'std'   => 0,
+                        'label' => 'Aktifkan untuk gunakan payment gateway Duitku.',
                     ],
                 ],
             ],

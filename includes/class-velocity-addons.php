@@ -194,12 +194,12 @@ class Velocity_Addons
          * Berisi Class untuk handle seo
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-seo.php';
-        
+
         /**
          * Berisi Class untuk handle shortcode
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-shortcode.php';
-        
+
         /**
          * Berisi Class untuk handle auto resize
          */
@@ -214,6 +214,11 @@ class Velocity_Addons
          * Class untuk menambah option page generate post
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-option-news-generate.php';
+
+        /**
+         * Class untuk menambah option duitku
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-duitku.php';
 
         /**
          * Class untuk menambah lisensi cecker
