@@ -29,7 +29,8 @@ class Velocity_Addons_Auto_Updater
 
   public function __construct()
   {
-    $this->license_key = get_option('velocity_license')['key'] !== '' ? get_option('velocity_license')['key'] : '';
+    $velocity_license = get_option('velocity_license');
+    $this->license_key = isset($velocity_license['key']) && !empty($velocity_license['key']) ? $velocity_license['key'] : '';
     $this->source = parse_url(get_site_url(), PHP_URL_HOST);
     add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
     add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
