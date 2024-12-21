@@ -276,6 +276,51 @@ class Velocity_Addons_Duitku {
         }
 
     }
+    
+    /**
+     * Callback function for duitku payment
+     * 
+     * This function will be called by duitku when the payment is finished
+     * 
+     * @return void
+     */
+    public function callback() {
+        $apiKey             = self::options()['merchant_key']; // API key anda
+        $merchantCode       = isset($_POST['merchantCode']) ? $_POST['merchantCode'] : null; 
+        $amount             = isset($_POST['amount']) ? $_POST['amount'] : null; 
+        $merchantOrderId    = isset($_POST['merchantOrderId']) ? $_POST['merchantOrderId'] : null; 
+        $productDetail      = isset($_POST['productDetail']) ? $_POST['productDetail'] : null; 
+        $additionalParam    = isset($_POST['additionalParam']) ? $_POST['additionalParam'] : null; 
+        $paymentCode        = isset($_POST['paymentCode']) ? $_POST['paymentCode'] : null; 
+        $resultCode         = isset($_POST['resultCode']) ? $_POST['resultCode'] : null; 
+        $merchantUserId     = isset($_POST['merchantUserId']) ? $_POST['merchantUserId'] : null; 
+        $reference          = isset($_POST['reference']) ? $_POST['reference'] : null; 
+        $signature          = isset($_POST['signature']) ? $_POST['signature'] : null; 
+        $publisherOrderId   = isset($_POST['publisherOrderId']) ? $_POST['publisherOrderId'] : null; 
+        $spUserHash         = isset($_POST['spUserHash']) ? $_POST['spUserHash'] : null; 
+        $settlementDate     = isset($_POST['settlementDate']) ? $_POST['settlementDate'] : null; 
+        $issuerCode         = isset($_POST['issuerCode']) ? $_POST['issuerCode'] : null; 
+
+        if(!empty($merchantCode) && !empty($amount) && !empty($merchantOrderId) && !empty($signature)) {
+
+            $params = $merchantCode . $amount . $merchantOrderId . $apiKey;
+            $calcSignature = md5($params);
+
+            if($signature == $calcSignature) {
+                //Callback tervalidasi
+                return $_POST;
+            } else {
+                //Callback tidak tervalidasi
+                return new WP_Error('missing_params', 'Bad Signature');
+            }
+
+
+        } else {
+            //eror parameter tidak lengkap
+            return new WP_Error('missing_params', 'Parameter tidak lengkap');
+        }
+
+    }
 
 }
 
