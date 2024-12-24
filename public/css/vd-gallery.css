@@ -1,0 +1,98 @@
+.vdgallery-kolom {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin-right: -.5rem;
+    margin-left: -.5rem;
+}
+.vdgallery-kolom *,.vdgallery-kolom ::after,.vdgallery-kolom ::before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.vdgallery-kolom .vdgallery-item {
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 25%;
+    -moz-box-flex: 0;
+    -ms-flex: 0 0 25%;
+    flex: 0 0 25%;
+    max-width: 25%;
+    padding-right: .5rem;
+    padding-left: .5rem;
+    padding-bottom: 1rem;
+    text-align: center;
+}
+.vdgallery-galleryshow .vdgallery-item-inside {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    width: 100%;
+}
+.vdgallery-kolom .vdgallery-item img {
+    margin: 0;    
+    width: 100%;
+}
+.vdgallery-kolom .vdgallery-item a {
+    display: inline-block;
+    width: 100%;
+}
+.vdgallery-galleryshow .vdgallery-item-caption-hover,
+.vdgallery-galleryshow .vdgallery-item-caption-inside {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgb(0 0 0 / 51%);
+    color: #ffffff;
+    padding: .4rem;
+    font-size: .7rem;
+    line-height: 1rem;
+    height: 1.6rem;
+    overflow: hidden;
+    transition: all 400ms;
+}
+.vdgallery-galleryshow .vdgallery-item-caption-hover {    
+    bottom: -100%;
+}
+.vdgallery-galleryshow .vdgallery-item-inside:hover .vdgallery-item-caption-hover {    
+    bottom: 0;
+}
+.vdgallery-pagination {
+    text-align: center;
+    margin: .3rem 0 1rem;
+}
+.vdgallery-pagi-btn {
+    display: inline-block;
+    margin-bottom: .3rem;
+}
+.vdgallery-pagination .vdgallery-pagi-btn:not(:last-child) {
+    margin-right: .3rem;
+}
+.vdgallery-pagi-btn span {
+    background-color: #fff;
+    border: 1px solid #555;
+    padding: .2rem .5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #333;
+}
+.vdgallery-pagi-btn.active span,
+.vdgallery-pagi-btn:hover span  {
+    background-color: #ddd;
+    border-color: #949494;
+}
+.vdgallery-slideshow .vdgallery-item-image {
+    width: 100%;
+}
+.vdgallery-slideshow .flickity-page-dots {
+    bottom: .5rem;
+}
+.vdgallery-slideshow .flickity-prev-next-button {
+    width: 25px;
+    height: 25px;
+}

@@ -10,3 +10,7 @@
     border-left: .25rem solid #ffaf09;
     margin: .25rem 0;
 }
+
+#accordionDashboard ul>li {
+    list-style: circle;
+}

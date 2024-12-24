@@ -89,6 +89,18 @@ class Custom_Admin_Option_Page
             );
         }
 
+        $velocity_gallery = get_option('velocity_gallery', '1');
+        if ($velocity_gallery == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Gallery',
+                'Gallery',
+                'manage_options',
+                'velocity_gallery_settings',
+                array($this, 'velocity_gallery_page'),
+            );
+        }
+
         $velocity_duitku = get_option('velocity_duitku', '1');
         if ($velocity_duitku == '1') {
             add_submenu_page(
@@ -126,6 +138,11 @@ class Custom_Admin_Option_Page
         Velocity_Addons_News::render_news_settings_page();
     }
 
+    public function velocity_gallery_page()
+    {
+        Velocity_Addons_Gallery::render_settings_page();
+    }
+
     public function velocity_duitku_page()
     {
         Velocity_Addons_Duitku::render_settings_page();
@@ -160,6 +177,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
         register_setting('custom_admin_options_group', 'captcha_velocity');
         register_setting('custom_admin_options_group', 'news_generate');
+        register_setting('custom_admin_options_group', 'velocity_gallery');
         register_setting('custom_admin_options_group', 'velocity_duitku');
         register_setting('custom_admin_options_group', 'floating_whatsapp');
         register_setting('custom_admin_options_group', 'floating_scrollTop');
@@ -297,6 +315,13 @@ class Custom_Admin_Option_Page
                         'title' => 'Import Artikel dari API',
                         'std'   => 1,
                         'label' => 'Aktifkan gunakan untuk import artikel post.',
+                    ],
+                    [
+                        'id'    => 'velocity_gallery',
+                        'type'  => 'checkbox',
+                        'title' => 'Gallery Post Type',
+                        'std'   => 0,
+                        'label' => 'Aktifkan untuk gunakan Gallery Post Type.',
                     ],
                     [
                         'id'    => 'velocity_duitku',

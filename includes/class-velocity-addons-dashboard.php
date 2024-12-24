@@ -73,7 +73,7 @@ class Velocity_Addons_Dashboard
             </div>
 
             <div class="accordion m-3" id="accordionDashboard">
-                <div class="accordion-item">
+                <div class="accordion-item mb-3">
                     <h2 class="accordion-header">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                             <h6>QC List Check</h6>
@@ -82,6 +82,34 @@ class Velocity_Addons_Dashboard
                     <div id="collapseOne" class="accordion-collapse collapse show">
                         <div class="accordion-body">
                             <?php Velocity_Addons_Maintenance_Mode::qc_maintenance(); ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                            <h6>List Shortcode</h6>
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse show">
+                        <div class="accordion-body">
+                            <h6>#Breadcrumbs</h6>
+                            <p><code>[vd-breadcrumbs]</code></p>
+
+                            <h6>#Share Post</h6>
+                            <p><code>[velocity-sharepost]</code></p>
+                            <ul>
+                                <li>title : nama label share. Share this post</li>
+                                <li>label_share : tampilkan label share. true/false</li>
+                                <li>platforms : platform berbagi. facebook/twitter/whatsapp/telegram/email</li>
+                            </ul>
+
+                            <h6>#VD Gallery</h6>
+                            <p><code>[vdgallery id='']</code></p>
+
+                            <h6>#VD Gallery Slide</h6>
+                            <p><code>[vdgalleryslide id='']</code></p>
                         </div>
                     </div>
                 </div>
