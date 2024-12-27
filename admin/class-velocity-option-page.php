@@ -101,7 +101,7 @@ class Custom_Admin_Option_Page
             );
         }
 
-        $velocity_duitku = get_option('velocity_duitku', '1');
+        $velocity_duitku = get_option('velocity_duitku', '0');
         if ($velocity_duitku == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
