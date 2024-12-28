@@ -89,18 +89,6 @@ class Custom_Admin_Option_Page
             );
         }
 
-        $velocity_gallery = get_option('velocity_gallery', '1');
-        if ($velocity_gallery == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Gallery',
-                'Gallery',
-                'manage_options',
-                'velocity_gallery_settings',
-                array($this, 'velocity_gallery_page'),
-            );
-        }
-
         $velocity_duitku = get_option('velocity_duitku', '0');
         if ($velocity_duitku == '1') {
             add_submenu_page(
@@ -136,11 +124,6 @@ class Custom_Admin_Option_Page
     public function velocity_news_page()
     {
         Velocity_Addons_News::render_news_settings_page();
-    }
-
-    public function velocity_gallery_page()
-    {
-        Velocity_Addons_Gallery::render_settings_page();
     }
 
     public function velocity_duitku_page()
