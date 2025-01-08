@@ -97,6 +97,9 @@ class Velocity_Addons_Dashboard
                             <h6>#Breadcrumbs</h6>
                             <p><code>[vd-breadcrumbs]</code></p>
 
+                            <h6>#Velocity Recaptcha</h6>
+                            <p><code>[velocity_captcha]</code></p>
+
                             <h6>#Share Post</h6>
                             <p><code>[velocity-sharepost]</code></p>
                             <ul>
