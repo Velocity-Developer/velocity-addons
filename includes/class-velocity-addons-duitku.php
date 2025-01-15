@@ -246,13 +246,15 @@ class Velocity_Addons_Duitku {
             'return_url'    => '',
         );
 
+        $data = wp_parse_args( $options, $data);
+
         if($data['mode'] == 'sandbox') {
             $data['url_createinvoice'] = 'https://api-sandbox.duitku.com/api/merchant/createinvoice'; 
         } else {
             $data['url_createinvoice'] = 'https://api-prod.duitku.com/api/merchant/createinvoice';
         }
         
-        return wp_parse_args( $options, $data);
+        return $data;
     }
 
     public static function render_settings_page() {
