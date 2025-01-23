@@ -174,6 +174,11 @@
                     $meta_title = get_the_title();
                 }
                 
+                //penanganan jika 'Auto Draft' / 'Konsep Otomatis'
+                if($meta_title === 'Auto Draft' || $meta_title === 'Konsep Otomatis'){
+                    $meta_title = get_the_title();
+                }
+                
                 // Jika $meta_keywords kosong, ambil home keywords
                 if(empty($meta_keywords)) {
                     $meta_keywords = $home_keywords;
@@ -268,15 +273,16 @@
         $post_meta_title = get_post_meta($post->ID, 'seo_post_title', true);
 
         // Ambil judul post
-        $post_title = get_the_title($post->ID);
+        $post_title = $post->post_title?$post->post_title:'';
+                
+        //set post title
+        $post_title_new = $post_meta_title??$post_title;
 
-        // Cek apakah judul kosong atau bernilai 'Auto Draft'
-        if (empty($post_title) || $post_title === 'Auto Draft') {
-            $post_title = ''; // Ambil nilai kosong
-        } else {
-            $post_title = $post_title; // Ambil nilai judul post
+        //penanganan jika 'Auto Draft' / 'Konsep Otomatis'
+        if($post_title_new === 'Auto Draft' || $post_title_new === 'Konsep Otomatis'){
+            $post_title_new = $post_title;
         }
-        $post_title_new = empty($post_meta_title) ? $post_title : $post_meta_title;
+        
         $content = get_the_content($post->ID);
         if (preg_match('/https?:\/\/(www\.)?youtube\.com|youtu\.be/', $content)) {
             $content = ''; // Kosongkan konten jika ada link YouTube
