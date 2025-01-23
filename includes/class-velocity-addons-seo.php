@@ -190,11 +190,15 @@
                     $meta_desc = wp_trim_words(wp_strip_all_tags(get_the_content()), 10);
                 }
             }
+            
+            //ubah enter jadi koma
+            $meta_keywords = str_replace(array("\r\n", "\n"), ',', $meta_keywords);
 
             // Menampilkan og tags
             echo '<meta property="og:type" content="'.$meta_type.'" />' . "\n";
             echo '<meta property="og:site_name" content="'.get_bloginfo( 'name' ).'" />' . "\n";
 
+            echo '<meta property="og:url" content="' . esc_attr($meta_url) . '" />' . "\n";
             echo '<meta property="url" content="' . esc_attr($meta_url) . '" />' . "\n";
             echo '<meta name="description" content="' . esc_attr($meta_desc) . '" />' . "\n";
             echo '<meta name="keywords" content="' . esc_attr($meta_keywords) . '" />' . "\n";
