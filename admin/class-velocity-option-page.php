@@ -430,7 +430,7 @@ class Custom_Admin_Option_Page
                         'id'    => 'redirect_to',
                         'type'  => 'text',
                         'title' => 'Redirect To',
-                        'std'   => 'http://127.0.0.1',
+                        'std'   => '127.0.0.1',
                         'label' => 'Tujuan redirect wp-login.php, jika Block wp-login.php aktif.',
                     ],
                 ],
