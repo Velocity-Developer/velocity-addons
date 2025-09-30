@@ -244,6 +244,11 @@ class Velocity_Addons
          * Class untuk menambah post duplicator di WordPress admin panel.
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-post-duplicator.php';
+        
+        /**
+         * Class untuk memasukkan kode snippet di WordPress admin panel.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-snippet.php';
 
         /**
          * The class responsible for defining all actions that occur in the admin area.
