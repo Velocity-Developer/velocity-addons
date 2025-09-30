@@ -232,8 +232,8 @@ class Velocity_Addons_News
                                 $categories = [];
                             }
                             ?>
-                            <select name="target" id="target">
-                                <option>Pilih Target</option>
+                            <select name="target" id="target" required>
+                                <option value="">Pilih Target</option>
                                 <?php foreach($categories as $category):
                                 echo '<option value="'.$category['id'].'">'.$category['name'].'</option>';
                                 endforeach;
@@ -245,23 +245,25 @@ class Velocity_Addons_News
                         <th scope="row">Tujuan Target</th>
                         <td><?php
                             wp_dropdown_categories(array(
-                                'show_option_all' => 'Pilih Kategori', 
+                                'show_option_none' => 'Pilih Kategori', 
+                                'option_none_value' => '', 
                                 'name' => 'category',
                                 'id' => 'category',
                                 'exclude'   =>1,
                                 'class' => 'postform',
                                 'hide_empty' => 0,
+                                'required' => 'required',
                             ));?>
                         </td>
                     </tr>
                     <tr>
                         <th scope="row">Jumlah Artikel</th>
-                        <td><input type="number" name="jml_target" id="jml_target" min="1" value="5" /></td>
+                        <td><input type="number" name="jml_target" id="jml_target" min="1" value="5" required/></td>
                     </tr>
                     <tr>
                         <th>Status</th>
                         <td>
-                            <select id="status" name="status">
+                            <select id="status" name="status" required>
                             <option value="publish">Publish</option>
                             <option value="draft">Draft</option>
                             </select>
