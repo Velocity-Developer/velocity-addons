@@ -109,6 +109,15 @@ class Custom_Admin_Option_Page
             'custom_admin_options',
             array($this, 'options_page_callback'),
         );
+
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Code Snippet',
+            'Code Snippet',
+            'manage_options',
+            'velocity_snippet_settings',
+            array($this, 'velocity_snippet_settings'),
+        );
     }
 
     public function velocity_seo_page()
@@ -119,6 +128,11 @@ class Custom_Admin_Option_Page
     public function velocity_floating_whatsapp_page()
     {
         Velocity_Addons_Floating_Whatsapp::floating_whatsapp_page();
+    }
+
+    public function velocity_snippet_settings()
+    {
+        Velocity_Addons_Snippet::snippet_page();
     }
 
     public function velocity_news_page()
