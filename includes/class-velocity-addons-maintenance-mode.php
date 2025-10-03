@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Register all actions and filters for the plugin
@@ -34,11 +34,33 @@ class Velocity_Addons_Maintenance_Mode
     public static function check_maintenance_mode()
     {
         if (!current_user_can('manage_options') && !is_admin() && !is_page('myaccount')) {
-            $opt    = get_option('maintenance_mode_data', []);
-            $hd     = isset($opt['header']) && !empty($opt['header']) ? $opt['header'] : 'Maintenance Mode';
-            $bd     = isset($opt['body']) && !empty($opt['body']) ? $opt['body'] : '';
+            $opt       = get_option('maintenance_mode_data', []);
+            $hd        = !empty($opt['header']) ? $opt['header'] : 'Maintenance Mode';
+            $bd        = !empty($opt['body']) ? $opt['body'] : 'We are currently performing maintenance. Please check back later.';
+            $bg_id     = !empty($opt['background']) ? absint($opt['background']) : 0;
+            $bg_url    = $bg_id ? wp_get_attachment_image_url($bg_id, 'full') : '';
 
-            wp_die('<h1>' . $hd . '</h1><p>' . $bd . '</p>', 'Maintenance Mode');
+            $heading        = esc_html($hd);
+            $body_content   = wpautop(wp_kses_post($bd));
+            $background_css = $bg_url
+                ? 'background-color:#0f172a;background-image:url(' . esc_url($bg_url) . ');background-size:cover;background-position:center;'
+                : 'background:linear-gradient(135deg,#0f172a,#1e293b);';
+
+            $message  = '<style>body#error-page{width:100%;max-width:100%;overflow:hidden;margin:0;padding:0;border:0;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#fff;' . $background_css . '}';
+            $message .= 'body#error-page:before{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.1);}';
+            $message .= '#velocity-maintenance__wrapper{position:relative;z-index:1;padding:30px;background:rgba(12,19,33,0.85);border-radius:10px;text-align:center;box-shadow:0 20px 45px rgba(0,0,0,0.35);}';
+            $message .= '#velocity-maintenance__wrapper h1{margin:0 0 17px;padding-bottom:17px;font-size:29px;line-height:1.2;color:#fff;}';
+            $message .= '#velocity-maintenance__wrapper .velocity-maintenance__body{font-size:18px;line-height:1.7;color:#e2e8f0;}';
+            $message .= '#velocity-maintenance__wrapper .velocity-maintenance__body p{margin:0 0 16px;padding:0;}';
+            $message .= '#velocity-maintenance__wrapper .velocity-maintenance__body p:last-child{margin-bottom:0;}';
+            $message .= '#error-page p,#error-page .wp-die-message{margin:0 auto;padding:20px;}';
+            $message .= '</style>';
+            $message .= '<div id="velocity-maintenance__wrapper">';
+            $message .= '<h1>' . $heading . '</h1>';
+            $message .= '<div class="velocity-maintenance__body">' . $body_content . '</div>';
+            $message .= '</div>';
+
+            wp_die($message, $heading, array('response' => 503));
         }
     }
 

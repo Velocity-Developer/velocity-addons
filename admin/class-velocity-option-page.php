@@ -243,6 +243,27 @@ class Custom_Admin_Option_Page
             echo '</div>';
         }
 
+        if ($type == 'media') {
+            $image_id     = absint($value);
+            $image_url    = $image_id ? wp_get_attachment_image_url($image_id, 'medium') : '';
+            $input_value  = $image_id ? $image_id : '';
+            echo '<div class="vd-media-field">';
+            echo '<div class="vd-media-preview">';
+            if ($image_url) {
+                echo '<img src="' . esc_url($image_url) . '" alt="">';
+            } else {
+                echo '<span class="vd-media-placeholder">Belum ada gambar yang dipilih.</span>';
+            }
+            echo '</div>';
+            echo '<input type="hidden" id="' . esc_attr($id) . '" name="' . esc_attr($name) . '" value="' . esc_attr($input_value) . '">';
+            echo '<div class="vd-media-actions">';
+            echo '<button type="button" class="button vd-media-upload" data-target="' . esc_attr($id) . '">Pilih Gambar</button>';
+            $remove_style = $image_id ? '' : ' style="display:none;"';
+            echo '<button type="button" class="button vd-media-remove" data-target="' . esc_attr($id) . '"' . $remove_style . '>Hapus</button>';
+            echo '</div>';
+            echo '</div>';
+        }
+
         ///tampil label
         if (isset($data['label']) && !empty($data['label'])) {
             echo '<label for="' . $id . '">';
@@ -260,6 +281,9 @@ class Custom_Admin_Option_Page
 
     public function options_page_callback()
     {
+        if (function_exists('wp_enqueue_media')) {
+            wp_enqueue_media();
+        }
         $pages = [
             'umum' => [
                 'title'     => 'Umum',
@@ -400,6 +424,13 @@ class Custom_Admin_Option_Page
                         'type'  => 'textarea',
                         'title' => 'Body',
                         'std'   => 'We are currently performing maintenance. Please check back later.',
+                    ],
+                    [
+                        'id'    => 'maintenance_mode_data',
+                        'sub'   => 'background',
+                        'type'  => 'media',
+                        'title' => 'Background Image',
+                        'label' => 'Pilih gambar latar belakang untuk tampilan halaman maintenance.',
                     ]
                 ],
             ],
@@ -592,8 +623,63 @@ class Custom_Admin_Option_Page
                         var act = localStorage.getItem('vdons-tabs');
                         act = act ? act : '#umum';
                         activeTab(act);
+
+                        if (typeof wp !== 'undefined' && wp.media) {
+                            $('.vd-media-upload').on('click', function(e) {
+                                e.preventDefault();
+                                var button = $(this);
+                                var field = button.closest('.vd-media-field');
+                                var mediaFrame = wp.media({
+                                    title: 'Pilih atau Upload Gambar',
+                                    button: {
+                                        text: 'Gunakan Gambar Ini'
+                                    },
+                                    library: {
+                                        type: 'image'
+                                    },
+                                    multiple: false
+                                });
+
+                                var currentId = field.find('input[type="hidden"]').val();
+                                if (currentId) {
+                                    mediaFrame.on('open', function() {
+                                        var selection = mediaFrame.state().get('selection');
+                                        selection.reset();
+                                        var attachment = wp.media.attachment(currentId);
+                                        attachment.fetch();
+                                        selection.add(attachment);
+                                    });
+                                }
+
+                                mediaFrame.on('select', function() {
+                                    var attachment = mediaFrame.state().get('selection').first().toJSON();
+                                    var imageUrl = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
+                                    field.find('input[type="hidden"]').val(attachment.id);
+                                    field.find('.vd-media-preview').html('<img src="' + imageUrl + '" alt="">');
+                                    field.find('.vd-media-remove').show();
+                                });
+
+                                mediaFrame.open();
+                            });
+
+                            $('.vd-media-remove').on('click', function(e) {
+                                e.preventDefault();
+                                var button = $(this);
+                                var field = button.closest('.vd-media-field');
+                                field.find('input[type="hidden"]').val('');
+                                field.find('.vd-media-preview').html('<span class="vd-media-placeholder">Belum ada gambar yang dipilih.</span>');
+                                button.hide();
+                            });
+                        }
                     });
                 </script>
+                <style>
+                    .vd-media-field{display:flex;flex-direction:column;gap:10px;max-width:320px;}
+                    .vd-media-field .vd-media-preview{border:1px dashed #c3c4c7;min-height:120px;display:flex;align-items:center;justify-content:center;background:#f6f7f7;border-radius:4px;overflow:hidden;padding:12px;}
+                    .vd-media-field .vd-media-preview img{width:100%;height:auto;display:block;border-radius:4px;}
+                    .vd-media-field .vd-media-placeholder{color:#6c7781;font-style:italic;text-align:center;}
+                    .vd-media-field .vd-media-actions{display:flex;gap:8px;flex-wrap:wrap;}
+                </style>
 
 
             </form>
