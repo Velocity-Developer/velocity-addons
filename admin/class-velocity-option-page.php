@@ -118,6 +118,19 @@ class Custom_Admin_Option_Page
             'velocity_snippet_settings',
             array($this, 'velocity_snippet_settings'),
         );
+
+        $statistik_velocity = get_option('statistik_velocity', '0');
+        if ($statistik_velocity == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Statistik Pengunjung',
+                'Statistik Pengunjung',
+                'manage_options',
+                'velocity_statistics',
+                array($this, 'visitor_stats_page_callback')
+            );
+        }
+
     }
 
     public function velocity_seo_page()
@@ -171,6 +184,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'classic_widget_velocity');
         register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
         register_setting('custom_admin_options_group', 'seo_velocity');
+        register_setting('custom_admin_options_group', 'statistik_velocity');
         register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
         register_setting('custom_admin_options_group', 'captcha_velocity');
         register_setting('custom_admin_options_group', 'news_generate');
@@ -284,6 +298,13 @@ class Custom_Admin_Option_Page
                         'title' => 'SEO',
                         'std'   => 1,
                         'label' => 'Aktifkan gunakan SEO dari Velocity.',
+                    ],
+                    [
+                        'id'    => 'statistik_velocity',
+                        'type'  => 'checkbox',
+                        'title' => 'Statistik Pengunjung',
+                        'std'   => 1,
+                        'label' => 'Aktifkan gunakan statistik pengunjung dari Velocity.',
                     ],
                     [
                         'id'    => 'floating_whatsapp',
@@ -579,6 +600,295 @@ class Custom_Admin_Option_Page
         </div>
 <?php
     }
+
+
+    public function visitor_stats_page_callback() {
+        if ( ! current_user_can('manage_options') ) {
+            wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+
+        // Gunakan satu instance per request (hindari double hook)
+        static $stats_handler = null;
+        if ( ! $stats_handler ) {
+            $stats_handler = new Velocity_Addons_Statistic();
+        }
+
+        // Handle rebuild request (POST + nonce)
+        $rebuild_message = '';
+        if ( isset($_POST['rebuild_stats']) && check_admin_referer('rebuild_stats') ) {
+            $daily_count = (int) $stats_handler->rebuild_daily_stats();
+            $page_count  = (int) $stats_handler->rebuild_page_stats();
+            $rebuild_message = "<div class='notice notice-success is-dismissible'><p>✅ Statistik berhasil dibangun ulang! Memproses {$daily_count} data harian dan {$page_count} data halaman.</p></div>";
+        }
+
+        // Ambil data
+        $summary_stats = $stats_handler->get_summary_stats();
+        $daily_stats   = $stats_handler->get_daily_stats(30);
+        $page_stats    = $stats_handler->get_page_stats(30);
+        $referer_stats = $stats_handler->get_referer_stats(30);
+
+        // Siapkan data untuk Chart.js (gunakan wp_json_encode)
+        $daily_payload = array_map(function($stat){
+            return array(
+                'date'          => $stat->visit_date,
+                'unique_visits' => (int) $stat->unique_visits,
+                'total_visits'  => (int) $stat->total_visits,
+            );
+        }, $daily_stats);
+
+        $page_payload = array_map(function($p){
+            return array(
+                'url'   => $p->page_url,
+                'views' => (int) $p->total_views,
+            );
+        }, array_slice($page_stats, 0, 8));
+
+        ?>
+        <div class="wrap vd-ons">
+            <h1>📊 Statistik Pengunjung</h1>
+
+            <?php echo $rebuild_message; ?>
+
+            <div style="margin: 20px 0;">
+                <form method="post" style="display:inline;">
+                    <?php wp_nonce_field('rebuild_stats'); ?>
+                    <input type="hidden" name="rebuild_stats" value="1">
+                    <button type="submit" class="button button-secondary"
+                        onclick="return confirm('Apakah Anda yakin ingin membangun ulang statistik? Ini akan menghitung ulang semua data dari log yang ada.')">
+                        🔄 Bangun Ulang Statistik
+                    </button>
+                    <span style="margin-left:10px;color:#666;font-size:13px;">Use this if visitor counts appear incorrect</span>
+                </form>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="stats-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin:20px 0;">
+                <?php
+                $cards = array(
+                    'Hari Ini'  => $summary_stats['today'],
+                    'Minggu Ini'=> $summary_stats['this_week'],
+                    'Bulan Ini' => $summary_stats['this_month'],
+                    'All Time'  => $summary_stats['all_time'],
+                );
+                foreach ($cards as $label => $obj): ?>
+                    <div class="stat-card" style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                        <h3 style="margin:0 0 10px;color:#0073aa;"><?php echo esc_html($label); ?></h3>
+                        <div style="font-size:24px;font-weight:700;color:#23282d;"><?php echo number_format_i18n((int)($obj->unique_visitors ?? 0)); ?></div>
+                        <div style="color:#666;font-size:14px;">Pengunjung Unik</div>
+                        <div style="color:#999;font-size:12px;"><?php echo number_format_i18n((int)($obj->total_visits ?? 0)); ?> total visits</div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-section" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0;">
+                <div class="chart-container" style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-top:0;color:#23282d;">📈 Daily Visits (Last 30 Days)</h3>
+                    <canvas id="dailyVisitsChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container" style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-top:0;color:#23282d;">📄 Halaman Teratas</h3>
+                    <canvas id="topPagesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Shortcode block (STATISTICS) -->
+            <div class="shortcode-section" style="background:#fff;padding:30px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin:20px 0;">
+                <h3 style="margin-top:0;color:#23282d;">📋 Shortcode Usage — [velocity-statistics]</h3>
+                <p style="color:#666;margin-bottom:25px;">Tampilkan statistik visitor di halaman, post, atau widget.</p>
+
+                <div class="shortcode-examples" style="display:grid;grid-template-columns:1fr 1fr;gap:30px;">
+                    <div>
+                        <h4 style="color:#23282d;margin-bottom:15px;">🎯 Basic</h4>
+                        <div style="margin-bottom:20px;">
+                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics]')">[velocity-statistics]</span>
+                                <button onclick="copyToClipboard('[velocity-statistics]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                            </div>
+                            <div style="font-size:13px;color:#666;">Semua statistik (default)</div>
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics show=&quot;today&quot;]')">[velocity-statistics show="today"]</span>
+                                <button onclick="copyToClipboard('[velocity-statistics show=&quot;today&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                            </div>
+                            <div style="font-size:13px;color:#666;">Hanya hari ini</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color:#23282d;margin-bottom:15px;">⚙️ Advanced</h4>
+                        <div style="margin-bottom:20px;">
+                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics style=&quot;cards&quot; columns=&quot;2&quot;]')">[velocity-statistics style="cards" columns="2"]</span>
+                                <button onclick="copyToClipboard('[velocity-statistics style=&quot;cards&quot; columns=&quot;2&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                            </div>
+                            <div style="font-size:13px;color:#666;">Style cards, 2 kolom</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shortcode block (HITS) -->
+            <div class="shortcode-section" style="background:#fff;padding:30px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin:20px 0;">
+                <h3 style="margin-top:0;color:#23282d;">👁️ Shortcode Menampilkan Hit — [velocity-hits]</h3>
+                <p style="color:#666;margin-bottom:20px;">
+                    Gunakan shortcode ini untuk menampilkan nilai meta <code>hit</code> pada posting. Default-nya
+                    akan memakai <code>get_the_ID()</code> (jadi ideal ditaruh pada Single Post). Atribut yang tersedia:
+                </p>
+                <ul style="margin:0 0 20px 18px; color:#444; line-height:1.6;">
+                    <li><code>post_id</code> — ID posting (opsional; default <code>get_the_ID()</code>)</li>
+                    <li><code>format</code> — <code>number</code> atau <code>compact</code> (misal 1.2K, 3.4M)</li>
+                    <li><code>before</code> — HTML/text di depan angka</li>
+                    <li><code>after</code> — HTML/text di belakang angka</li>
+                    <li><code>class</code> — CSS class untuk wrapper <code>&lt;span&gt;</code></li>
+                </ul>
+
+                <div class="shortcode-examples" style="display:grid;grid-template-columns:1fr 1fr;gap:30px;">
+                    <div>
+                        <h4 style="color:#23282d;margin-bottom:15px;">🎯 Basic (di Single Post)</h4>
+                        <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                            <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-hits]')">[velocity-hits]</span>
+                            <button onclick="copyToClipboard('[velocity-hits]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">
+                                Copy
+                            </button>
+                        </div>
+                        <div style="font-size:13px;color:#666;">Memakai <code>get_the_ID()</code> sebagai target.</div>
+                    </div>
+                    <div>
+                        <h4 style="color:#23282d;margin-bottom:15px;">⚙️ Advanced</h4>
+                        <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                            <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-hits post_id=&quot;123&quot; format=&quot;compact&quot; before=&quot;&quot; after=&quot; views&quot;]')">
+                                [velocity-hits post_id="123" format="compact" before="" after=" views"]
+                            </span>
+                            <button onclick="copyToClipboard('[velocity-hits post_id=&quot;123&quot; format=&quot;compact&quot; before=&quot;&quot; after=&quot; views&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">
+                                Copy
+                            </button>
+                        </div>
+                        <div style="font-size:13px;color:#666;">Pakai ID tertentu + format singkat + label.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Tables -->
+            <div class="tables-section" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0;">
+                <div class="table-container" style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-top:0;color:#23282d;">🏆 Halaman Teratas (30 Hari Terakhir)</h3>
+                    <table class="widefat striped" style="margin-top:15px;">
+                        <thead>
+                            <tr><th>Page URL</th><th>Pengunjung Unik</th><th>Total Tampilan</th></tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($page_stats)) : ?>
+                            <tr><td colspan="3" style="text-align:center;color:#666;">No data available</td></tr>
+                        <?php else: foreach ($page_stats as $page): ?>
+                            <tr>
+                                <td>
+                                    <?php
+                                    $full = home_url($page->page_url);
+                                    echo '<a href="'.esc_url($full).'" target="_blank" rel="noopener noreferrer"><code>'.esc_html($page->page_url).'</code></a>';
+                                    ?>
+                                </td>
+                                <td><?php echo number_format_i18n((int)$page->unique_visitors); ?></td>
+                                <td><?php echo number_format_i18n((int)$page->total_views); ?></td>
+                            </tr>
+                        <?php endforeach; endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-container" style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-top:0;color:#23282d;">🔗 Rujukan Teratas (30 Hari Terakhir)</h3>
+                    <table class="widefat striped" style="margin-top:15px;">
+                        <thead>
+                            <tr><th>Referrer</th><th>Visits</th></tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($referer_stats)) : ?>
+                            <tr><td colspan="2" style="text-align:center;color:#666;">No data available</td></tr>
+                        <?php else: foreach ($referer_stats as $ref): ?>
+                            <tr>
+                                <td><code><?php echo esc_html(parse_url($ref->referer, PHP_URL_HOST) ?: $ref->referer); ?></code></td>
+                                <td><?php echo number_format_i18n((int)$ref->visits); ?></td>
+                            </tr>
+                        <?php endforeach; endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+        (function(){
+            const dailyData = <?php echo wp_json_encode($daily_payload); ?>;
+            const pageData  = <?php echo wp_json_encode($page_payload); ?>;
+
+            const dailyLabels = dailyData.map(i => i.date);
+            const uniqueVisitsData = dailyData.map(i => i.unique_visits);
+            const totalVisitsData  = dailyData.map(i => i.total_visits);
+
+            const dailyCtx = document.getElementById('dailyVisitsChart').getContext('2d');
+            new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: dailyLabels,
+                    datasets: [
+                        { label: 'Pengunjung Unik', data: uniqueVisitsData, borderColor: '#0073aa', backgroundColor: 'rgba(0,115,170,0.1)', tension: .4, fill: true },
+                        { label: 'Total Kunjungan', data: totalVisitsData,  borderColor: '#00a32a', backgroundColor: 'rgba(0,163,42,0.1)', tension: .4, fill: false }
+                    ]
+                },
+                options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true } }, plugins:{ legend:{ position:'top' } } }
+            });
+
+            const pageLabels = pageData.map(i => i.url);
+            const pageViews  = pageData.map(i => i.views);
+
+            const pageCtx = document.getElementById('topPagesChart').getContext('2d');
+            new Chart(pageCtx, {
+                type: 'bar',
+                data: { labels: pageLabels, datasets: [{ label:'Page Views', data: pageViews, backgroundColor:['#0073aa','#00a32a','#d63638','#ff922b','#7c3aed','#db2777','#059669','#dc2626'] }] },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    scales:{ y:{ beginAtZero:true }, x:{ ticks:{ maxRotation:45, callback:(v,i)=>{ const l=pageLabels[i]||''; return l.length>20?l.substring(0,20)+'…':l; } } } },
+                    plugins:{ legend:{ display:false } }
+                }
+            });
+
+            window.copyToClipboard = function(text){
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(showCopySuccess);
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+                    document.body.appendChild(ta); ta.select();
+                    try { document.execCommand('copy'); showCopySuccess(); } catch(e){}
+                    document.body.removeChild(ta);
+                }
+            };
+            function showCopySuccess(){
+                const el=document.createElement('div');
+                el.style.cssText='position:fixed;top:50px;right:20px;background:#00a32a;color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:all .3s';
+                el.textContent='✅ Shortcode copied to clipboard!';
+                document.body.appendChild(el);
+                setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-20px)';setTimeout(()=>document.body.removeChild(el),300)},2000);
+            }
+        })();
+        </script>
+
+        <style>
+        @media (max-width: 768px){
+            .stats-summary,.charts-section,.tables-section,.shortcode-examples{grid-template-columns:1fr!important}
+        }
+        .chart-container canvas{height:200px!important}
+        .table-container table{font-size:14px}
+        .table-container code{background:#f1f1f1;padding:2px 6px;border-radius:4px;font-size:12px}
+        </style>
+        <?php
+    }
+
+
+
 }
 
 // Initialize the Pengaturan Admin page

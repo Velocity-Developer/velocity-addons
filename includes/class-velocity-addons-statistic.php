@@ -1,446 +1,509 @@
 <?php
-
 /**
- * Register all actions and filters for the plugin
- *
+ * Visitor Statistics functionality
  * @link       https://velocitydeveloper.com
  * @since      1.0.0
- *
  * @package    Velocity_Addons
  * @subpackage Velocity_Addons/includes
  */
 
-/**
- * Register all actions and filters for the plugin.
- *
- * Maintain a list of all hooks that are registered throughout
- * the plugin, and register them with the WordPress API. Call the
- * run function to execute the list of actions and filters.
- *
- * @package    Velocity_Addons
- * @subpackage Velocity_Addons/includes
- * @author     Velocity <bantuanvelocity@gmail.com>
- */
+if ( ! class_exists('Velocity_Addons_Statistic') ) :
 
-class Velocity_Addons_Statistic
-{
-    public function __construct()
-    {
+class Velocity_Addons_Statistic {
 
-        $statistik_velocity = get_option('statistik_velocity', '1');
-        if ($statistik_velocity !== '1')
-            return false;
+    /** Tables (hanya referensi nama) */
+    private $logs_table;
+    private $daily_stats_table;
+    private $monthly_stats_table;
+    private $page_stats_table;
+    private $referrer_stats_table;
+    private $daily_unique_table; // penanda unique harian (atomic)
 
-        // Inisialisasi sesi jika belum diinisialisasi
-        if (session_id() === '') {
-            session_start();
-        }
+    /** Popular posts helper */
+    private $visitor_id = '';
+    private $hit_window = 240; // detik (4 menit)
 
-        // Panggil fungsi untuk cek dan buat tabel database jika perlu
-        self::check_and_create_table();
-        add_action('wp_head', array($this, 'record_page_visit'));
-
-        // Tambahkan shortcode
-        add_shortcode('statistik_kunjungan', array($this, 'display_statistik_kunjungan'));
-
-        // Tambahkan count hit di kolom post
-        add_filter('manage_post_posts_columns', array($this, 'statistik_posts_columns'));
-        add_action('manage_post_posts_custom_column', array($this, 'statistik_posts_column'), 10, 2);
-        add_filter('manage_page_posts_columns', array($this, 'statistik_posts_columns'));
-        add_action('manage_page_posts_custom_column', array($this, 'statistik_posts_column'), 10, 2);
-
-        // Tambahkan action update meta 'hit'
-        add_action('wp_head', array($this, 'post_single_update_hit'));
-
-        //Tambahkan aksi saat tombol reset ditekan
-        // add_action('admin_post_reset_table', array($this, 'reset_statistik'));
-
-        // Tambahkan aksi untuk AJAX
-        add_action('wp_ajax_reset_data', array($this, 'reset_statistik'));
-    }
-
-    public static function check_and_create_table()
-    {
+    public function __construct() {
         global $wpdb;
 
-        $version_db = get_option('version_db', 1);
-        $current_version = 3.3;
+        $this->logs_table           = $wpdb->prefix . 'vd_visitor_logs';
+        $this->daily_stats_table    = $wpdb->prefix . 'vd_daily_stats';
+        $this->monthly_stats_table  = $wpdb->prefix . 'vd_monthly_stats';
+        $this->page_stats_table     = $wpdb->prefix . 'vd_page_stats';
+        $this->referrer_stats_table = $wpdb->prefix . 'vd_referrer_stats';
+        $this->daily_unique_table   = $wpdb->prefix . 'vd_daily_unique';
 
-        // Cek apakah versi database lebih kecil dari versi sekarang
-        if ($version_db < $current_version) {
-            // Nama tabel
-            $table_name = $wpdb->prefix . 'vd_statistic';
+        // Cookie visitor anonim utk throttle per user
+        add_action('init', array($this, 'ensure_visitor_id'));
 
-            // SQL untuk membuat tabel
-            $sql = "CREATE TABLE $table_name (
-                id INT(11) NOT NULL AUTO_INCREMENT,
-                sesi VARCHAR(255) NOT NULL,
-                post_id INT(11) NOT NULL,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (id)
-            ) ENGINE=InnoDB";
+        // Track kunjungan + update meta 'hit'
+        add_action('wp', array($this, 'track_visitor'));
 
-            // Eksekusi query untuk membuat tabel
-            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-            dbDelta($sql);
+        // Cron harian (agregasi + cleanup)
+        add_action('vd_daily_aggregation', array($this, 'run_daily_aggregation'));
 
-            // Update versi database
-            update_option('version_db', $current_version);
-        }
+        // Shortcodes
+        add_shortcode('velocity-statistics', array($this, 'statistics_shortcode'));
+        add_shortcode('velocity-hits', array($this, 'shortcode_post_hit'));
     }
 
-    public static function record_page_visit()
-    {
-        // Mendapatkan data kunjungan
-        global $post;
-        $sesi           = session_id();
-        $post_id        = isset($post->ID) ? $post->ID : '';
-        $timestamp      = current_time('mysql');
-        $transient_name = 'velocity_statistic_' . $sesi . $post_id;
+    /** ==================================
+     *  Main tracker + meta 'hit' updater
+     *  ================================== */
+    public function track_visitor() {
+        // Hanya front-end biasa
+        if ( is_admin() || wp_doing_ajax() || wp_doing_cron() ) return;
 
-        // Cek apakah transient sudah expired
-        if (false == get_transient($transient_name)) {
+        // Skip bot umum
+        $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        if ( $this->is_bot($ua) ) return;
 
-            // Memasukkan data kunjungan ke dalam tabel database
-            global $wpdb;
-            $table_name = $wpdb->prefix . 'vd_statistic';
+        global $wpdb;
 
-            $wpdb->insert(
-                $table_name,
-                array(
-                    'sesi' => $sesi,
-                    'post_id' => $post_id,
-                    'timestamp' => $timestamp,
-                ),
-                array(
-                    '%s',
-                    '%d',
-                    '%s',
-                )
-            );
+        $visitor_ip = $this->get_visitor_ip();
+        $user_agent = $ua ? sanitize_text_field($ua) : '';
+        $page_url   = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) );
+        $referer    = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw( wp_unslash($_SERVER['HTTP_REFERER']) ) : '';
 
-            // Set transient untuk mencegah penghitungan views yang berulang dalam 4 menit
-            set_transient($transient_name, 1, 4 * MINUTE_IN_SECONDS);
-        }
-    }
+        // Konsisten timezone WP
+        $ts         = current_time('timestamp');
+        $visit_date = wp_date('Y-m-d', $ts);
+        $visit_time = wp_date('H:i:s', $ts);
 
-    public static function display_admin_page()
-    {
-        // Tampilkan konten halaman admin di sini
-        echo '<div class="wrap">';
-        echo '<h1>Statistik Kunjungan</h1><br>';
-
-        // Tampilkan tabel statistik
-        echo '<table class="widefat striped">';
-        echo '<thead>';
-        echo '<tr>';
-        echo '<th>Statistik</th>';
-        echo '<th>Jumlah</th>';
-        echo '<th>Shortcode</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
-
-        // Tampilkan statistik kunjungan
-        $today_unique_visitors = self::get_today_unique_visitors();
-        $today_visits = self::get_today_visits();
-        $unique_visitors = self::get_unique_visitors();
-        $total_visits = self::get_total_visits();
-        $online_visitors = self::get_online_visitors();
-
-        echo '<tr>';
-        echo '<td>Pengunjung Hari Ini</td>';
-        echo '<td>' . $today_unique_visitors . ' Pengunjung</td>';
-        echo '<td><code>[statistik_kunjungan stat=today_visitors]</code></td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Kunjungan Hari Ini</td>';
-        echo '<td>' . $today_visits . ' Kunjungan</td>';
-        echo '<td><code>[statistik_kunjungan stat=today_visits]</code></td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Total Pengunjung</td>';
-        echo '<td>' . $unique_visitors . ' Pengunjung</td>';
-        echo '<td><code>[statistik_kunjungan stat=total_visitors]</code></td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Total Kunjungan</td>';
-        echo '<td>' . $total_visits . ' Kunjungan</td>';
-        echo '<td><code>[statistik_kunjungan stat=total_visits]</code></td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Pengunjung Online</td>';
-        echo '<td>' . $online_visitors . ' Pengunjung</td>';
-        echo '<td><code>[statistik_kunjungan stat=online]</code></td>';
-        echo '</tr>';
-        echo '</tbody>';
-        echo '</table>';
-
-        echo '<br><h3>Shortcode</h3>';
-        echo '<table class="widefat striped">';
-        echo '<tr>';
-        echo '<td>Shortcode lengkap</td>';
-        echo '<td><code>[statistik_kunjungan]</code></td>';
-        echo '</tr>';
-        echo '<tr>';
-        echo '<td>Shortcode Per Post/Page</td>';
-        echo '<td>';
-        echo '<code>[statistik_kunjungan stat=post]</code>';
-        echo '<div>Untuk ID Post akan diambil dari global $post;</div>';
-        echo '<div>atau jia ingin set id post gunakan</div>';
-        echo '<code>[statistik_kunjungan stat=post id=50]</code>';
-        echo '</td>';
-        echo '</tr>';
-        echo '</table>';
-
-        // reset statistik
-        echo '<div class="wrap">';
-        echo '<h2><strong>Reset Data Statistik</strong></h2>';
-        echo '<button id="reset-data" class="button-primary">Reset Statistik</button>';
-        echo '<div id="reset-message"></div>';
-        echo '</div>';
-        echo '</div>';
-    }
-
-    /// [statistik_kunjungan]
-    public static function display_statistik_kunjungan($atts)
-    {
-        ob_start(); // Mulai buffering output
-
-        ///attribut shortcode
-        $atribut = shortcode_atts(array(
-            'stat'  => '',
-            'id'    => '',
-        ), $atts);
-        $stat   = $atribut['stat'];
-        $postID = $atribut['id'];
-
-        if ($stat) {
-
-            switch ($stat) {
-                case 'today_visits':
-                    echo self::get_today_visits();
-                    break;
-                case 'total_visitors':
-                    echo self::get_unique_visitors();
-                    break;
-                case 'total_visits':
-                    echo self::get_total_visits();
-                    break;
-                case 'online':
-                    echo self::get_online_visitors();
-                    break;
-                case 'post':
-                    if (empty($postID)) {
-                        global $post;
-                        $postID = $post->ID;
-                    }
-                    echo self::get_count_post($postID);
-                    break;
-                default:
-                    echo self::get_today_unique_visitors();
-                    break;
+        // Hit per post dengan throttle
+        if ( is_singular() ) {
+            $post_id = get_queried_object_id();
+            if ( $post_id ) {
+                $this->maybe_update_post_hit( $post_id, 'session' );
             }
-        } else {
+        }
 
-            // Tampilkan list group statistik
-            echo '<ul class="list-group list-group-flush" style="--bs-list-group-bg: transparent;">';
+        // Insert log atomic (hindari duplikasi IP+URL+DATE)
+        $inserted = $wpdb->query( $wpdb->prepare(
+            "INSERT IGNORE INTO {$this->logs_table}
+             (visitor_ip, user_agent, page_url, referer, visit_date, visit_time)
+             VALUES (%s, %s, %s, %s, %s, %s)",
+            $visitor_ip, $user_agent, $page_url, $referer, $visit_date, $visit_time
+        ) );
 
-            // Tampilkan statistik kunjungan
-            $today_unique_visitors = self::get_today_unique_visitors();
-            $today_visits = self::get_today_visits();
-            $unique_visitors = self::get_unique_visitors();
-            $total_visits = self::get_total_visits();
-            $online_visitors = self::get_online_visitors();
+        if ( $inserted ) {
+            // Unique harian atomic
+            $is_unique_today = (int) $wpdb->query( $wpdb->prepare(
+                "INSERT IGNORE INTO {$this->daily_unique_table} (visitor_ip, stat_date) VALUES (%s, %s)",
+                $visitor_ip, $visit_date
+            ) );
 
-            $stats = array(
-                'Pengunjung Hari Ini' => $today_unique_visitors,
-                'Kunjungan Hari Ini' => $today_visits,
-                'Total Pengunjung' => $unique_visitors,
-                'Total Kunjungan' => $total_visits,
-                'Pengunjung Online' => $online_visitors,
+            // Agregasi real-time
+            $this->update_daily_stats( $visit_date, $is_unique_today ? 1 : 0 );
+            $this->update_page_stats(  $page_url,  $visit_date, 1 );
+            $this->update_referrer_stats( $referer, $visit_date );
+        }
+    }
+
+    /** ============================
+     *  Helper: detect IP & bot
+     *  ============================ */
+    private function get_visitor_ip() {
+        $candidates = array('HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP','REMOTE_ADDR');
+        foreach ($candidates as $key) {
+            if ( ! empty($_SERVER[$key]) ) {
+                $ips = explode(',', $_SERVER[$key]);
+                foreach ($ips as $ip) {
+                    $ip = trim($ip);
+                    if ( filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) ) {
+                        $ip = apply_filters('vd_raw_visitor_ip', $ip);
+                        $mode = apply_filters('vd_ip_mode', 'plain'); // 'plain'|'masked'|'hash'
+                        if ($mode === 'masked' && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                            $parts = explode('.', $ip);
+                            $ip = $parts[0].'.'.$parts[1].'.'.$parts[2].'.0';
+                        } elseif ($mode === 'hash') {
+                            $salt = apply_filters('vd_ip_hash_salt', wp_salt('auth'));
+                            $ip = hash('sha256', $ip.$salt);
+                        }
+                        return $ip;
+                    }
+                }
+            }
+        }
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '0.0.0.0';
+        $ip = apply_filters('vd_raw_visitor_ip', $ip);
+        $mode = apply_filters('vd_ip_mode', 'plain');
+        if ($mode === 'masked' && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $parts = explode('.', $ip);
+            $ip = $parts[0].'.'.$parts[1].'.'.$parts[2].'.0';
+        } elseif ($mode === 'hash') {
+            $salt = apply_filters('vd_ip_hash_salt', wp_salt('auth'));
+            $ip = hash('sha256', $ip.$salt);
+        }
+        return $ip;
+    }
+
+    private function is_bot($ua) {
+        if (empty($ua)) return false;
+        return (bool) preg_match('~(bot|spider|crawl|slurp|bingpreview|yandex|ahrefs|facebookexternalhit|bytespider|semrush|duckduckbot|lighthouse|headlesschrome)~i', $ua);
+    }
+
+    /** ======================================
+     *  Aggregation updaters (using flags)
+     *  ====================================== */
+    private function update_daily_stats($visit_date, $is_unique_today) {
+        global $wpdb;
+        $wpdb->query( $wpdb->prepare(
+            "INSERT INTO {$this->daily_stats_table} (stat_date, unique_visitors, total_pageviews)
+             VALUES (%s, %d, 1)
+             ON DUPLICATE KEY UPDATE
+               unique_visitors = unique_visitors + CASE WHEN %d = 1 THEN 1 ELSE 0 END,
+               total_pageviews = total_pageviews + 1",
+            $visit_date, (int)$is_unique_today, (int)$is_unique_today
+        ) );
+    }
+
+    private function update_page_stats($page_url, $visit_date, $is_unique_page_today) {
+        global $wpdb;
+        $wpdb->query( $wpdb->prepare(
+            "INSERT INTO {$this->page_stats_table} (page_url, stat_date, unique_visitors, total_views)
+             VALUES (%s, %s, %d, 1)
+             ON DUPLICATE KEY UPDATE
+               unique_visitors = unique_visitors + CASE WHEN %d = 1 THEN 1 ELSE 0 END,
+               total_views = total_views + 1",
+            $page_url, $visit_date, (int)$is_unique_page_today, (int)$is_unique_page_today
+        ) );
+    }
+
+    private function update_referrer_stats($referer, $visit_date) {
+        if ( empty($referer) ) return;
+        global $wpdb;
+        $referrer_domain = parse_url($referer, PHP_URL_HOST) ?: $referer;
+        $wpdb->query( $wpdb->prepare(
+            "INSERT INTO {$this->referrer_stats_table} (referrer_domain, stat_date, total_visits)
+             VALUES (%s, %s, 1)
+             ON DUPLICATE KEY UPDATE total_visits = total_visits + 1",
+            $referrer_domain, $visit_date
+        ) );
+    }
+
+    /** ===========================
+     *  Cron: monthly + cleanup
+     *  =========================== */
+    public function run_daily_aggregation() {
+        $this->aggregate_monthly_stats();
+        $this->cleanup_old_logs();
+    }
+
+    private function aggregate_monthly_stats() {
+        global $wpdb;
+        $ts = current_time('timestamp');
+        $current_month = (int) wp_date('n', $ts);
+        $current_year  = (int) wp_date('Y', $ts);
+
+        $monthly_data = $wpdb->get_row( $wpdb->prepare(
+            "SELECT 
+                SUM(unique_visitors) AS unique_visitors,
+                SUM(total_pageviews) AS total_pageviews
+             FROM {$this->daily_stats_table}
+             WHERE MONTH(stat_date) = %d AND YEAR(stat_date) = %d",
+            $current_month, $current_year
+        ) );
+
+        if ( $monthly_data ) {
+            $wpdb->query( $wpdb->prepare(
+                "INSERT INTO {$this->monthly_stats_table}
+                    (stat_year, stat_month, unique_visitors, total_pageviews)
+                 VALUES (%d, %d, %d, %d)
+                 ON DUPLICATE KEY UPDATE
+                    unique_visitors = VALUES(unique_visitors),
+                    total_pageviews = VALUES(total_pageviews)",
+                $current_year, $current_month,
+                (int) $monthly_data->unique_visitors,
+                (int) $monthly_data->total_pageviews
+            ) );
+        }
+    }
+
+    private function cleanup_old_logs() {
+        global $wpdb;
+        $wpdb->query(
+            "DELETE FROM {$this->logs_table} 
+             WHERE visit_date < DATE_SUB(CURDATE(), INTERVAL 90 DAY)"
+        );
+    }
+
+    /** ===========================
+     *  Reader APIs
+     *  =========================== */
+    public function get_daily_stats($days = 30) {
+        global $wpdb;
+        return $wpdb->get_results( $wpdb->prepare(
+            "SELECT stat_date AS visit_date, unique_visitors AS unique_visits, total_pageviews AS total_visits
+             FROM {$this->daily_stats_table}
+             WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL %d DAY)
+             ORDER BY stat_date ASC",
+            (int)$days
+        ) );
+    }
+
+    public function get_page_stats($days = 30) {
+        global $wpdb;
+        return $wpdb->get_results( $wpdb->prepare(
+            "SELECT page_url, SUM(unique_visitors) AS unique_visitors, SUM(total_views) AS total_views
+             FROM {$this->page_stats_table}
+             WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL %d DAY)
+             GROUP BY page_url
+             ORDER BY total_views DESC
+             LIMIT 10",
+            (int)$days
+        ) );
+    }
+
+    public function get_referer_stats($days = 30) {
+        global $wpdb;
+        return $wpdb->get_results( $wpdb->prepare(
+            "SELECT referrer_domain AS referer, SUM(total_visits) AS visits
+             FROM {$this->referrer_stats_table}
+             WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL %d DAY)
+             GROUP BY referrer_domain
+             ORDER BY visits DESC
+             LIMIT 10",
+            (int)$days
+        ) );
+    }
+
+    public function get_summary_stats() {
+        global $wpdb;
+
+        $today = $wpdb->get_row(
+            "SELECT unique_visitors, total_pageviews AS total_visits
+             FROM {$this->daily_stats_table}
+             WHERE stat_date = CURDATE()"
+        );
+
+        $this_week = $wpdb->get_row(
+            "SELECT SUM(unique_visitors) AS unique_visitors, SUM(total_pageviews) AS total_visits
+             FROM {$this->daily_stats_table}
+             WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
+        );
+
+        $this_month = $wpdb->get_row(
+            "SELECT SUM(unique_visitors) AS unique_visitors, SUM(total_pageviews) AS total_visits
+             FROM {$this->daily_stats_table}
+             WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
+        );
+
+        $all_time = $wpdb->get_row(
+            "SELECT 
+                (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->monthly_stats_table}) +
+                (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->daily_stats_table}
+                 WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS unique_visitors,
+                (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->monthly_stats_table}) +
+                (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->daily_stats_table}
+                 WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS total_visits"
+        );
+
+        return array(
+            'today'      => $today      ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],
+            'this_week'  => $this_week  ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],
+            'this_month' => $this_month ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],
+            'all_time'   => $all_time   ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],
+        );
+    }
+
+    /** ===========================
+     *  Shortcodes (Bootstrap 5)
+     *  =========================== */
+    public function statistics_shortcode($atts) {
+        $atts = shortcode_atts(array(
+            'style'   => 'minimal',   // cards|minimal
+            'show'    => 'all',       // all|today|total
+            'columns' => '1',         // 1|2|3|4
+        ), $atts, 'velocity-statistics');
+
+        $stats = $this->get_summary_stats();
+
+        // Kumpulkan item yang akan ditampilkan
+        $items = array();
+        if ( $atts['show'] === 'all' || $atts['show'] === 'today' ) {
+            $items[] = array(
+                'label' => __('Kunjungan Hari Ini', 'velocity-addons'),
+                'value' => number_format_i18n( (int) ($stats['today']->total_visits ?? 0) ),
             );
+            $items[] = array(
+                'label' => __('Pengunjung Hari Ini', 'velocity-addons'),
+                'value' => number_format_i18n( (int) ($stats['today']->unique_visitors ?? 0) ),
+            );
+        }
+        if ( $atts['show'] === 'all' || $atts['show'] === 'total' ) {
+            $items[] = array(
+                'label' => __('Total Kunjungan', 'velocity-addons'),
+                'value' => number_format_i18n( (int) ($stats['all_time']->total_visits ?? 0) ),
+            );
+            $items[] = array(
+                'label' => __('Total Pengunjung', 'velocity-addons'),
+                'value' => number_format_i18n( (int) ($stats['all_time']->unique_visitors ?? 0) ),
+            );
+        }
 
-            foreach ($stats as $label => $value) {
-                echo '<li class="list-group-item bg-transparent px-0 d-flex justify-content-between align-items-center">';
-                echo $label;
-                echo '<span class="badge bg-secondary rounded-pill">' . $value . '</span>';
+        // Mapping kolom → grid Bootstrap
+        $cols = (string) $atts['columns'];
+        switch ($cols) {
+            case '1': $col_class = 'col-12'; break;
+            case '2': $col_class = 'col-12 col-md-6'; break;
+            case '3': $col_class = 'col-12 col-md-4'; break;
+            case '4': $col_class = 'col-12 col-md-3'; break;
+            default:  $col_class = 'col-12'; break;
+        }
+
+        ob_start();
+
+        if ($atts['style'] === 'minimal') {
+            echo '<ul class="list-group list-group-flush m-0 p-0">';
+            foreach ($items as $it) {
+                echo '<li class="bg-transparent px-0 list-group-item d-flex justify-content-between align-items-center">';
+                echo '<span>'.esc_html($it['label']).'</span>';
+                echo '<span class="fw-bold">'.esc_html($it['value']).'</span>';
                 echo '</li>';
             }
-
             echo '</ul>';
+        } else {
+            echo '<div class="row g-3 my-3">';
+            foreach ($items as $it) {
+                echo '<div class="'.esc_attr($col_class).'">';
+                echo '  <div class="card shadow-sm h-100">';
+                echo '    <div class="card-body text-center">';
+                echo '      <div class="display-6 fw-bold mb-1 text-dark">'.esc_html($it['value']).'</div>';
+                echo '      <div class="text-uppercase text-muted small fw-semibold">'.esc_html($it['label']).'</div>';
+                echo '    </div>';
+                echo '  </div>';
+                echo '</div>';
+            }
+            echo '</div>';
         }
 
         return ob_get_clean();
     }
 
-    public static function get_today_visits()
-    {
-        global $wpdb;
+    /**
+     * Shortcode: [velocity-hits post_id="123" format="number|compact" before="" after=" views" class="badge bg-secondary velocity-hits-count"]
+     * Default class = badge Bootstrap 5.
+     */
+    public function shortcode_post_hit($atts) {
+        $atts = shortcode_atts(array(
+            'post_id' => 0,
+            'format'  => 'compact', // number|compact
+            'before'  => '',
+            'after'   => '',
+            'class'   => 'velocity-hits-count',
+        ), $atts, 'velocity-hits');
 
-        // Nama tabel
-        $table_name = $wpdb->prefix . 'vd_statistic';
+        $post_id = absint($atts['post_id']);
+        if ( ! $post_id ) {
+            $post_id = get_the_ID();
+        }
+        if ( ! $post_id ) {
+            return '';
+        }
 
-        // Mendapatkan tanggal hari ini
-        $today_date = date('Y-m-d');
+        $raw = get_post_meta($post_id, 'hit', true);
+        $hit = is_numeric($raw) ? (int) $raw : 0;
 
-        // Query untuk mendapatkan jumlah kunjungan hari ini
-        $today_visits = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM $table_name WHERE DATE(timestamp) = %s",
-                $today_date
-            )
-        );
+        $display = ($atts['format'] === 'compact') ? $this->compact_number($hit) : number_format_i18n($hit);
 
-        return $today_visits;
+        $html  = '';
+        $html .= $atts['before'];
+        $html .= '<span class="' . esc_attr($atts['class']) . '" data-post="' . esc_attr($post_id) . '">' . esc_html($display) . '</span>';
+        $html .= $atts['after'];
+
+        return $html;
     }
 
-    public static function get_today_unique_visitors()
-    {
-        global $wpdb;
-
-        // Nama tabel
-        $table_name = $wpdb->prefix . 'vd_statistic';
-
-        // Mendapatkan tanggal hari ini
-        $today_date = date('Y-m-d');
-
-        // Query untuk mendapatkan jumlah pengunjung unik hari ini
-        $today_unique_visitors = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(DISTINCT sesi) FROM $table_name WHERE DATE(timestamp) = %s",
-                $today_date
-            )
-        );
-
-        return $today_unique_visitors;
+    /** Helper: format 1.2K / 3.4M */
+    private function compact_number($n) {
+        $n = (int) $n;
+        if ( $n >= 1000000000 ) return round($n/1000000000, 1) . 'B';
+        if ( $n >= 1000000 )    return round($n/1000000, 1) . 'M';
+        if ( $n >= 1000 )       return round($n/1000, 1) . 'K';
+        return (string) $n;
     }
 
-    public static function get_unique_visitors()
-    {
-        global $wpdb;
-
-        // Nama tabel
-        $table_name = $wpdb->prefix . 'vd_statistic';
-
-        // Query untuk mendapatkan jumlah pengunjung unik
-        $unique_visitors = $wpdb->get_var(
-            "SELECT COUNT(DISTINCT sesi) FROM $table_name"
-        );
-
-        return $unique_visitors;
+    /** ======================================
+     *  Popular posts: cookie + throttle + SQL
+     *  ====================================== */
+    public function ensure_visitor_id() {
+        if ( ! empty($_COOKIE['vd_sid']) ) {
+            $this->visitor_id = sanitize_text_field($_COOKIE['vd_sid']);
+            return;
+        }
+        $this->visitor_id = wp_generate_uuid4();
+        @setcookie('vd_sid', $this->visitor_id, array(
+            'expires'  => time() + 30 * DAY_IN_SECONDS,
+            'path'     => COOKIEPATH ?: '/',
+            'domain'   => COOKIE_DOMAIN,
+            'secure'   => is_ssl(),
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ));
+        $_COOKIE['vd_sid'] = $this->visitor_id;
     }
 
-    public static function get_total_visits()
-    {
-        global $wpdb;
+    private function maybe_update_post_hit($post_id, $mode = 'session') {
+        if ( ! $post_id ) return;
 
-        // Nama tabel
-        $table_name = $wpdb->prefix . 'vd_statistic';
+        $window = (int) apply_filters('vd_hit_window', $this->hit_window);
+        $window = $window > 0 ? $window : 240;
 
-        // Query untuk mendapatkan total kunjungan
-        $total_visits = $wpdb->get_var(
-            "SELECT COUNT(*) FROM $table_name"
-        );
+        switch ($mode) {
+            case 'unique_day':
+                $key = sprintf('vd_hitd_%d_%s_%s', $post_id, md5($this->visitor_id ?: $this->get_visitor_ip()), wp_date('Ymd', current_time('timestamp')));
+                if ( false === get_transient($key) ) {
+                    $this->increment_post_meta_atomic($post_id, 'hit', 1);
+                    $ttl = DAY_IN_SECONDS - ( current_time('timestamp') - strtotime(wp_date('Y-m-d 00:00:00', current_time('timestamp'))) );
+                    set_transient($key, 1, max(60, $ttl));
+                }
+                break;
 
-        return $total_visits;
-    }
+            case 'always':
+                $this->increment_post_meta_atomic($post_id, 'hit', 1);
+                break;
 
-    public static function get_online_visitors()
-    {
-        global $wpdb;
-
-        // Nama tabel
-        $table_name = $wpdb->prefix . 'vd_statistic';
-
-        // Interval waktu untuk dianggap sebagai "online" (dalam menit)
-        $online_interval = 5; // Anda dapat mengganti sesuai kebutuhan
-
-        // Waktu saat ini
-        $current_time = current_time('mysql');
-
-        // Waktu beberapa menit yang lalu
-        $online_threshold = date('Y-m-d H:i:s', strtotime("-$online_interval minutes", strtotime($current_time)));
-
-        // Query untuk mendapatkan jumlah pengunjung online
-        $online_visitors = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(DISTINCT sesi) FROM $table_name WHERE timestamp >= %s",
-                $online_threshold
-            )
-        );
-
-        return $online_visitors;
-    }
-
-    public static function get_count_post($post_id)
-    {
-        global $wpdb;
-
-        // Nama tabel
-        $table_name = $wpdb->prefix . 'vd_statistic';
-
-        // Query untuk mendapatkan jumlah pengunjung berdasarkan ID Post
-        $totals = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM $table_name WHERE post_id = %s",
-                $post_id
-            )
-        );
-
-        return $totals;
-    }
-
-    public static function statistik_posts_columns($columns)
-    {
-        $columns['statistik'] = __('Hits', 'velocity-addons');
-        return $columns;
-    }
-
-    public static function statistik_posts_column($column, $post_id)
-    {
-        switch ($column) {
-            case 'statistik':
-                echo self::get_count_post($post_id);
+            case 'session':
+            default:
+                $sid = $this->visitor_id ?: md5($this->get_visitor_ip());
+                $key = sprintf('vd_hit_%d_%s', $post_id, md5($sid));
+                if ( false === get_transient($key) ) {
+                    $this->increment_post_meta_atomic($post_id, 'hit', 1);
+                    set_transient($key, 1, $window);
+                }
                 break;
         }
     }
 
-    //update meta hit untuk post & page
-    public static function post_single_update_hit()
-    {
-        if (is_singular('post') || is_page()) {
-            global $post;
-            $postID     = $post->ID;
-            $countKey   = 'hit';
-            $count      = get_post_meta($postID, $countKey, true);
-            $newcount   = self::get_count_post($postID);
-
-            update_post_meta($postID, $countKey, $newcount);
-        }
-    }
-
-    public static function reset_statistik()
-    {
+    private function increment_post_meta_atomic($post_id, $meta_key = 'hit', $by = 1) {
         global $wpdb;
-        // Nama tabel
-        $table_name = $wpdb->prefix . 'vd_statistic';
 
-        // Perintah SQL untuk menghapus semua data dari tabel
-        $wpdb->query("TRUNCATE TABLE $table_name");
-
-        // Query untuk mengambil semua post dan page
-        $posts = $wpdb->get_results("SELECT ID FROM {$wpdb->posts} WHERE post_type IN ('post', 'page')");
-
-        // Loop melalui setiap post dan page
-        foreach ($posts as $post) {
-            // Hapus meta hit
-            delete_post_meta($post->ID, 'hit');
+        // Pastikan baris meta ada; jika belum, buat 0 (unique add)
+        $exists = $wpdb->get_var( $wpdb->prepare(
+            "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id=%d AND meta_key=%s LIMIT 1",
+            $post_id, $meta_key
+        ) );
+        if ( ! $exists ) {
+            add_post_meta($post_id, $meta_key, 0, true);
         }
 
-        // Kembalikan respons JSON
-        wp_send_json_success('Semua data di tabel database dan meta post hit telah berhasil direset.');
+        // Increment atomik langsung di SQL (anti race condition)
+        $wpdb->query( $wpdb->prepare(
+            "UPDATE {$wpdb->postmeta}
+             SET meta_value = IF(meta_value REGEXP '^[0-9]+$', meta_value + %d, %d)
+             WHERE post_id=%d AND meta_key=%s",
+            (int)$by, (int)$by, (int)$post_id, $meta_key
+        ) );
+
+        // Sinkronkan object cache
+        wp_cache_delete($post_id, 'post_meta');
     }
 }
 
-$statistics_handler = new Velocity_Addons_Statistic();
+endif;
+
+/** Inisialisasi kelas setelah semua plugin siap (hindari output saat aktivasi) */
+add_action('plugins_loaded', function () {
+    new Velocity_Addons_Statistic();
+});
