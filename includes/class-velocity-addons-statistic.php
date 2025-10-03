@@ -37,7 +37,7 @@ class Velocity_Addons_Statistic {
         add_action('init', array($this, 'ensure_visitor_id'));
 
         // Track kunjungan + update meta 'hit'
-        add_action('wp', array($this, 'track_visitor'));
+        add_action('template_redirect', array($this, 'track_visitor'), 11);
 
         // Cron harian (agregasi + cleanup)
         add_action('vd_daily_aggregation', array($this, 'run_daily_aggregation'));
@@ -54,23 +54,38 @@ class Velocity_Addons_Statistic {
         // Hanya front-end biasa
         if ( is_admin() || wp_doing_ajax() || wp_doing_cron() ) return;
 
+        // Metode HTTP yang dihitung saja
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        if ( ! in_array($method, ['GET','HEAD'], true) ) return;
+
         // Skip bot umum
         $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
         if ( $this->is_bot($ua) ) return;
+
+        // Abaikan request internal/asset/preview dsb.
+        if ( $this->should_ignore_request() ) return;
+
+        // Jangan rekam jika 404
+        if ( is_404() ) return;
 
         global $wpdb;
 
         $visitor_ip = $this->get_visitor_ip();
         $user_agent = $ua ? sanitize_text_field($ua) : '';
-        $page_url   = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) );
-        $referer    = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw( wp_unslash($_SERVER['HTTP_REFERER']) ) : '';
+
+        // Normalisasi URL → simpan path + whitelist query saja
+        $raw_uri  = wp_unslash($_SERVER['REQUEST_URI'] ?? '/');
+        $page_url = esc_url_raw( $this->normalize_path($raw_uri) );
+
+        // Referer (boleh kosong), simpan domain agregat di tabel referrer
+        $referer  = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw( wp_unslash($_SERVER['HTTP_REFERER']) ) : '';
 
         // Konsisten timezone WP
         $ts         = current_time('timestamp');
         $visit_date = wp_date('Y-m-d', $ts);
         $visit_time = wp_date('H:i:s', $ts);
 
-        // Hit per post dengan throttle
+        // 1) Hit per post dengan throttle
         if ( is_singular() ) {
             $post_id = get_queried_object_id();
             if ( $post_id ) {
@@ -78,7 +93,7 @@ class Velocity_Addons_Statistic {
             }
         }
 
-        // Insert log atomic (hindari duplikasi IP+URL+DATE)
+        // 2) Insert log atomic (hindari duplikasi IP+URL+DATE)
         $inserted = $wpdb->query( $wpdb->prepare(
             "INSERT IGNORE INTO {$this->logs_table}
              (visitor_ip, user_agent, page_url, referer, visit_date, visit_time)
@@ -87,17 +102,87 @@ class Velocity_Addons_Statistic {
         ) );
 
         if ( $inserted ) {
-            // Unique harian atomic
+            // 3) Unique harian atomic via tabel vd_daily_unique
             $is_unique_today = (int) $wpdb->query( $wpdb->prepare(
                 "INSERT IGNORE INTO {$this->daily_unique_table} (visitor_ip, stat_date) VALUES (%s, %s)",
                 $visitor_ip, $visit_date
             ) );
 
-            // Agregasi real-time
+            // 4) Update agregasi real-time
             $this->update_daily_stats( $visit_date, $is_unique_today ? 1 : 0 );
-            $this->update_page_stats(  $page_url,  $visit_date, 1 );
+            $this->update_page_stats(  $page_url,  $visit_date, 1 ); // log pertama utk IP+URL+DATE
             $this->update_referrer_stats( $referer, $visit_date );
         }
+    }
+
+    /** ============================
+     *  Helper: filter request & URL
+     *  ============================ */
+
+    /** Abaikan request yang tidak relevan untuk statistik */
+    private function should_ignore_request(): bool {
+        // Customizer/Preview builder
+        if ( function_exists('is_customize_preview') && is_customize_preview() ) return true;
+
+        $raw_uri = wp_unslash($_SERVER['REQUEST_URI'] ?? '/');
+        $parts   = wp_parse_url($raw_uri);
+        $path    = isset($parts['path']) ? $parts['path'] : '/';
+
+        // 1) Abaikan path internal & asset statis (generik)
+        $ignored_path_fragments = apply_filters('vd_ignored_path_fragments', [
+            '/wp-content/', '/wp-includes/', '/wp-admin/', '/wp-json', '/xmlrpc.php',
+        ]);
+        foreach ($ignored_path_fragments as $frag) {
+            if (strpos($path, $frag) !== false) return true;
+        }
+
+        // /feed, /sitemap*, robots.txt, favicon.ico
+        if ( preg_match('~/(?:feed(?:/.*)?|sitemap[^/]*|robots\.txt|favicon\.ico)$~i', $path) ) return true;
+
+        // Ekstensi asset statis (css/js/img/fonts/media/archives/map/json/pdf, dll.)
+        $ignored_exts = apply_filters('vd_ignored_file_exts', ['css','js','map','json','png','jpe?g','gif','webp','svg','ico','woff2?','ttf','eot','otf','mp4','mp3','wav','avi','mov','mkv','zip','rar','7z','gz','pdf']);
+        $ext_regex = '~\.(' . implode('|', $ignored_exts) . ')$~i';
+        if ( preg_match($ext_regex, $path) ) return true;
+
+        // 2) Abaikan GET param internal/editor/preview lainnya
+        $get = $_GET;
+
+        $ignore_get_keys = apply_filters('vd_ignore_query_keys', [
+            'customize_changeset_uuid','customize_theme','customize_messenger_channel','customize_autosaved',
+            'elementor-preview','fl_builder','wp_scrape_key','wp_scrape_nonce',
+            'preview','preview_id','preview_nonce',
+        ]);
+        foreach ($ignore_get_keys as $k) {
+            if ( isset($get[$k]) ) return true;
+        }
+        if ( isset($get['action']) && preg_match('~^(kirki-styles|oembed|heartbeat)$~i', $get['action']) ) {
+            return true;
+        }
+
+        // (Opsional) abaikan user login yang bisa edit
+        // if ( is_user_logged_in() && current_user_can('edit_posts') ) return true;
+
+        // Allow devs extend/override
+        return (bool) apply_filters('vd_should_ignore_request', false, $path, $get);
+    }
+
+    /** Simpan path + whitelist query param yang penting saja */
+    private function normalize_path($uri) {
+        $parts = wp_parse_url($uri);
+        $path  = $parts['path'] ?? '/';
+
+        // Pertahankan hanya parameter yang mempengaruhi konten
+        $whitelist = apply_filters('vd_url_whitelist_params', ['page','paged','s','amp']);
+
+        if (!empty($parts['query'])) {
+            parse_str($parts['query'], $q);
+            $keep = array_intersect_key($q, array_flip($whitelist));
+            if ($keep) {
+                ksort($keep);
+                $path .= '?' . http_build_query($keep, '', '&', PHP_QUERY_RFC3986);
+            }
+        }
+        return $path;
     }
 
     /** ============================
