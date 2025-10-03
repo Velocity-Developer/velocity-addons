@@ -313,6 +313,65 @@ class Velocity_Addons_Statistic {
         );
     }
 
+    /** ======================================
+     *  Rebuild from raw logs (VAS compatible)
+     *  ====================================== */
+
+    /**
+     * Rebuild vd_daily_stats from vd_visitor_logs.
+     * Menghasilkan 1 baris per tanggal: unique_visitors & total_pageviews.
+     * @return int Jumlah baris harian yang diinsert
+     */
+    public function rebuild_daily_stats() {
+        global $wpdb;
+
+        // Kosongkan tabel agregat harian
+        $wpdb->query( "TRUNCATE TABLE {$this->daily_stats_table}" );
+
+        // Isi ulang dari log
+        $inserted = $wpdb->query(
+            "INSERT INTO {$this->daily_stats_table} (stat_date, unique_visitors, total_pageviews)
+            SELECT
+                visit_date AS stat_date,
+                COUNT(DISTINCT visitor_ip) AS unique_visitors,
+                COUNT(*) AS total_pageviews
+            FROM {$this->logs_table}
+            GROUP BY visit_date"
+        );
+
+        // Segarkan agregasi bulanan agar konsisten
+        $this->aggregate_monthly_stats();
+
+        return (int) $inserted;
+    }
+
+    /**
+     * Rebuild vd_page_stats dari vd_visitor_logs.
+     * Menghasilkan 1 baris per (page_url, tanggal).
+     * @return int Jumlah baris halaman-harian yang diinsert
+     */
+    public function rebuild_page_stats() {
+        global $wpdb;
+
+        // Kosongkan tabel agregat per-halaman
+        $wpdb->query( "TRUNCATE TABLE {$this->page_stats_table}" );
+
+        // Isi ulang dari log
+        $inserted = $wpdb->query(
+            "INSERT INTO {$this->page_stats_table} (page_url, stat_date, unique_visitors, total_views)
+            SELECT
+                page_url,
+                visit_date AS stat_date,
+                COUNT(DISTINCT visitor_ip) AS unique_visitors,
+                COUNT(*) AS total_views
+            FROM {$this->logs_table}
+            GROUP BY page_url, visit_date"
+        );
+
+        return (int) $inserted;
+    }
+
+
     /** ===========================
      *  Reader APIs
      *  =========================== */
