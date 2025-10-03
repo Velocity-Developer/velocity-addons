@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Display Dashboard Menu in the WordPress admin panel
@@ -101,11 +101,29 @@ class Velocity_Addons_Dashboard
                             <p><code>[velocity_captcha]</code></p>
 
                             <h6>#Share Post</h6>
-                            <p><code>[velocity-sharepost]</code></p>
+                            <p><code>[velocity-sharepost title='' label_share='' platforms='']</code></p>
                             <ul>
-                                <li>title : nama label share. Share this post</li>
-                                <li>label_share : tampilkan label share. true/false</li>
-                                <li>platforms : platform berbagi. facebook/twitter/whatsapp/telegram/email</li>
+                                <li><strong>title</strong>: nama label share. Share this post</li>
+                                <li><strong>label_share</strong>: tampilkan label share. true/false</li>
+                                <li><strong>platforms</strong>: platform berbagi. facebook/twitter/whatsapp/telegram/email</li>
+                            </ul>
+
+                            <h6>#Velocity Statistics</h6>
+                            <p><code>[velocity-statistics style='' show='' columns='']</code></p>
+                            <ul>
+                                <li><strong>style</strong>: pilih tampilan statistik. minimal/cards (default minimal)</li>
+                                <li><strong>show</strong>: filter data yang ditampilkan. all/today/total (default all)</li>
+                                <li><strong>columns</strong>: jumlah kolom untuk mode cards. 1/2/3/4 (default 1)</li>
+                            </ul>
+
+                            <h6>#Velocity Hits</h6>
+                            <p><code>[velocity-hits post_id='' format='' before='' after='' class='']</code></p>
+                            <ul>
+                                <li><strong>post_id</strong>: ID posting (opsional; default get_the_ID())</li>
+                                <li><strong>format</strong>: format angka. compact/number (default compact)</li>
+                                <li><strong>before</strong>: teks/HTML sebelum angka hit</li>
+                                <li><strong>after</strong>: teks/HTML setelah angka hit</li>
+                                <li><strong>class</strong>: kelas CSS untuk elemen angka hit</li>
                             </ul>
 
                             <h6>#VD Gallery</h6>
