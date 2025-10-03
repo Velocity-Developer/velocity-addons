@@ -188,7 +188,7 @@ class Velocity_Addons
         /**
          * Berisi Class untuk handle statistic
          */
-        // require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-statistic.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-statistic.php';
 
         /**
          * Berisi Class untuk handle seo
