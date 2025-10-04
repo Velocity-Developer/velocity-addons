@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Register snippet code in the WordPress admin panel
  *
@@ -9,27 +9,26 @@
  * @subpackage Velocity_Addons/includes
  */
 
-
 class Velocity_Addons_Snippet
 {
     public function __construct()
     {
-        // Menambahkan submenu
+        // Setting untuk tiga opsi yang sudah ada
         add_action('admin_init', [$this, 'register_snippet_settings']);
 
-        // Hook untuk menambahkan snippet ke bagian yang sesuai
-        add_action('wp_head', [$this, 'velocity_header_snippet']);
-        add_action('wp_body_open', [$this, 'velocity_body_snippet']);
-        add_action('wp_footer', [$this, 'velocity_footer_snippet']);
+        // Pasang snippet dengan prioritas aman
+        add_action('wp_head',      [$this, 'velocity_header_snippet'],  99);
+        add_action('wp_body_open', [$this, 'velocity_body_snippet'],    20);
+        add_action('wp_footer',    [$this, 'velocity_footer_snippet'], 999);
     }
-    
+
     public function register_snippet_settings()
     {
         register_setting('velocity_snippet_group', 'header_snippet');
         register_setting('velocity_snippet_group', 'body_snippet');
         register_setting('velocity_snippet_group', 'footer_snippet');
     }
-    
+
     public static function snippet_page()
     {
         ?>
@@ -44,7 +43,7 @@ class Velocity_Addons_Snippet
                         <td>
                             <textarea class="large-text code" name="header_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('header_snippet', '')); ?></textarea>
                             <br/>
-                            <small for="header_snippet">Kode yang dimasukkan di sini akan ditempatkan di dalam tag &lt;head&gt; pada setiap halaman situs Anda.</small>
+                            <small>Kode ditempatkan di dalam &lt;head&gt;.</small>
                         </td>
                     </tr>
                     <tr valign="top">
@@ -52,7 +51,7 @@ class Velocity_Addons_Snippet
                         <td>
                             <textarea class="large-text code" name="body_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('body_snippet', '')); ?></textarea>
                             <br/>
-                            <small for="body_snippet">Kode yang dimasukkan di sini akan ditempatkan tepat setelah tag pembuka &lt;body&gt; pada setiap halaman situs Anda.</small>
+                            <small>Kode ditempatkan tepat setelah tag pembuka &lt;body&gt;.</small>
                         </td>
                     </tr>
                     <tr valign="top">
@@ -60,7 +59,7 @@ class Velocity_Addons_Snippet
                         <td>
                             <textarea class="large-text code" name="footer_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('footer_snippet', '')); ?></textarea>
                             <br/>
-                            <small for="footer_snippet">Kode yang dimasukkan di sini akan ditempatkan tepat sebelum tag penutup &lt;/body&gt; pada setiap halaman situs Anda.</small>
+                            <small>Kode ditempatkan sebelum tag penutup &lt;/body&gt;.</small>
                         </td>
                     </tr>
                 </table>
@@ -70,66 +69,109 @@ class Velocity_Addons_Snippet
         <?php
     }
 
-    /* ===== Helper inti: fleksibel CSS/JS/Shortcode ===== */
-    private function process_snippet($raw, $area = 'footer')
+    /* ===================== Core Helpers ===================== */
+
+    /**
+     * Heuristik: apakah ini konteks editing/kerja (bukan pengunjung)?
+     * - Admin, AJAX, REST
+     * - Customizer / Preview
+     * - User login + admin bar + bisa edit (indikasi sedang kerja/editor/builder)
+     */
+    private function is_editing_context(): bool
+    {
+        if (is_admin() || wp_doing_ajax() || (defined('REST_REQUEST') && REST_REQUEST)) {
+            return true;
+        }
+        if (is_customize_preview() || is_preview()) {
+            return true;
+        }
+        if (is_user_logged_in()
+            && function_exists('is_admin_bar_showing') && is_admin_bar_showing()
+            && current_user_can('edit_posts')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Processor snippet:
+     * - MODE_EDITING: JS dimatikan, shortcode TIDAK dieksekusi, CSS/HTML boleh.
+     * - MODE_VISITOR: JS boleh, shortcode dieksekusi.
+     */
+    private function process_snippet($raw, $area = 'footer', $mode = 'visitor')
     {
         $raw = (string) $raw;
         if (trim($raw) === '') return '';
 
-        // 1) Expand shortcode dulu (boleh kosong kalau tidak ada shortcode)
-        $expanded = do_shortcode($raw);
-        $out = trim($expanded);
+        $allow_js      = ($mode === 'visitor');
+        $expand_sc     = ($mode === 'visitor');
 
-        // 2) Kalau sudah mengandung tag yang umum di head/body/footer → keluarkan apa adanya
+        // Expand shortcode hanya untuk pengunjung
+        $content = $expand_sc ? do_shortcode($raw) : $raw;
+        $out = trim($content);
+
+        // Jika sudah ada tag umum, keluarkan sesuai izin
         if (preg_match('#<(script|style|link|meta|noscript|!--)#i', $out)) {
+            if (!$allow_js) {
+                // Hapus <script> di mode editing agar editor/builder aman
+                $out = preg_replace('#<script\b[^>]*>.*?</script>#is', '', $out);
+            }
             return $out;
         }
 
-        // 3) Deteksi CSS sederhana → bungkus <style>
-        //    Pola: selector { ... } atau banyak deklarasi "prop: val;"
+        // Deteksi CSS sederhana → bungkus <style>
         $looks_like_css_block = preg_match('#[^\{\}]+\{[^}]+\}#s', $out);
         $looks_like_css_lines = (substr_count($out, ':') >= 1 && substr_count($out, ';') >= 1);
-
         if ($looks_like_css_block || $looks_like_css_lines) {
             return "<style id=\"velocity-snippet-{$area}\">\n{$out}\n</style>";
         }
 
-        // 4) Deteksi JS sederhana → bungkus <script>
-        //    Pola umum: function( / document. / window. / console. / var|let|const
-        if (preg_match('#\b(function\s*\(|document\.|window\.|console\.|var\s|let\s|const\s)#', $out)) {
-            return "<script id=\"velocity-snippet-{$area}\">\n{$out}\n</script>";
+        // Deteksi JS sederhana → bungkus <script> (hanya untuk pengunjung)
+        if ($allow_js && preg_match('#\b(function\s*\(|document\.|window\.|console\.|var\s|let\s|const\s)#', $out)) {
+            // Bungkus try/catch agar error kecil tidak memutus eksekusi
+            $wrapped = "try{\n{$out}\n}catch(e){if(window.console&&console.warn){console.warn('Velocity snippet error:',e);}}";
+            return "<script id=\"velocity-snippet-{$area}\">\n{$wrapped}\n</script>";
         }
 
-        // 5) Default → anggap HTML biasa
+        // Default → anggap HTML biasa
         return $out;
     }
 
-    // Output ke head
-    public function velocity_header_snippet() {
+    /* ===================== Output Hooks ===================== */
+
+    // Output ke <head>
+    public function velocity_header_snippet()
+    {
         $snippet = get_option('header_snippet', '');
-        if (!empty($snippet)) {
-            echo $this->process_snippet($snippet, 'header');
-        }
+        if ($snippet === '') return;
+
+        $mode = $this->is_editing_context() ? 'editing' : 'visitor';
+        echo "<!-- velocity-snippet:header mode={$mode} -->\n";
+        echo $this->process_snippet($snippet, 'header', $mode) . "\n";
     }
 
-    // Output setelah body open
-    public function velocity_body_snippet() {
+    // Output setelah <body> dibuka
+    public function velocity_body_snippet()
+    {
         $snippet = get_option('body_snippet', '');
-        if (!empty($snippet)) {
-            echo $this->process_snippet($snippet, 'body');
-        }
+        if ($snippet === '') return;
+
+        $mode = $this->is_editing_context() ? 'editing' : 'visitor';
+        echo "<!-- velocity-snippet:body mode={$mode} -->\n";
+        echo $this->process_snippet($snippet, 'body', $mode) . "\n";
     }
 
-    // Output sebelum body close
-    public function velocity_footer_snippet() {
+    // Output sebelum </body>
+    public function velocity_footer_snippet()
+    {
         $snippet = get_option('footer_snippet', '');
-        if (!empty($snippet)) {
-            echo $this->process_snippet($snippet, 'footer');
-        }
+        if ($snippet === '') return;
+
+        $mode = $this->is_editing_context() ? 'editing' : 'visitor';
+        echo "<!-- velocity-snippet:footer mode={$mode} -->\n";
+        echo $this->process_snippet($snippet, 'footer', $mode) . "\n";
     }
-
-
 }
 
- // Inisialisasi class Velocity_Addons_Snippet
- $velocity_addons_Snippet = new Velocity_Addons_Snippet();
+// Inisialisasi class
+$velocity_addons_Snippet = new Velocity_Addons_Snippet();
