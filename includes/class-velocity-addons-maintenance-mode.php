@@ -28,7 +28,7 @@ class Velocity_Addons_Maintenance_Mode
         if (get_option('maintenance_mode')) {
             // Jalankan di tahap template_redirect (front-end) agar tak ganggu bootstrap editor/admin
             add_action('template_redirect', [$this, 'check_maintenance_mode'], 0);
-            add_action('admin_notices', [$this, 'qc_maintenance']);
+            add_action('admin_notices', [self::class, 'qc_maintenance']);
         }
     }
 
@@ -76,7 +76,7 @@ class Velocity_Addons_Maintenance_Mode
         wp_die($message, $heading, ['response' => 503]);
     }
 
-    public function qc_maintenance()
+    public static function qc_maintenance()
     {
         echo '<div class="notice notice-warning notice-alt">';
         echo self::check_permalink_settings();
