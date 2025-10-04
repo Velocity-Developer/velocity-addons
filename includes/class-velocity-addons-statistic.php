@@ -228,6 +228,16 @@ class Velocity_Addons_Statistic {
         return (bool) preg_match('~(bot|spider|crawl|slurp|bingpreview|yandex|ahrefs|facebookexternalhit|bytespider|semrush|duckduckbot|lighthouse|headlesschrome)~i', $ua);
     }
 
+    // Cek apakah sebuah tabel ada di DB
+    private function table_exists(string $table_name): bool {
+        global $wpdb;
+        if ('' === trim($table_name)) return false;
+        // exact match terhadap nama tabel lengkap (termasuk prefix)
+        $found = $wpdb->get_var( $wpdb->prepare('SHOW TABLES LIKE %s', $table_name) );
+        return $found === $table_name;
+    }
+
+
     /** ======================================
      *  Aggregation updaters (using flags)
      *  ====================================== */
@@ -415,33 +425,54 @@ class Velocity_Addons_Statistic {
     public function get_summary_stats() {
         global $wpdb;
 
-        $today = $wpdb->get_row(
+        // Pakai tanggal WP, hindari selisih timezone dengan CURDATE()
+        $today_str = wp_date('Y-m-d', current_time('timestamp'));
+
+        $today = $wpdb->get_row( $wpdb->prepare(
             "SELECT unique_visitors, total_pageviews AS total_visits
-             FROM {$this->daily_stats_table}
-             WHERE stat_date = CURDATE()"
-        );
+            FROM {$this->daily_stats_table}
+            WHERE stat_date = %s", $today_str
+        ));
 
         $this_week = $wpdb->get_row(
             "SELECT SUM(unique_visitors) AS unique_visitors, SUM(total_pageviews) AS total_visits
-             FROM {$this->daily_stats_table}
-             WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
+            FROM {$this->daily_stats_table}
+            WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
         );
 
         $this_month = $wpdb->get_row(
             "SELECT SUM(unique_visitors) AS unique_visitors, SUM(total_pageviews) AS total_visits
-             FROM {$this->daily_stats_table}
-             WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
+            FROM {$this->daily_stats_table}
+            WHERE stat_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
         );
 
-        $all_time = $wpdb->get_row(
-            "SELECT 
-                (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->monthly_stats_table}) +
-                (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->daily_stats_table}
-                 WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS unique_visitors,
-                (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->monthly_stats_table}) +
-                (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->daily_stats_table}
-                 WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS total_visits"
+        // --- ALL TIME ---
+        // 1) total dari daily: selalu ada
+        $all_from_daily = $wpdb->get_row(
+            "SELECT COALESCE(SUM(unique_visitors),0) AS uv, COALESCE(SUM(total_pageviews),0) AS pv
+            FROM {$this->daily_stats_table}"
         );
+
+        // 2) jika tabel monthly ada, pakai akumulasi monthly + bulan berjalan
+        $all_time = null;
+        if ( $this->table_exists($this->monthly_stats_table) ) {
+            $all_time = $wpdb->get_row(
+                "SELECT 
+                    (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->monthly_stats_table}) +
+                    (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->daily_stats_table}
+                    WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS unique_visitors,
+                    (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->monthly_stats_table}) +
+                    (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->daily_stats_table}
+                    WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS total_visits"
+            );
+        }
+
+        if ( empty($all_time) ) {
+            $all_time = (object) [
+                'unique_visitors' => (int) ($all_from_daily->uv ?? 0),
+                'total_visits'    => (int) ($all_from_daily->pv ?? 0),
+            ];
+        }
 
         return array(
             'today'      => $today      ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],
@@ -450,6 +481,7 @@ class Velocity_Addons_Statistic {
             'all_time'   => $all_time   ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],
         );
     }
+
 
     /** ===========================
      *  Shortcodes (Bootstrap 5)

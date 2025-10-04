@@ -1,126 +1,159 @@
 <?php
 /**
- * Fired during plugin activation
+ * Fired during plugin activation.
+ *
+ * Membuat/upgrade tabel statistik dan menjadwalkan cron harian.
+ * Disusun agar ramah MySQL 8 & utf8mb4 (pakai backtick + TIMESTAMP).
+ *
  * @link       https://velocitydeveloper.com
  * @since      1.0.0
  * @package    Velocity_Addons
  * @subpackage Velocity_Addons/includes
  */
 
+if ( ! defined('ABSPATH') ) exit;
+
 class Velocity_Addons_Activator {
 
-    /**
-     * Dieksekusi sekali saat plugin diaktifkan:
-     * - Buat/upgrade tabel statistik via dbDelta
-     * - Jadwalkan cron harian vd_daily_aggregation
-     */
-    public static function activate() {
-        // Pastikan fungsi dbDelta tersedia
-        if ( ! function_exists('dbDelta') ) {
-            require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-        }
+	public static function activate() {
+		global $wpdb;
 
-        global $wpdb;
-        $charset_collate = $wpdb->get_charset_collate();
+		// Pastikan dbDelta/maybe_create_table tersedia
+		if ( ! function_exists('dbDelta') ) {
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		}
 
-        $visitor_logs_table   = $wpdb->prefix . 'vd_visitor_logs';
-        $daily_stats_table    = $wpdb->prefix . 'vd_daily_stats';
-        $monthly_stats_table  = $wpdb->prefix . 'vd_monthly_stats';
-        $page_stats_table     = $wpdb->prefix . 'vd_page_stats';
-        $referrer_stats_table = $wpdb->prefix . 'vd_referrer_stats';
-        $daily_unique_table   = $wpdb->prefix . 'vd_daily_unique';
+		$charset_collate = $wpdb->get_charset_collate();
 
-        // Gunakan VARCHAR(191) untuk kolom yang diindeks (aman untuk utf8mb4)
-        $sql1 = "CREATE TABLE $visitor_logs_table (
-            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-            visitor_ip VARCHAR(45) NOT NULL,
-            user_agent TEXT,
-            page_url VARCHAR(191) NOT NULL,
-            referer VARCHAR(191),
-            visit_date DATE NOT NULL,
-            visit_time TIME NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY ip_url_date (visitor_ip, page_url, visit_date),
-            KEY ip_date (visitor_ip, visit_date),
-            KEY page_url (page_url),
-            KEY visit_date (visit_date)
-        ) $charset_collate;";
+		$visitor_logs_table   = $wpdb->prefix . 'vd_visitor_logs';
+		$daily_stats_table    = $wpdb->prefix . 'vd_daily_stats';
+		$monthly_stats_table  = $wpdb->prefix . 'vd_monthly_stats';
+		$page_stats_table     = $wpdb->prefix . 'vd_page_stats';
+		$referrer_stats_table = $wpdb->prefix . 'vd_referrer_stats';
+		$daily_unique_table   = $wpdb->prefix . 'vd_daily_unique';
 
-        $sql2 = "CREATE TABLE $daily_stats_table (
-            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-            stat_date DATE NOT NULL,
-            unique_visitors INT(11) DEFAULT 0,
-            total_pageviews INT(11) DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY stat_date (stat_date)
-        ) $charset_collate;";
+		// DDL (backtick + TIMESTAMP + BIGINT unsigned untuk counter)
+		$sql1 = "CREATE TABLE `{$visitor_logs_table}` (
+			`id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+			`visitor_ip` VARCHAR(45) NOT NULL,
+			`user_agent` TEXT NULL,
+			`page_url` VARCHAR(191) NOT NULL,
+			`referer` VARCHAR(191) NULL,
+			`visit_date` DATE NOT NULL,
+			`visit_time` TIME NOT NULL,
+			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `ip_url_date` (`visitor_ip`,`page_url`,`visit_date`),
+			KEY `ip_date` (`visitor_ip`,`visit_date`),
+			KEY `page_url` (`page_url`),
+			KEY `visit_date` (`visit_date`)
+		) {$charset_collate};";
 
-        $sql3 = "CREATE TABLE $monthly_stats_table (
-            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-            stat_year INT(4) NOT NULL,
-            stat_month INT(2) NOT NULL,
-            unique_visitors INT(11) DEFAULT 0,
-            total_pageviews INT(11) DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY year_month (stat_year, stat_month)
-        ) $charset_collate;";
+		$sql2 = "CREATE TABLE `{$daily_stats_table}` (
+			`id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+			`stat_date` DATE NOT NULL,
+			`unique_visitors` BIGINT UNSIGNED DEFAULT 0,
+			`total_pageviews` BIGINT UNSIGNED DEFAULT 0,
+			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+			`updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `stat_date` (`stat_date`)
+		) {$charset_collate};";
 
-        $sql4 = "CREATE TABLE $page_stats_table (
-            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-            page_url VARCHAR(191) NOT NULL,
-            stat_date DATE NOT NULL,
-            unique_visitors INT(11) DEFAULT 0,
-            total_views INT(11) DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY page_date (page_url, stat_date),
-            KEY page_url (page_url),
-            KEY stat_date (stat_date)
-        ) $charset_collate;";
+		$sql3 = "CREATE TABLE `{$monthly_stats_table}` (
+			`id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+			`stat_year` SMALLINT(4) UNSIGNED NOT NULL,
+			`stat_month` TINYINT(2) UNSIGNED NOT NULL,
+			`unique_visitors` BIGINT UNSIGNED DEFAULT 0,
+			`total_pageviews` BIGINT UNSIGNED DEFAULT 0,
+			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+			`updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `year_month` (`stat_year`,`stat_month`)
+		) {$charset_collate};";
 
-        $sql5 = "CREATE TABLE $referrer_stats_table (
-            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-            referrer_domain VARCHAR(191) NOT NULL,
-            stat_date DATE NOT NULL,
-            total_visits INT(11) DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY referrer_date (referrer_domain, stat_date),
-            KEY referrer_domain (referrer_domain),
-            KEY stat_date (stat_date)
-        ) $charset_collate;";
+		$sql4 = "CREATE TABLE `{$page_stats_table}` (
+			`id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+			`page_url` VARCHAR(191) NOT NULL,
+			`stat_date` DATE NOT NULL,
+			`unique_visitors` BIGINT UNSIGNED DEFAULT 0,
+			`total_views` BIGINT UNSIGNED DEFAULT 0,
+			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+			`updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `page_date` (`page_url`,`stat_date`),
+			KEY `page_url` (`page_url`),
+			KEY `stat_date` (`stat_date`)
+		) {$charset_collate};";
 
-        // NEW: penanda unique harian (IP+DATE) → atomic unique
-        $sql6 = "CREATE TABLE $daily_unique_table (
-            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-            visitor_ip VARCHAR(45) NOT NULL,
-            stat_date DATE NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY ip_date (visitor_ip, stat_date),
-            KEY stat_date (stat_date)
-        ) $charset_collate;";
+		$sql5 = "CREATE TABLE `{$referrer_stats_table}` (
+			`id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+			`referrer_domain` VARCHAR(191) NOT NULL,
+			`stat_date` DATE NOT NULL,
+			`total_visits` BIGINT UNSIGNED DEFAULT 0,
+			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+			`updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `referrer_date` (`referrer_domain`,`stat_date`),
+			KEY `referrer_domain` (`referrer_domain`),
+			KEY `stat_date` (`stat_date`)
+		) {$charset_collate};";
 
-        // Jalankan dbDelta
-        dbDelta($sql1);
-        dbDelta($sql2);
-        dbDelta($sql3);
-        dbDelta($sql4);
-        dbDelta($sql5);
-        dbDelta($sql6);
+		$sql6 = "CREATE TABLE `{$daily_unique_table}` (
+			`id` MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+			`visitor_ip` VARCHAR(45) NOT NULL,
+			`stat_date` DATE NOT NULL,
+			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `ip_date` (`visitor_ip`,`stat_date`),
+			KEY `stat_date` (`stat_date`)
+		) {$charset_collate};";
 
-        // Jadwalkan cron harian jika belum ada
-        if ( ! wp_next_scheduled('vd_daily_aggregation') ) {
-            wp_schedule_event(time(), 'daily', 'vd_daily_aggregation');
-        }
+		$tables = [
+			$visitor_logs_table   => $sql1,
+			$daily_stats_table    => $sql2,
+			$monthly_stats_table  => $sql3,
+			$page_stats_table     => $sql4,
+			$referrer_stats_table => $sql5,
+			$daily_unique_table   => $sql6,
+		];
 
-        // Jangan echo/print apapun di sini (hindari "unexpected output")
-    }
+		foreach ($tables as $table_name => $ddl) {
+			self::create_table($table_name, $ddl);
+		}
+
+		// Jadwalkan cron harian kalau belum ada (mulai dari sekarang, interval daily)
+		if ( ! wp_next_scheduled('vd_daily_aggregation') ) {
+			wp_schedule_event(time(), 'daily', 'vd_daily_aggregation');
+		}
+	}
+
+	/* ===== Helpers internal ===== */
+
+	private static function create_table(string $table_name, string $ddl) : void {
+		global $wpdb;
+
+		if ('' === trim($table_name) || '' === trim($ddl)) return;
+
+		// 1) dbDelta
+		dbDelta($ddl);
+		if ( self::table_exists($table_name) ) return;
+
+		// 2) maybe_create_table
+		if ( function_exists('maybe_create_table') ) {
+			maybe_create_table($table_name, $ddl);
+			if ( self::table_exists($table_name) ) return;
+		}
+
+		// 3) Fallback IF NOT EXISTS
+		$fallback = preg_replace('/^CREATE\s+TABLE\s+/i', 'CREATE TABLE IF NOT EXISTS ', trim($ddl));
+		if ( $fallback ) $wpdb->query($fallback);
+	}
+
+	private static function table_exists(string $table_name) : bool {
+		global $wpdb;
+		if ('' === trim($table_name)) return false;
+		$found = $wpdb->get_var( $wpdb->prepare('SHOW TABLES LIKE %s', $table_name) );
+		return $found === $table_name;
+	}
 }
