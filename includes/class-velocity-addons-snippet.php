@@ -95,23 +95,27 @@ class Velocity_Addons_Snippet
 
     /**
      * Heuristik: apakah ini konteks editing/kerja (bukan pengunjung)?
-     * - Admin, AJAX, REST
-     * - Customizer / Preview
-     * - User login + admin bar + bisa edit (indikasi sedang kerja/editor/builder)
      */
     private function is_editing_context(): bool
     {
+        // Admin, AJAX, REST
         if (is_admin() || wp_doing_ajax() || (defined('REST_REQUEST') && REST_REQUEST)) {
             return true;
         }
+
+        // Customizer / Preview
         if (is_customize_preview() || is_preview()) {
             return true;
         }
+
+        // User login + admin bar + bisa edit (indikasi sedang kerja/editor/builder)
+        /*
         if (is_user_logged_in()
             && function_exists('is_admin_bar_showing') && is_admin_bar_showing()
             && current_user_can('edit_posts')) {
             return true;
         }
+        */
         return false;
     }
 
