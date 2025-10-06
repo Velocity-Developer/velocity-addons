@@ -15,8 +15,8 @@
  * @wordpress-plugin
  * Plugin Name:       Velocity Addons
  * Plugin URI:        https://velocitydeveloper.com
- * Description:       Addon plugin for Velocitydeveloper Client
- * Version:           1.5.0
+ * Description:       Additional functionality for Velocitydeveloper clients
+ * Version:           1.6.0
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('VELOCITY_ADDONS_VERSION', '1.5.0');
+define('VELOCITY_ADDONS_VERSION', '1.6.0');
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
 define('PLUGIN_FILE', plugin_basename(__FILE__));
 define('PLUGIN_BASE_NAME', plugin_basename(__DIR__));
@@ -86,3 +86,5 @@ function run_velocity_addons()
     $plugin->run();
 }
 run_velocity_addons();
+
+

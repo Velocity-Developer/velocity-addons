@@ -22,6 +22,11 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.6.0=
+- Penambahan fitur snippet
+- Penambahan statistik pengunjung 
+- Penambahan background image pada maintenance mode
+
 =1.3.1=
 - Fix bug Setting SEO Single title
 
