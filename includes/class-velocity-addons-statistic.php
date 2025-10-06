@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Visitor Statistics functionality
  * @link       https://velocitydeveloper.com
@@ -486,17 +486,21 @@ class Velocity_Addons_Statistic {
     /** ===========================
      *  Shortcodes (Bootstrap 5)
      *  =========================== */
+    /**
+     * Shortcode: [velocity-statistics style="list|inline" show="all|today|total" label_today_visits="..." label_today_visitors="..." label_total_visits="..." label_total_visitors="..."]
+     * Menampilkan ringkasan statistik kunjungan dalam tampilan list atau inline dengan label yang dapat disesuaikan.
+     */
     public function statistics_shortcode($atts) {
         $atts = shortcode_atts(array(
-            'style'                => 'minimal',   // cards|minimal
-            'show'                 => 'all',       // all|today|total
-            'columns'              => '1',         // 1|2|3|4
+            'style'                => 'list',   // list|inline
+            'show'                 => 'all',    // all|today|total
             'label_today_visits'   => __('Kunjungan Hari Ini', 'velocity-addons'),
             'label_today_visitors' => __('Pengunjung Hari Ini', 'velocity-addons'),
             'label_total_visits'   => __('Total Kunjungan', 'velocity-addons'),
             'label_total_visitors' => __('Total Pengunjung', 'velocity-addons'),
         ), $atts, 'velocity-statistics');
 
+        // Sanitasi label
         $label_keys = array(
             'label_today_visits',
             'label_today_visitors',
@@ -507,73 +511,61 @@ class Velocity_Addons_Statistic {
             $atts[$key] = sanitize_text_field($atts[$key]);
         }
 
+        // Ambil data statistik
         $stats = $this->get_summary_stats();
 
         // Kumpulkan item yang akan ditampilkan
         $items = array();
-        if ( $atts['show'] === 'all' || $atts['show'] === 'today' ) {
+        if ($atts['show'] === 'all' || $atts['show'] === 'today') {
             $items[] = array(
                 'label' => $atts['label_today_visits'],
-                'value' => number_format_i18n( (int) ($stats['today']->total_visits ?? 0) ),
+                'value' => number_format_i18n((int) ($stats['today']->total_visits ?? 0)),
             );
             $items[] = array(
                 'label' => $atts['label_today_visitors'],
-                'value' => number_format_i18n( (int) ($stats['today']->unique_visitors ?? 0) ),
+                'value' => number_format_i18n((int) ($stats['today']->unique_visitors ?? 0)),
             );
         }
-        if ( $atts['show'] === 'all' || $atts['show'] === 'total' ) {
+        if ($atts['show'] === 'all' || $atts['show'] === 'total') {
             $items[] = array(
                 'label' => $atts['label_total_visits'],
-                'value' => number_format_i18n( (int) ($stats['all_time']->total_visits ?? 0) ),
+                'value' => number_format_i18n((int) ($stats['all_time']->total_visits ?? 0)),
             );
             $items[] = array(
                 'label' => $atts['label_total_visitors'],
-                'value' => number_format_i18n( (int) ($stats['all_time']->unique_visitors ?? 0) ),
+                'value' => number_format_i18n((int) ($stats['all_time']->unique_visitors ?? 0)),
             );
-        }
-
-        // Mapping kolom → grid Bootstrap
-        $cols = (string) $atts['columns'];
-        switch ($cols) {
-            case '1': $col_class = 'col-12'; break;
-            case '2': $col_class = 'col-12 col-md-6'; break;
-            case '3': $col_class = 'col-12 col-md-4'; break;
-            case '4': $col_class = 'col-12 col-md-3'; break;
-            default:  $col_class = 'col-12'; break;
         }
 
         ob_start();
 
-        if ($atts['style'] === 'minimal') {
-            echo '<ul class="list-group list-group-flush m-0 p-0">';
+        // ======== STYLE INLINE ========
+        if ($atts['style'] === 'inline') {
+            $parts = array();
+            foreach ($items as $it) {
+                $parts[] = esc_html($it['label']) . ': ' . esc_html($it['value']);
+            }
+            echo '<div class="velocity-inline-stats">' . implode(' | ', $parts) . '</div>';
+
+        // ======== STYLE LIST (default & fallback) ========
+        } elseif ($atts['style'] === 'list' || empty($atts['style'])) {
+            echo '<ul class="velocity-list-stats list-group list-group-flush m-0 p-0">';
             foreach ($items as $it) {
                 echo '<li class="bg-transparent px-0 list-group-item d-flex justify-content-between align-items-center">';
-                echo '<span>'.esc_html($it['label']).'</span>';
-                echo '<span class="fw-bold">'.esc_html($it['value']).'</span>';
+                echo '<span>' . esc_html($it['label']) . '</span>';
+                echo '<span class="fw-bold">' . esc_html($it['value']) . '</span>';
                 echo '</li>';
             }
             echo '</ul>';
-        } else {
-            echo '<div class="row g-3 my-3">';
-            foreach ($items as $it) {
-                echo '<div class="'.esc_attr($col_class).'">';
-                echo '  <div class="card shadow-sm h-100">';
-                echo '    <div class="card-body text-center">';
-                echo '      <div class="display-6 fw-bold mb-1 text-dark">'.esc_html($it['value']).'</div>';
-                echo '      <div class="text-uppercase text-muted small fw-semibold">'.esc_html($it['label']).'</div>';
-                echo '    </div>';
-                echo '  </div>';
-                echo '</div>';
-            }
-            echo '</div>';
         }
 
         return ob_get_clean();
     }
 
+
     /**
-     * Shortcode: [velocity-hits post_id="123" format="number|compact" before="" after=" views" class="badge bg-secondary velocity-hits-count"]
-     * Default class = badge Bootstrap 5.
+     * Shortcode: [velocity-hits post_id="123" format="compact|number" before="" after=" views" class="velocity-hits-count"]
+     * Menampilkan hit posting (default ke post aktif) dengan opsi format angka, prefix/suffix, dan class custom.
      */
     public function shortcode_post_hit($atts) {
         $atts = shortcode_atts(array(

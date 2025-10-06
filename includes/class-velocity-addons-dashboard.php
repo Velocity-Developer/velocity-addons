@@ -109,11 +109,10 @@ class Velocity_Addons_Dashboard
                             </ul>
 
                             <h6>#Velocity Statistics</h6>
-                            <p><code>[velocity-statistics style='' show='' columns='']</code></p>
+                            <p><code>[velocity-statistics style='' show='']</code></p>
                             <ul>
-                                <li><strong>style</strong>: pilih tampilan statistik. minimal/cards (default minimal)</li>
+                                <li><strong>style</strong>: pilih tampilan statistik. list/inline (default list)</li>
                                 <li><strong>show</strong>: filter data yang ditampilkan. all/today/total (default all)</li>
-                                <li><strong>columns</strong>: jumlah kolom untuk mode cards. 1/2/3/4 (default 1)</li>
                                 <li><strong>label_today_visits</strong>: ganti label "Kunjungan Hari Ini" (opsional)</li>
                                 <li><strong>label_today_visitors</strong>: ganti label "Pengunjung Hari Ini" (opsional)</li>
                                 <li><strong>label_total_visits</strong>: ganti label "Total Kunjungan" (opsional)</li>

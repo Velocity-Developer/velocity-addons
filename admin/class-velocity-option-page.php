@@ -782,6 +782,14 @@ class Custom_Admin_Option_Page
             <div class="shortcode-section" style="background:#fff;padding:30px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin:20px 0;">
                 <h3 style="margin-top:0;color:#23282d;">📋 Shortcode Usage — [velocity-statistics]</h3>
                 <p style="color:#666;margin-bottom:25px;">Tampilkan statistik visitor di halaman, post, atau widget.</p>
+                <ul style="margin:0 0 20px 18px; color:#444; line-height:1.6;">
+                    <li><code>style</code> — pilih tampilan statistik. <code>list</code> atau <code>inline</code> (default <code>list</code>)</li>
+                    <li><code>show</code> — filter data yang ditampilkan. <code>all</code>, <code>today</code>, atau <code>total</code> (default <code>all</code>)</li>
+                    <li><code>label_today_visits</code> — ganti label "Kunjungan Hari Ini" (opsional)</li>
+                     <li><code>label_today_visitors</code> — ganti label "Pengunjung Hari Ini" (opsional)</li>
+                    <li><code>label_total_visits</code> — ganti label "Total Kunjungan" (opsional)</li>
+                    <li><code>label_total_visitors</code> — ganti label "Total Pengunjung" (opsional)</li>
+                </ul>
 
                 <div class="shortcode-examples" style="display:grid;grid-template-columns:1fr 1fr;gap:30px;">
                     <div>
@@ -805,10 +813,10 @@ class Custom_Admin_Option_Page
                         <h4 style="color:#23282d;margin-bottom:15px;">⚙️ Advanced</h4>
                         <div style="margin-bottom:20px;">
                             <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
-                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics style=&quot;cards&quot; columns=&quot;2&quot;]')">[velocity-statistics style="cards" columns="2"]</span>
-                                <button onclick="copyToClipboard('[velocity-statistics style=&quot;cards&quot; columns=&quot;2&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics style=&quot;list&quot;]')">[velocity-statistics style="list"]</span>
+                                <button onclick="copyToClipboard('[velocity-statistics style=&quot;list&quot; ]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
                             </div>
-                            <div style="font-size:13px;color:#666;">Style cards, 2 kolom</div>
+                            <div style="font-size:13px;color:#666;">Style: <code>list</code> atau <code>inline</code></div>
                         </div>
                         <div style="margin-bottom:20px;">
                             <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
