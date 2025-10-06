@@ -24,11 +24,33 @@ class Velocity_Addons_Snippet
 
     public function register_snippet_settings()
     {
-        register_setting('velocity_snippet_group', 'header_snippet');
-        register_setting('velocity_snippet_group', 'body_snippet');
-        register_setting('velocity_snippet_group', 'footer_snippet');
-    }
+        $args = [
+            'type'              => 'string',
+            'sanitize_callback' => [$this, 'sanitize_snippet'],
+            'default'           => '',
+        ];
 
+        register_setting('velocity_snippet_group', 'header_snippet', $args);
+        register_setting('velocity_snippet_group', 'body_snippet', $args);
+        register_setting('velocity_snippet_group', 'footer_snippet', $args);
+    }
+    /**
+     * Allow admins to keep raw snippets while sanitizing fallback for other roles.
+     */
+    public function sanitize_snippet($value)
+    {
+        if (!is_string($value)) {
+            return '';
+        }
+
+        $normalized = str_replace(["\r\n", "\r"], "\n", $value);
+
+        if (!current_user_can('unfiltered_html')) {
+            return wp_kses_post($normalized);
+        }
+
+        return $normalized;
+    }
     public static function snippet_page()
     {
         ?>
@@ -119,21 +141,21 @@ class Velocity_Addons_Snippet
             return $out;
         }
 
-        // Deteksi CSS sederhana → bungkus <style>
+        // Deteksi CSS sederhana -> bungkus <style>
         $looks_like_css_block = preg_match('#[^\{\}]+\{[^}]+\}#s', $out);
         $looks_like_css_lines = (substr_count($out, ':') >= 1 && substr_count($out, ';') >= 1);
         if ($looks_like_css_block || $looks_like_css_lines) {
             return "<style id=\"velocity-snippet-{$area}\">\n{$out}\n</style>";
         }
 
-        // Deteksi JS sederhana → bungkus <script> (hanya untuk pengunjung)
+        // Deteksi JS sederhana -> bungkus <script> (hanya untuk pengunjung)
         if ($allow_js && preg_match('#\b(function\s*\(|document\.|window\.|console\.|var\s|let\s|const\s)#', $out)) {
             // Bungkus try/catch agar error kecil tidak memutus eksekusi
             $wrapped = "try{\n{$out}\n}catch(e){if(window.console&&console.warn){console.warn('Velocity snippet error:',e);}}";
             return "<script id=\"velocity-snippet-{$area}\">\n{$wrapped}\n</script>";
         }
 
-        // Default → anggap HTML biasa
+        // Default -> anggap HTML biasa
         return $out;
     }
 
