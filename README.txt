@@ -26,6 +26,7 @@ This section describes how to install the plugin and get it working.
 - Penambahan fitur snippet
 - Penambahan statistik pengunjung 
 - Penambahan background image pada maintenance mode
+- Perbaikan bug
 
 =1.3.1=
 - Fix bug Setting SEO Single title
