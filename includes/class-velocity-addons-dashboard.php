@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 /**
  * Display Dashboard Menu in the WordPress admin panel
