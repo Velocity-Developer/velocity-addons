@@ -810,6 +810,13 @@ class Custom_Admin_Option_Page
                             </div>
                             <div style="font-size:13px;color:#666;">Style cards, 2 kolom</div>
                         </div>
+                        <div style="margin-bottom:20px;">
+                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')">[velocity-statistics label_today_visits="Traffic Hari Ini" label_today_visitors="Visitor Hari Ini" label_total_visits="Total Traffic" label_total_visitors="Total Visitor"]</span>
+                                <button onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                            </div>
+                            <div style="font-size:13px;color:#666;">Custom label counter (gunakan atribut <code>label_today_visits</code>, <code>label_today_visitors</code>, <code>label_total_visits</code>, <code>label_total_visitors</code>)</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -979,3 +986,4 @@ class Custom_Admin_Option_Page
 
 // Initialize the Pengaturan Admin page
 $custom_admin_options_page = new Custom_Admin_Option_Page();
+

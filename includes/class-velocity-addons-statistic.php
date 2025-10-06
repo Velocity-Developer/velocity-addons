@@ -488,10 +488,24 @@ class Velocity_Addons_Statistic {
      *  =========================== */
     public function statistics_shortcode($atts) {
         $atts = shortcode_atts(array(
-            'style'   => 'minimal',   // cards|minimal
-            'show'    => 'all',       // all|today|total
-            'columns' => '1',         // 1|2|3|4
+            'style'                => 'minimal',   // cards|minimal
+            'show'                 => 'all',       // all|today|total
+            'columns'              => '1',         // 1|2|3|4
+            'label_today_visits'   => __('Kunjungan Hari Ini', 'velocity-addons'),
+            'label_today_visitors' => __('Pengunjung Hari Ini', 'velocity-addons'),
+            'label_total_visits'   => __('Total Kunjungan', 'velocity-addons'),
+            'label_total_visitors' => __('Total Pengunjung', 'velocity-addons'),
         ), $atts, 'velocity-statistics');
+
+        $label_keys = array(
+            'label_today_visits',
+            'label_today_visitors',
+            'label_total_visits',
+            'label_total_visitors',
+        );
+        foreach ($label_keys as $key) {
+            $atts[$key] = sanitize_text_field($atts[$key]);
+        }
 
         $stats = $this->get_summary_stats();
 
@@ -499,21 +513,21 @@ class Velocity_Addons_Statistic {
         $items = array();
         if ( $atts['show'] === 'all' || $atts['show'] === 'today' ) {
             $items[] = array(
-                'label' => __('Kunjungan Hari Ini', 'velocity-addons'),
+                'label' => $atts['label_today_visits'],
                 'value' => number_format_i18n( (int) ($stats['today']->total_visits ?? 0) ),
             );
             $items[] = array(
-                'label' => __('Pengunjung Hari Ini', 'velocity-addons'),
+                'label' => $atts['label_today_visitors'],
                 'value' => number_format_i18n( (int) ($stats['today']->unique_visitors ?? 0) ),
             );
         }
         if ( $atts['show'] === 'all' || $atts['show'] === 'total' ) {
             $items[] = array(
-                'label' => __('Total Kunjungan', 'velocity-addons'),
+                'label' => $atts['label_total_visits'],
                 'value' => number_format_i18n( (int) ($stats['all_time']->total_visits ?? 0) ),
             );
             $items[] = array(
-                'label' => __('Total Pengunjung', 'velocity-addons'),
+                'label' => $atts['label_total_visitors'],
                 'value' => number_format_i18n( (int) ($stats['all_time']->unique_visitors ?? 0) ),
             );
         }
@@ -683,3 +697,4 @@ endif;
 add_action('plugins_loaded', function () {
     new Velocity_Addons_Statistic();
 });
+

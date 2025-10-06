@@ -114,6 +114,10 @@ class Velocity_Addons_Dashboard
                                 <li><strong>style</strong>: pilih tampilan statistik. minimal/cards (default minimal)</li>
                                 <li><strong>show</strong>: filter data yang ditampilkan. all/today/total (default all)</li>
                                 <li><strong>columns</strong>: jumlah kolom untuk mode cards. 1/2/3/4 (default 1)</li>
+                                <li><strong>label_today_visits</strong>: ganti label "Kunjungan Hari Ini" (opsional)</li>
+                                <li><strong>label_today_visitors</strong>: ganti label "Pengunjung Hari Ini" (opsional)</li>
+                                <li><strong>label_total_visits</strong>: ganti label "Total Kunjungan" (opsional)</li>
+                                <li><strong>label_total_visitors</strong>: ganti label "Total Pengunjung" (opsional)</li>
                             </ul>
 
                             <h6>#Velocity Hits</h6>
@@ -144,3 +148,4 @@ class Velocity_Addons_Dashboard
 
 // Inisialisasi class Velocity_Addons_Dashboard
 $velocity_news = new Velocity_Addons_Dashboard();
+
