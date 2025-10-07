@@ -119,7 +119,7 @@ class Custom_Admin_Option_Page
             array($this, 'velocity_snippet_settings'),
         );
 
-        $statistik_velocity = get_option('statistik_velocity', '0');
+        $statistik_velocity = get_option('statistik_velocity', '1');
         if ($statistik_velocity == '1') {
             add_submenu_page(
                 'admin_velocity_addons',

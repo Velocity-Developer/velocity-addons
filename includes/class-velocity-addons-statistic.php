@@ -23,7 +23,15 @@ class Velocity_Addons_Statistic {
     private $visitor_id = '';
     private $hit_window = 240; // detik (4 menit)
 
+    private function is_enabled(): bool {
+        // cek opsi di database, default aktif (1)
+        return get_option('statistik_velocity', '1') === '1';
+    }
+
     public function __construct() {
+
+        if ( ! $this->is_enabled() ) return;
+
         global $wpdb;
 
         $this->logs_table           = $wpdb->prefix . 'vd_visitor_logs';
@@ -292,7 +300,7 @@ class Velocity_Addons_Statistic {
         $current_year  = (int) wp_date('Y', $ts);
 
         $monthly_data = $wpdb->get_row( $wpdb->prepare(
-            "SELECT 
+            "SELECT
                 SUM(unique_visitors) AS unique_visitors,
                 SUM(total_pageviews) AS total_pageviews
              FROM {$this->daily_stats_table}
@@ -318,7 +326,7 @@ class Velocity_Addons_Statistic {
     private function cleanup_old_logs() {
         global $wpdb;
         $wpdb->query(
-            "DELETE FROM {$this->logs_table} 
+            "DELETE FROM {$this->logs_table}
              WHERE visit_date < DATE_SUB(CURDATE(), INTERVAL 90 DAY)"
         );
     }
@@ -457,7 +465,7 @@ class Velocity_Addons_Statistic {
         $all_time = null;
         if ( $this->table_exists($this->monthly_stats_table) ) {
             $all_time = $wpdb->get_row(
-                "SELECT 
+                "SELECT
                     (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->monthly_stats_table}) +
                     (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->daily_stats_table}
                     WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS unique_visitors,
