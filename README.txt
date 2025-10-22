@@ -22,7 +22,7 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
-=1.6.1=
+=1.6.2=
 - Penambahan fitur snippet
 - Penambahan statistik pengunjung 
 - Penambahan background image pada maintenance mode
