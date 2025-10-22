@@ -12,11 +12,12 @@ Menonaktifkan komentar, menyembunyikan notifikasi, batasi login, maintenance mod
 ```bash
   git clone https://github.com/Velocity-Developer/velocity-addons.git
 ```
-Install packages
+- Install packages
 ```bash
   npm install
 ```
-Build
+### Build
+Untuk membuat package rilis (zip), gunakan :
 ```bash
   npm run build
 ```
