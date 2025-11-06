@@ -22,6 +22,10 @@ class Velocity_Addons_Statistic {
     /** Popular posts helper */
     private $visitor_id = '';
     private $hit_window = 240; // detik (4 menit)
+    /** Online users helper */
+    private $online_ttl = 300; // detik (5 menit)
+    private $online_debounce = 10; // detik
+    private $online_sessions_table;
 
     private function is_enabled(): bool {
         // cek opsi di database, default aktif (1)
@@ -40,6 +44,7 @@ class Velocity_Addons_Statistic {
         $this->page_stats_table     = $wpdb->prefix . 'vd_page_stats';
         $this->referrer_stats_table = $wpdb->prefix . 'vd_referrer_stats';
         $this->daily_unique_table   = $wpdb->prefix . 'vd_daily_unique';
+        $this->online_sessions_table = $wpdb->prefix . 'vd_online_sessions';
 
         // Cookie visitor anonim utk throttle per user
         add_action('init', array($this, 'ensure_visitor_id'));
@@ -49,6 +54,15 @@ class Velocity_Addons_Statistic {
 
         // Cron harian (agregasi + cleanup)
         add_action('vd_daily_aggregation', array($this, 'run_daily_aggregation'));
+
+        // Cron 10 menit untuk cleanup sesi online
+        add_filter('cron_schedules', array($this, 'crons_add_ten_minutes'));
+        add_action('vd_cleanup_online_sessions', array($this, 'cleanup_online_sessions'));
+        if ( ! wp_next_scheduled('vd_cleanup_online_sessions') ) {
+            wp_schedule_event( time() + 600, 'vd_ten_minutes', 'vd_cleanup_online_sessions' );
+        }
+
+        // Tabel sesi online dibuat di activator; tidak dibuat di sini lagi
 
         // Shortcodes
         add_shortcode('velocity-statistics', array($this, 'statistics_shortcode'));
@@ -77,6 +91,9 @@ class Velocity_Addons_Statistic {
         if ( is_404() ) return;
 
         global $wpdb;
+
+        // Update aktivitas untuk hitung "online users" (UPSERT + debounce)
+        $this->upsert_online_session();
 
         $visitor_ip = $this->get_visitor_ip();
         $user_agent = $ua ? sanitize_text_field($ua) : '';
@@ -121,6 +138,84 @@ class Velocity_Addons_Statistic {
             $this->update_page_stats(  $page_url,  $visit_date, 1 ); // log pertama utk IP+URL+DATE
             $this->update_referrer_stats( $referer, $visit_date );
         }
+    }
+
+    /** ==========================
+     *  Online users (via DB table)
+     *  ========================== */
+    public function crons_add_ten_minutes($schedules) {
+        if ( ! isset($schedules['vd_ten_minutes']) ) {
+            $schedules['vd_ten_minutes'] = array(
+                'interval' => 10 * 60,
+                'display'  => __('Every 10 minutes', 'velocity-addons'),
+            );
+        }
+        return $schedules;
+    }
+
+    
+
+    private function get_online_ttl() {
+        $ttl = (int) apply_filters('vd_online_ttl', $this->online_ttl);
+        return $ttl > 0 ? $ttl : 300;
+    }
+
+    private function upsert_online_session() {
+        global $wpdb;
+        $table = $this->online_sessions_table;
+
+        // Pastikan ada session id
+        $sid = $this->visitor_id ?: '';
+        if ( empty($sid) ) {
+            $sid = md5($this->get_visitor_ip());
+        }
+        $sid = substr(sanitize_text_field($sid), 0, 64);
+
+        $user_id = is_user_logged_in() ? get_current_user_id() : 0;
+
+        // Normalisasi URL yg disimpan
+        $raw_uri  = wp_unslash($_SERVER['REQUEST_URI'] ?? '/');
+        $current_url = esc_url_raw( $this->normalize_path($raw_uri) );
+
+        // 1) Coba INSERT jika belum ada (session baru)
+        $inserted = $wpdb->query( $wpdb->prepare(
+            "INSERT IGNORE INTO {$table} (session_id, user_id, current_url, first_seen, last_seen)
+             VALUES (%s, %d, %s, NOW(), NOW())",
+            $sid, (int) $user_id, $current_url
+        ) );
+
+        // 2) Jika sudah ada, update hanya bila melewati debounce
+        if ( $inserted === 0 ) {
+            $wpdb->query( $wpdb->prepare(
+                "UPDATE {$table}
+                 SET user_id = %d, current_url = %s, last_seen = NOW()
+                 WHERE session_id = %s AND last_seen <= (NOW() - INTERVAL %d SECOND)",
+                (int) $user_id, $current_url, $sid, (int) max(1, $this->online_debounce)
+            ) );
+        }
+    }
+
+    public function cleanup_online_sessions() {
+        global $wpdb;
+        $table = $this->online_sessions_table;
+        $ttl = $this->get_online_ttl();
+        $wpdb->query( $wpdb->prepare(
+            "DELETE FROM {$table} WHERE last_seen < (NOW() - INTERVAL %d SECOND)",
+            (int) $ttl
+        ) );
+    }
+
+    private function get_online_users_count($ttl = null) {
+        global $wpdb;
+        $table = $this->online_sessions_table;
+        if ($ttl === null) {
+            $ttl = $this->get_online_ttl();
+        }
+        $count = $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$table} WHERE last_seen >= (NOW() - INTERVAL %d SECOND)",
+            (int) $ttl
+        ) );
+        return (int) $count;
     }
 
     /** ============================
@@ -502,10 +597,12 @@ class Velocity_Addons_Statistic {
         $atts = shortcode_atts(array(
             'style'                => 'list',   // list|inline
             'show'                 => 'all',    // all|today|total
+            'with_online'          => '1',     // default tampilkan user online
             'label_today_visits'   => __('Kunjungan Hari Ini', 'velocity-addons'),
             'label_today_visitors' => __('Pengunjung Hari Ini', 'velocity-addons'),
             'label_total_visits'   => __('Total Kunjungan', 'velocity-addons'),
             'label_total_visitors' => __('Total Pengunjung', 'velocity-addons'),
+            'label_online'         => __('Pengunjung Online', 'velocity-addons'),
         ), $atts, 'velocity-statistics');
 
         // Sanitasi label
@@ -514,6 +611,7 @@ class Velocity_Addons_Statistic {
             'label_today_visitors',
             'label_total_visits',
             'label_total_visitors',
+            'label_online',
         );
         foreach ($label_keys as $key) {
             $atts[$key] = sanitize_text_field($atts[$key]);
@@ -542,6 +640,15 @@ class Velocity_Addons_Statistic {
             $items[] = array(
                 'label' => $atts['label_total_visitors'],
                 'value' => number_format_i18n((int) ($stats['all_time']->unique_visitors ?? 0)),
+            );
+        }
+
+        // Online users (opsional)
+        $with_online = in_array(strtolower((string)$atts['with_online']), array('1','true','yes','on'), true);
+        if ( $with_online ) {
+            $items[] = array(
+                'label' => $atts['label_online'],
+                'value' => number_format_i18n( (int) $this->get_online_users_count() ),
             );
         }
 
@@ -613,6 +720,8 @@ class Velocity_Addons_Statistic {
         if ( $n >= 1000 )       return round($n/1000, 1) . 'K';
         return (string) $n;
     }
+
+    
 
     /** ======================================
      *  Popular posts: cookie + throttle + SQL

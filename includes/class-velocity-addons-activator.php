@@ -31,6 +31,7 @@ class Velocity_Addons_Activator {
 		$page_stats_table     = $wpdb->prefix . 'vd_page_stats';
 		$referrer_stats_table = $wpdb->prefix . 'vd_referrer_stats';
 		$daily_unique_table   = $wpdb->prefix . 'vd_daily_unique';
+		$online_sessions_table = $wpdb->prefix . 'vd_online_sessions';
 
 		// DDL (backtick + TIMESTAMP + BIGINT unsigned untuk counter)
 		$sql1 = "CREATE TABLE `{$visitor_logs_table}` (
@@ -109,6 +110,17 @@ class Velocity_Addons_Activator {
 			KEY `stat_date` (`stat_date`)
 		) {$charset_collate};";
 
+		$sql7 = "CREATE TABLE `{$online_sessions_table}` (
+			`session_id` VARCHAR(64) NOT NULL,
+			`user_id` BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+			`current_url` VARCHAR(512) NOT NULL DEFAULT '',
+			`first_seen` DATETIME NOT NULL,
+			`last_seen` DATETIME NOT NULL,
+			PRIMARY KEY (`session_id`),
+			KEY `last_seen_idx` (`last_seen`),
+			KEY `user_id_idx` (`user_id`)
+		) {$charset_collate};";
+
 		$tables = [
 			$visitor_logs_table   => $sql1,
 			$daily_stats_table    => $sql2,
@@ -116,6 +128,7 @@ class Velocity_Addons_Activator {
 			$page_stats_table     => $sql4,
 			$referrer_stats_table => $sql5,
 			$daily_unique_table   => $sql6,
+			$online_sessions_table => $sql7,
 		];
 
 		foreach ($tables as $table_name => $ddl) {
