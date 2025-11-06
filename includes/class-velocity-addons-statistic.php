@@ -557,14 +557,14 @@ class Velocity_Addons_Statistic {
 
         // ======== STYLE LIST (default & fallback) ========
         } elseif ($atts['style'] === 'list' || empty($atts['style'])) {
-            echo '<ul class="velocity-list-stats list-group list-group-flush m-0 p-0">';
+            echo '<div class="velocity-list-stats">';
             foreach ($items as $it) {
-                echo '<li class="bg-transparent px-0 list-group-item d-flex justify-content-between align-items-center">';
+                echo '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
                 echo '<span>' . esc_html($it['label']) . '</span>';
                 echo '<span class="fw-bold">' . esc_html($it['value']) . '</span>';
-                echo '</li>';
+                echo '</div>';
             }
-            echo '</ul>';
+            echo '</div>';
         }
 
         return ob_get_clean();
