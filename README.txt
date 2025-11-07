@@ -22,6 +22,11 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.6.3=
+- Update dokumentasi statistik: tambah keterangan dan contoh penggunaan parameter pengunjung online (with_online, label_online) di halaman admin dan dashboard.
+- Peningkatan UI dokumentasi shortcode statistik.
+- Minor copy update pada pengaturan Statistik.
+
 =1.6.2=
 - Penambahan fitur snippet
 - Penambahan statistik pengunjung 
