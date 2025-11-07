@@ -16,6 +16,8 @@ class Velocity_Addons_Post_Duplicator {
         add_action('admin_action_duplicate_post', array($this, 'duplicate_post_as_draft'));
         add_filter('post_row_actions', array($this, 'duplicate_post_link'), 10, 2);
         add_filter('page_row_actions', array($this, 'duplicate_post_link'), 10, 2); // Untuk Custom Post Type (CPT)
+        // Tambahkan tombol Duplicate di admin bar pada halaman edit post
+        add_action('admin_bar_menu', array($this, 'add_admin_bar_duplicate_link'), 100);
     }
 
     public function duplicate_post_as_draft() {
@@ -90,6 +92,44 @@ class Velocity_Addons_Post_Duplicator {
             $actions['duplicate'] = '<a href="' . wp_nonce_url(admin_url('admin.php?action=duplicate_post&post=' . $post->ID), 'duplicate_post_nonce', 'duplicate_nonce') . '" title="Duplicate this post" rel="permalink">Duplicate</a>';
         }
         return $actions;
+    }
+
+    // Tambah link Duplicate di Admin Bar saat berada di halaman edit post (Classic & Gutenberg)
+    public function add_admin_bar_duplicate_link($wp_admin_bar) {
+        if ( ! is_admin() || ! current_user_can('edit_posts') ) {
+            return;
+        }
+
+        // Berlaku untuk layar edit post (classic maupun Gutenberg)
+        $post_id = isset($_GET['post']) ? absint($_GET['post']) : 0;
+        $action  = isset($_GET['action']) ? sanitize_key($_GET['action']) : '';
+        if ( $action !== 'edit' ) {
+            // Fallback: cek current screen bila tersedia
+            if ( function_exists('get_current_screen') ) {
+                $screen = get_current_screen();
+                if ( ! $screen || $screen->base !== 'post' ) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+        if ( ! $post_id ) {
+            return;
+        }
+
+        $url = wp_nonce_url(
+            admin_url('admin.php?action=duplicate_post&post=' . $post_id),
+            'duplicate_post_nonce',
+            'duplicate_nonce'
+        );
+
+        $wp_admin_bar->add_node(array(
+            'id'    => 'vd-duplicate-post',
+            'title' => __('Duplicate', 'velocity-addons'),
+            'href'  => $url,
+            'meta'  => array('title' => __('Duplicate this post', 'velocity-addons')),
+        ));
     }
 }
 
