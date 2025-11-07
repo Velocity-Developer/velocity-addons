@@ -109,14 +109,16 @@ class Velocity_Addons_Dashboard
                             </ul>
 
                             <h6>#Velocity Statistics</h6>
-                            <p><code>[velocity-statistics style='' show='']</code></p>
+                            <p><code>[velocity-statistics style='' show='' with_online='']</code></p>
                             <ul>
                                 <li><strong>style</strong>: pilih tampilan statistik. list/inline (default list)</li>
                                 <li><strong>show</strong>: filter data yang ditampilkan. all/today/total (default all)</li>
+                                <li><strong>with_online</strong>: tampilkan/sembunyikan baris <em>Pengunjung Online</em>. 1/0 (default 1)</li>
                                 <li><strong>label_today_visits</strong>: ganti label "Kunjungan Hari Ini" (opsional)</li>
                                 <li><strong>label_today_visitors</strong>: ganti label "Pengunjung Hari Ini" (opsional)</li>
                                 <li><strong>label_total_visits</strong>: ganti label "Total Kunjungan" (opsional)</li>
                                 <li><strong>label_total_visitors</strong>: ganti label "Total Pengunjung" (opsional)</li>
+                                <li><strong>label_online</strong>: ganti label "Pengunjung Online" (opsional)</li>
                             </ul>
 
                             <h6>#Velocity Hits</h6>

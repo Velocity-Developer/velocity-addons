@@ -785,10 +785,12 @@ class Custom_Admin_Option_Page
                 <ul style="margin:0 0 20px 18px; color:#444; line-height:1.6;">
                     <li><code>style</code> — pilih tampilan statistik. <code>list</code> atau <code>inline</code> (default <code>list</code>)</li>
                     <li><code>show</code> — filter data yang ditampilkan. <code>all</code>, <code>today</code>, atau <code>total</code> (default <code>all</code>)</li>
+                    <li><code>with_online</code> — tampilkan jumlah <em>pengunjung online</em> saat ini (default <code>1</code> / tampil). Set <code>0</code> untuk menyembunyikan.</li>
                     <li><code>label_today_visits</code> — ganti label "Kunjungan Hari Ini" (opsional)</li>
-                     <li><code>label_today_visitors</code> — ganti label "Pengunjung Hari Ini" (opsional)</li>
+                    <li><code>label_today_visitors</code> — ganti label "Pengunjung Hari Ini" (opsional)</li>
                     <li><code>label_total_visits</code> — ganti label "Total Kunjungan" (opsional)</li>
                     <li><code>label_total_visitors</code> — ganti label "Total Pengunjung" (opsional)</li>
+                    <li><code>label_online</code> — ganti label "Pengunjung Online" (opsional)</li>
                 </ul>
 
                 <div class="shortcode-examples" style="display:grid;grid-template-columns:1fr 1fr;gap:30px;">
@@ -808,9 +810,6 @@ class Custom_Admin_Option_Page
                             </div>
                             <div style="font-size:13px;color:#666;">Hanya hari ini</div>
                         </div>
-                    </div>
-                    <div>
-                        <h4 style="color:#23282d;margin-bottom:15px;">⚙️ Advanced</h4>
                         <div style="margin-bottom:20px;">
                             <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
                                 <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics style=&quot;list&quot;]')">[velocity-statistics style="list"]</span>
@@ -818,12 +817,29 @@ class Custom_Admin_Option_Page
                             </div>
                             <div style="font-size:13px;color:#666;">Style: <code>list</code> atau <code>inline</code></div>
                         </div>
+                    </div>
+                    <div>
+                        <h4 style="color:#23282d;margin-bottom:15px;">⚙️ Advanced</h4>
+                        <div style="margin-bottom:20px;">
+                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics with_online=&quot;0&quot;]')">[velocity-statistics with_online="0"]</span>
+                                <button onclick="copyToClipboard('[velocity-statistics with_online=&quot;0&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                            </div>
+                            <div style="font-size:13px;color:#666;">Sembunyikan baris "Pengunjung Online"</div>
+                        </div>
                         <div style="margin-bottom:20px;">
                             <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
                                 <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')">[velocity-statistics label_today_visits="Traffic Hari Ini" label_today_visitors="Visitor Hari Ini" label_total_visits="Total Traffic" label_total_visitors="Total Visitor"]</span>
                                 <button onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
                             </div>
-                            <div style="font-size:13px;color:#666;">Custom label counter (gunakan atribut <code>label_today_visits</code>, <code>label_today_visitors</code>, <code>label_total_visits</code>, <code>label_total_visitors</code>)</div>
+                            <div style="font-size:13px;color:#666;">Custom label counter (gunakan atribut <code>label_today_visits</code>, <code>label_today_visitors</code>, <code>label_total_visits</code>, <code>label_total_visitors</code>, <code>label_online</code>)</div>
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics label_online=&quot;User Online&quot;]')">[velocity-statistics label_online="User Online"]</span>
+                                <button onclick="copyToClipboard('[velocity-statistics label_online=&quot;User Online&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                            </div>
+                            <div style="font-size:13px;color:#666;">Ubah label baris "Pengunjung Online"</div>
                         </div>
                     </div>
                 </div>
