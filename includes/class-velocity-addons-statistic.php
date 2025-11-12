@@ -577,6 +577,27 @@ class Velocity_Addons_Statistic {
             ];
         }
 
+        // Adjust with legacy baseline options so "all time" matches old plugin totals
+        $base_visits = (int) get_option('vd_legacy_total_visits', 0);
+        $base_unique = (int) get_option('vd_legacy_total_unique', 0);
+        $last_date   = (string) get_option('vd_legacy_last_date', '');
+        if ( $base_visits > 0 || $base_unique > 0 ) {
+            if ( ! empty($last_date) ) {
+                $after = $wpdb->get_row( $wpdb->prepare(
+                    "SELECT COALESCE(SUM(unique_visitors),0) AS uv, COALESCE(SUM(total_pageviews),0) AS pv
+                     FROM {$this->daily_stats_table}
+                     WHERE stat_date > %s",
+                    $last_date
+                ) );
+                $all_time->total_visits    = (int) $base_visits + (int) ($after->pv ?? 0);
+                $all_time->unique_visitors = (int) $base_unique + (int) ($after->uv ?? 0);
+            } else {
+                // fallback: ensure baseline at minimum
+                $all_time->total_visits    = max( (int)$all_time->total_visits, $base_visits );
+                $all_time->unique_visitors = max( (int)$all_time->unique_visitors, $base_unique );
+            }
+        }
+
         return array(
             'today'      => $today      ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],
             'this_week'  => $this_week  ?: (object) ['unique_visitors'=>0, 'total_visits'=>0],

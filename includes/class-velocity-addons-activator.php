@@ -139,6 +139,20 @@ class Velocity_Addons_Activator {
 		if ( ! wp_next_scheduled('vd_daily_aggregation') ) {
 			wp_schedule_event(time(), 'daily', 'vd_daily_aggregation');
 		}
+
+		// Tambahkan statistik dari versi lama (vd_statistic) sekali saja
+		try {
+			if ( ! get_option('velocity_addons_stats_legacy_added') && ! get_option('velocity_addons_stats_migrated') ) {
+				require_once plugin_dir_path(__FILE__) . 'class-velocity-addons-statistic-legacy.php';
+				$migrator = new Velocity_Addons_Statistic_Legacy(null, false);
+				$migrator->run();
+			}
+		} catch ( \Throwable $e ) {
+			// Jangan hentikan aktivasi jika migrasi error; hanya log di error_log
+			if ( function_exists('error_log') ) {
+				error_log('[velocity-addons] Migration error: ' . $e->getMessage());
+			}
+		}
 	}
 
 	/* ===== Helpers internal ===== */

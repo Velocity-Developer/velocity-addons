@@ -86,3 +86,13 @@ function run_velocity_addons()
     $plugin->run();
 }
 run_velocity_addons();
+
+// One-time additive import from legacy statistics (if site updated without re-activation)
+add_action('admin_init', function(){
+    if ( get_option('velocity_addons_stats_legacy_added') || get_option('velocity_addons_stats_migrated') ) return;
+    // Run only for users who can manage options to avoid front-end overhead
+    if ( ! current_user_can('manage_options') ) return;
+    require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-statistic-legacy.php';
+    $migrator = new Velocity_Addons_Statistic_Legacy(null, false);
+    $migrator->run();
+});
