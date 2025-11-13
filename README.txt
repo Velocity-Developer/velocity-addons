@@ -22,6 +22,10 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.6.5=
+- Jalankan ulang routine aktivasi/statistik otomatis setelah update plugin tanpa perlu re-aktivasi manual.
+- Simpan versi skema `velocity_addons_db_version` agar setup dijalankan sekali per rilis dan konsisten antar site.
+
 =1.6.4=
 - Import statistik legacy otomatis (additive) dengan baseline total kunjungan/pengunjung agar konsisten antar versi.
 - Tambah tombol Reset Statistik pada halaman admin untuk mengosongkan semua data statistik & meta hit secara aman.
