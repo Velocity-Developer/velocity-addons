@@ -431,57 +431,40 @@ class Velocity_Addons_Statistic {
      *  ====================================== */
 
     /**
-     * Rebuild vd_daily_stats from vd_visitor_logs.
-     * Menghasilkan 1 baris per tanggal: unique_visitors & total_pageviews.
-     * @return int Jumlah baris harian yang diinsert
+     * Reset seluruh data statistik, termasuk tabel agregat dan meta hit.
      */
-    public function rebuild_daily_stats() {
+    public function reset_statistics() {
         global $wpdb;
 
-        // Kosongkan tabel agregat harian
-        $wpdb->query( "TRUNCATE TABLE {$this->daily_stats_table}" );
-
-        // Isi ulang dari log
-        $inserted = $wpdb->query(
-            "INSERT INTO {$this->daily_stats_table} (stat_date, unique_visitors, total_pageviews)
-            SELECT
-                visit_date AS stat_date,
-                COUNT(DISTINCT visitor_ip) AS unique_visitors,
-                COUNT(*) AS total_pageviews
-            FROM {$this->logs_table}
-            GROUP BY visit_date"
+        $tables = array(
+            $this->logs_table,
+            $this->daily_stats_table,
+            $this->monthly_stats_table,
+            $this->page_stats_table,
+            $this->referrer_stats_table,
+            $this->daily_unique_table,
+            $this->online_sessions_table,
+            $wpdb->prefix . 'vd_statistic', // legacy table (versi lama)
         );
 
-        // Segarkan agregasi bulanan agar konsisten
-        $this->aggregate_monthly_stats();
+        foreach ( $tables as $table ) {
+            if ( ! empty( $table ) && $this->table_exists( $table ) ) {
+                $wpdb->query( "TRUNCATE TABLE `{$table}`" );
+            }
+        }
 
-        return (int) $inserted;
-    }
+        // Hapus meta 'hit' pada semua post/page
+        $wpdb->query( $wpdb->prepare(
+            "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s",
+            'hit'
+        ) );
 
-    /**
-     * Rebuild vd_page_stats dari vd_visitor_logs.
-     * Menghasilkan 1 baris per (page_url, tanggal).
-     * @return int Jumlah baris halaman-harian yang diinsert
-     */
-    public function rebuild_page_stats() {
-        global $wpdb;
-
-        // Kosongkan tabel agregat per-halaman
-        $wpdb->query( "TRUNCATE TABLE {$this->page_stats_table}" );
-
-        // Isi ulang dari log
-        $inserted = $wpdb->query(
-            "INSERT INTO {$this->page_stats_table} (page_url, stat_date, unique_visitors, total_views)
-            SELECT
-                page_url,
-                visit_date AS stat_date,
-                COUNT(DISTINCT visitor_ip) AS unique_visitors,
-                COUNT(*) AS total_views
-            FROM {$this->logs_table}
-            GROUP BY page_url, visit_date"
-        );
-
-        return (int) $inserted;
+        // Bersihkan opsi baseline dan flag migrasi
+        delete_option('vd_legacy_total_visits');
+        delete_option('vd_legacy_total_unique');
+        delete_option('vd_legacy_last_date');
+        delete_option('velocity_addons_stats_legacy_added');
+        delete_option('velocity_addons_stats_migrated');
     }
 
 

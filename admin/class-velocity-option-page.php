@@ -698,16 +698,12 @@ class Custom_Admin_Option_Page
         if ( ! $stats_handler ) {
             $stats_handler = new Velocity_Addons_Statistic();
         }
-
-        // Handle rebuild request (POST + nonce)
+        // Handle RESET request (POST + nonce)
         $rebuild_message = '';
-        if ( isset($_POST['rebuild_stats']) && check_admin_referer('rebuild_stats') ) {
-            $daily_count = (int) $stats_handler->rebuild_daily_stats();
-            $page_count  = (int) $stats_handler->rebuild_page_stats();
-            $rebuild_message = "<div class='notice notice-success is-dismissible'><p>✅ Statistik berhasil dibangun ulang! Memproses {$daily_count} data harian dan {$page_count} data halaman.</p></div>";
+        if ( isset($_POST['reset_stats']) && check_admin_referer('reset_stats') ) {
+            $stats_handler->reset_statistics();
+            $rebuild_message = "<div class='notice notice-success is-dismissible'><p>Statistik berhasil di-reset. Semua data statistik dan meta 'hit' telah dihapus.</p></div>";
         }
-
-        // Ambil data
         $summary_stats = $stats_handler->get_summary_stats();
         $daily_stats   = $stats_handler->get_daily_stats(30);
         $page_stats    = $stats_handler->get_page_stats(30);
@@ -737,13 +733,13 @@ class Custom_Admin_Option_Page
 
             <div style="margin: 20px 0;">
                 <form method="post" style="display:inline;">
-                    <?php wp_nonce_field('rebuild_stats'); ?>
-                    <input type="hidden" name="rebuild_stats" value="1">
+                    <?php wp_nonce_field('reset_stats'); ?>
+                    <input type="hidden" name="reset_stats" value="1">
                     <button type="submit" class="button button-secondary"
-                        onclick="return confirm('Apakah Anda yakin ingin membangun ulang statistik? Ini akan menghitung ulang semua data dari log yang ada.')">
-                        🔄 Bangun Ulang Statistik
+                        onclick="return confirm('Apakah Anda yakin ingin me-reset statistik? Tindakan ini akan menghapus semua data statistik dan meta hit secara permanen.')">
+                        Reset Statistik
                     </button>
-                    <span style="margin-left:10px;color:#666;font-size:13px;">Use this if visitor counts appear incorrect</span>
+                    <span style="vertical-align:middle;margin-left:10px;color:#666;font-size:13px;">Gunakan ini untuk mengosongkan seluruh data statistik</span>
                 </form>
             </div>
 
