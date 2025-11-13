@@ -22,6 +22,11 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.6.4=
+- Import statistik legacy otomatis (additive) dengan baseline total kunjungan/pengunjung agar konsisten antar versi.
+- Tambah tombol Reset Statistik pada halaman admin untuk mengosongkan semua data statistik & meta hit secara aman.
+- Perapian UI statistik + perbaikan minor dokumentasi dan logika statistik.
+
 =1.6.3=
 - Update dokumentasi statistik: tambah keterangan dan contoh penggunaan parameter pengunjung online (with_online, label_online) di halaman admin dan dashboard.
 - Peningkatan UI dokumentasi shortcode statistik.
