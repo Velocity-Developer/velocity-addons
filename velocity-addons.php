@@ -36,6 +36,7 @@ if (!defined('WPINC')) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define('VELOCITY_ADDONS_VERSION', '1.6.4');
+define('VELOCITY_ADDONS_DB_VERSION', VELOCITY_ADDONS_VERSION);
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
 define('PLUGIN_FILE', plugin_basename(__FILE__));
 define('PLUGIN_BASE_NAME', plugin_basename(__DIR__));
@@ -63,6 +64,26 @@ function deactivate_velocity_addons()
 
 register_activation_hook(__FILE__, 'activate_velocity_addons');
 register_deactivation_hook(__FILE__, 'deactivate_velocity_addons');
+
+/**
+ * Ensure DB schema/setup runs after silent core/plugin updates.
+ */
+function velocity_addons_maybe_upgrade_after_update() {
+    if ( ! is_admin() || ! current_user_can('activate_plugins') ) {
+        return;
+    }
+
+    $installed_version = get_option('velocity_addons_db_version');
+    if ( $installed_version && version_compare($installed_version, VELOCITY_ADDONS_DB_VERSION, '>=') ) {
+        return;
+    }
+
+    require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-activator.php';
+
+    // Re-run activator to (re)generate tables, cron, etc.
+    Velocity_Addons_Activator::activate();
+}
+add_action('admin_init', 'velocity_addons_maybe_upgrade_after_update', 5);
 
 /**
  * The core plugin class that is used to define internationalization,

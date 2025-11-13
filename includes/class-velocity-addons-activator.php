@@ -153,6 +153,8 @@ class Velocity_Addons_Activator {
 				error_log('[velocity-addons] Migration error: ' . $e->getMessage());
 			}
 		}
+
+		update_option('velocity_addons_db_version', VELOCITY_ADDONS_DB_VERSION);
 	}
 
 	/* ===== Helpers internal ===== */
