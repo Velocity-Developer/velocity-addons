@@ -22,7 +22,7 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
-=1.6.5=
+=1.6.6=
 - Jalankan ulang routine aktivasi/statistik otomatis setelah update plugin tanpa perlu re-aktivasi manual.
 - Simpan versi skema `velocity_addons_db_version` agar setup dijalankan sekali per rilis dan konsisten antar site.
 
