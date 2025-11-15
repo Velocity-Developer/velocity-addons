@@ -48,8 +48,16 @@ define('VELOCITY_ADDONS_PLUGIN_DIR_URL', plugin_dir_url(__FILE__));
  */
 function activate_velocity_addons()
 {
-    require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-activator.php';
-    Velocity_Addons_Activator::activate();
+    ob_start();
+    try {
+        require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-activator.php';
+        Velocity_Addons_Activator::activate();
+    } finally {
+        $buffer = ob_get_clean();
+        if (!empty($buffer) && function_exists('error_log')) {
+            error_log('[velocity-addons] Activation output suppressed: ' . wp_strip_all_tags($buffer));
+        }
+    }
 }
 
 /**
@@ -115,5 +123,10 @@ add_action('admin_init', function(){
     if ( ! current_user_can('manage_options') ) return;
     require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-statistic-legacy.php';
     $migrator = new Velocity_Addons_Statistic_Legacy(null, false);
+    ob_start();
     $migrator->run();
+    $buffer = ob_get_clean();
+    if (!empty($buffer) && function_exists('error_log')) {
+        error_log('[velocity-addons] Legacy migrator output suppressed: ' . wp_strip_all_tags($buffer));
+    }
 });

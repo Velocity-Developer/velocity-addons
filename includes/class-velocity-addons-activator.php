@@ -164,6 +164,10 @@ class Velocity_Addons_Activator {
 
 		if ('' === trim($table_name) || '' === trim($ddl)) return;
 
+		if ( self::table_exists($table_name) && self::should_skip_alter($table_name) ) {
+			return;
+		}
+
 		// 1) dbDelta
 		dbDelta($ddl);
 		if ( self::table_exists($table_name) ) return;
@@ -184,5 +188,16 @@ class Velocity_Addons_Activator {
 		if ('' === trim($table_name)) return false;
 		$found = $wpdb->get_var( $wpdb->prepare('SHOW TABLES LIKE %s', $table_name) );
 		return $found === $table_name;
+	}
+
+	private static function should_skip_alter(string $table_name) : bool {
+		global $wpdb;
+		$monthly = $wpdb->prefix . 'vd_monthly_stats';
+		if ( $table_name !== $monthly ) {
+			return false;
+		}
+		// Monthly stats schema previously used composite keys (year/month). If the table already
+		// exists we skip forcing dbDelta to add an auto ID/primary key to avoid MySQL errors.
+		return true;
 	}
 }
