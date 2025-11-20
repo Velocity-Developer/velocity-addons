@@ -22,6 +22,10 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.6.7=
+- Tambah fitur Optimize Database: hapus revisions, auto-draft, trash, orphan meta/term, komentar spam/trash/pending lama, transients kedaluwarsa, cache oEmbed. Tampilkan jumlah dan estimasi ukuran per item.
+- Opsi eksekusi: Hapus Terpilih atau Hapus Semua, dengan notifikasi hasil.
+
 =1.6.6=
 - Jalankan ulang routine aktivasi/statistik otomatis setelah update plugin tanpa perlu re-aktivasi manual.
 - Simpan versi skema `velocity_addons_db_version` agar setup dijalankan sekali per rilis dan konsisten antar site.
