@@ -170,6 +170,20 @@ class Velocity_Addons_Optimasi
         $url = admin_url('admin-post.php');
         echo '<div class="wrap">';
         echo '<h2>Optimize Database</h2>';
+        echo '<style>
+        .vd-grid{display:grid;grid-template-columns:2fr 1fr;gap:15px;align-items:start;margin-top:10px}
+        @media(max-width:1024px){.vd-grid{grid-template-columns:1fr}}
+        .vd-chart{width:100%;height:260px}
+        .vd-chart canvas{width:100%!important;height:100%!important}
+        @media(max-width:782px){.vd-chart{height:200px}}
+        .vd-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .vd-table{width:100%;table-layout:auto!important}
+        .vd-table th,.vd-table td{vertical-align:middle}
+        .vd-col-select{width:40px;text-align:center}
+        .vd-col-label{word-break:break-word}
+        .vd-col-count,.vd-col-size{white-space:nowrap;text-align:right}
+        @media(max-width:782px){.vd-col-select{width:30px}.vd-col-count,.vd-col-size{min-width:50px}}
+        </style>';
         $rank = [];
         foreach ($stats as $k=>$it) { $rank[$k] = isset($it['size']) ? (int)$it['size'] : 0; }
         arsort($rank);
@@ -207,7 +221,7 @@ class Velocity_Addons_Optimasi
             // }
         }
         $chart_json = wp_json_encode($chart_data);
-        $chart_html = '<div style="margin-top:8px"><canvas id="optimizeChart" height="160" data-chart=\'' . esc_attr($chart_json) . '\'></canvas></div>';
+        $chart_html = '<div class="vd-chart"><canvas id="optimizeChart" data-chart=\'' . esc_attr($chart_json) . '\'></canvas></div>';
         echo '<div style="margin:10px 0;background:#fff;padding:12px;border:1px solid #ddd;border-radius:4px;">'
             . '<strong>Statistik Kandidat</strong>: ' . esc_html(number_format($rows_total)) . ' row, ' . esc_html(self::format_bytes($size_total))
             . $top_html
@@ -235,27 +249,27 @@ class Velocity_Addons_Optimasi
             'oembed_cache' => 'Cache oEmbed'
         ];
 
-        echo '<div class="vd-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:15px;align-items:start;margin-top:10px">';
+        echo '<div class="vd-grid">';
         echo '<div>';
-        echo '<table class="widefat fixed">';
-        echo "<thead><tr><th style=\"width:40px\">Pilih</th><th>Item</th><th style=\"width:140px\">Jumlah Baris</th><th style=\"width:180px\">Estimasi Ukuran</th></tr></thead><tbody>";
+        echo '<div class="vd-table-wrap"><table class="widefat fixed vd-table">';
+        echo "<thead><tr><th class=\"vd-col-select\">Pilih</th><th class=\"vd-col-label\" style=\"width:30%\">Item</th><th class=\"vd-col-count\" style=\"text-align:right;\">Row</th><th class=\"vd-col-size\" style=\"text-align:right;\">Ukuran</th></tr></thead><tbody>";
         foreach ($items as $key => $label) {
             $count = isset($stats[$key]['count']) ? (int)$stats[$key]['count'] : 0;
             $size = isset($stats[$key]['size']) ? (int)$stats[$key]['size'] : 0;
             echo '<tr>';
-            echo '<td><input type="checkbox" name="items[]" value="' . esc_attr($key) . '" /></td>';
-            echo '<td>' . esc_html($label) . '</td>';
-            echo '<td>' . esc_html(number_format($count)) . ' row</td>';
-            echo '<td>' . esc_html(self::format_bytes($size)) . '</td>';
+            echo '<td class="vd-col-select"><input type="checkbox" name="items[]" value="' . esc_attr($key) . '" /></td>';
+            echo '<td class="vd-col-label">' . esc_html($label) . '</td>';
+            echo '<td class="vd-col-count">' . esc_html(number_format($count)) . ' row</td>';
+            echo '<td class="vd-col-size">' . esc_html(self::format_bytes($size)) . '</td>';
             echo '</tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></div>';
 
         echo '</div>';
         echo '<div>';
         echo '<div style="margin-top:0;background:#fff;padding:15px;border:1px solid #ddd;border-radius:4px;">'
             . '<h3 style="margin:0 0 10px">Penjelasan & Dampak</h3>'
-            . '<p>Kolom "Jumlah Baris" menampilkan jumlah row yang akan dihapus; "Estimasi Ukuran" adalah perkiraan total byte konten terkait.</p>'
+            . '<p>Kolom "Row" menampilkan jumlah row yang akan dihapus; "Estimasi Ukuran" adalah perkiraan total byte konten terkait.</p>'
             . '<ul style="margin:0 0 0 18px;list-style:disc">'
             . '<li>Revisions, Auto Draft, Trash: membersihkan cadangan/konsep, aman untuk konten publik.</li>'
             . '<li>Orphan Postmeta/Term/Relasi/Commentmeta: hanya menghapus data tanpa induk, aman.</li>'

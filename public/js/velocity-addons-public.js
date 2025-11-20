@@ -63,7 +63,7 @@
 						pointHoverRadius: 6
 					},
 					{
-						label: 'Jumlah Baris',
+						label: 'Row',
 						data: counts,
 						borderColor: '#1e73be',
 						backgroundColor: 'rgba(30, 115, 190, 0.15)',

@@ -3,7 +3,7 @@
 Dokumen ini menjelaskan setiap opsi pembersihan yang tersedia di halaman “Optimize Database”, termasuk dampak, potensi konflik, dan kompatibilitas dengan page builder.
 
 ## Ikhtisar Tampilan
-- Kolom “Jumlah Baris” menunjukkan jumlah baris (row) yang akan dihapus sesuai kondisi tiap item.
+- Kolom “Row” menunjukkan jumlah baris (row) yang akan dihapus sesuai kondisi tiap item.
 - Kolom “Estimasi Ukuran” adalah estimasi total byte konten yang terlibat (bukan ukuran fisik file tabel), diformat agar mudah dibaca.
 
 ## Item Pembersihan
@@ -81,7 +81,7 @@ Setelah menjalankan pembersihan:
 
 ## Praktik Aman
 - Selalu backup database penuh sebelum eksekusi.
-- Gunakan tampilan pratinjau (“Jumlah Baris” dan “Estimasi Ukuran”) untuk menilai dampak.
+- Gunakan tampilan pratinjau (“Row” dan Ukuran”) untuk menilai dampak.
 - Jalankan di staging jika ragu, kemudian produksi.
 - Prefix tabel: jika bukan `wp_`, sistem akan otomatis menggunakan prefix situs aktif (`$wpdb->prefix`).
 
