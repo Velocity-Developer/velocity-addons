@@ -164,9 +164,55 @@ class Velocity_Addons_Optimasi
         if (!current_user_can('manage_options')) return;
         $done = isset($_GET['velocity_optimize_done']) ? sanitize_text_field($_GET['velocity_optimize_done']) : '';
         $stats = self::stats();
+        $rows_total = 0;
+        $size_total = 0;
+        foreach ($stats as $it) { $rows_total += isset($it['count']) ? (int)$it['count'] : 0; $size_total += isset($it['size']) ? (int)$it['size'] : 0; }
         $url = admin_url('admin-post.php');
         echo '<div class="wrap">';
         echo '<h2>Optimize Database</h2>';
+        $rank = [];
+        foreach ($stats as $k=>$it) { $rank[$k] = isset($it['size']) ? (int)$it['size'] : 0; }
+        arsort($rank);
+        $top = array_slice($rank, 0, 3, true);
+        $top_html = '';
+        if (!empty($top)) {
+            $top_html .= '<div style="margin-top:8px;color:#555"><strong><em>Top berdasarkan ukuran:</em></strong> <ul>';
+            foreach ($top as $tk=>$sz) {
+                $label = ucwords(str_replace('_',' ',$tk));
+                $cnt   = isset($stats[$tk]['count']) ? (int)$stats[$tk]['count'] : 0;
+                $top_html .= '<li>' . esc_html($label) . ': ' . esc_html(self::format_bytes($sz)) . ' (' . esc_html(number_format($cnt)) . ' row)</li>';
+            }
+            $top_html .= '</ul></div>';
+        }
+        $labels_map = [
+            'revisions' => 'Revisions',
+            'auto_drafts' => 'Auto Draft',
+            'trash_posts' => 'Posts di Trash',
+            'orphan_postmeta' => 'Orphan Postmeta',
+            'orphan_term_rel_object' => 'Orphan Term Relationships (Object)',
+            'orphan_term_rel_tax' => 'Orphan Term Relationships (Taxonomy)',
+            'orphan_termmeta' => 'Orphan Termmeta',
+            'comments_spam_trash' => 'Komentar Spam & Trash',
+            'comments_pending_old' => 'Komentar Pending > 90 Hari',
+            'orphan_commentmeta' => 'Orphan Commentmeta',
+            'expired_transients' => 'Transients Kedaluwarsa',
+            'oembed_cache' => 'Cache oEmbed'
+        ];
+        $chart_data = [];
+        foreach ($labels_map as $key=>$label) {
+            $sz  = isset($stats[$key]['size']) ? (int)$stats[$key]['size'] : 0;
+            $cnt = isset($stats[$key]['count']) ? (int)$stats[$key]['count'] : 0;
+            // if ($cnt > 0 || $sz > 0) {
+                $chart_data[] = ['label' => $label, 'size' => $sz, 'count' => $cnt];
+            // }
+        }
+        $chart_json = wp_json_encode($chart_data);
+        $chart_html = '<div style="margin-top:8px"><canvas id="optimizeChart" height="160" data-chart=\'' . esc_attr($chart_json) . '\'></canvas></div>';
+        echo '<div style="margin:10px 0;background:#fff;padding:12px;border:1px solid #ddd;border-radius:4px;">'
+            . '<strong>Statistik Kandidat</strong>: ' . esc_html(number_format($rows_total)) . ' row, ' . esc_html(self::format_bytes($size_total))
+            . $top_html
+            . $chart_html
+            . '</div>';
         if ($done) {
             echo '<div class="notice notice-success is-dismissible"><p><strong>Optimize selesai</strong> — ' . esc_html($done) . '</p></div>';
         }
@@ -175,22 +221,24 @@ class Velocity_Addons_Optimasi
         echo wp_nonce_field('velocity_optimize_db', '_velocity_optimize_db', true, false);
 
         $items = [
-            'revisions' => 'Hapus Revisions',
-            'auto_drafts' => 'Hapus Auto Draft',
-            'trash_posts' => 'Hapus Posts di Trash',
-            'orphan_postmeta' => 'Hapus Orphan Postmeta',
-            'orphan_term_rel_object' => 'Hapus Orphan Term Relationships (Object)',
-            'orphan_term_rel_tax' => 'Hapus Orphan Term Relationships (Taxonomy)',
-            'orphan_termmeta' => 'Hapus Orphan Termmeta',
-            'comments_spam_trash' => 'Hapus Komentar Spam & Trash',
-            'comments_pending_old' => 'Hapus Komentar Pending > 90 Hari',
-            'orphan_commentmeta' => 'Hapus Orphan Commentmeta',
-            'expired_transients' => 'Hapus Transients Kedaluwarsa',
-            'oembed_cache' => 'Hapus Cache oEmbed'
+            'revisions' => 'Revisions',
+            'auto_drafts' => 'Auto Draft',
+            'trash_posts' => 'Posts di Trash',
+            'orphan_postmeta' => 'Orphan Postmeta',
+            'orphan_term_rel_object' => 'Orphan Term Relationships (Object)',
+            'orphan_term_rel_tax' => 'Orphan Term Relationships (Taxonomy)',
+            'orphan_termmeta' => 'Orphan Termmeta',
+            'comments_spam_trash' => 'Komentar Spam & Trash',
+            'comments_pending_old' => 'Komentar Pending > 90 Hari',
+            'orphan_commentmeta' => 'Orphan Commentmeta',
+            'expired_transients' => 'Transients Kedaluwarsa',
+            'oembed_cache' => 'Cache oEmbed'
         ];
 
+        echo '<div class="vd-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:15px;align-items:start;margin-top:10px">';
+        echo '<div>';
         echo '<table class="widefat fixed">';
-        echo '<thead><tr><th style="width:40px">Pilih</th><th>Item</th><th style="width:140px">Jumlah Baris</th><th style="width:180px">Estimasi Ukuran</th></tr></thead><tbody>';
+        echo "<thead><tr><th style=\"width:40px\">Pilih</th><th>Item</th><th style=\"width:140px\">Jumlah Baris</th><th style=\"width:180px\">Estimasi Ukuran</th></tr></thead><tbody>";
         foreach ($items as $key => $label) {
             $count = isset($stats[$key]['count']) ? (int)$stats[$key]['count'] : 0;
             $size = isset($stats[$key]['size']) ? (int)$stats[$key]['size'] : 0;
@@ -203,7 +251,9 @@ class Velocity_Addons_Optimasi
         }
         echo '</tbody></table>';
 
-        echo '<div style="margin-top:15px;background:#fff;padding:15px;border:1px solid #ddd;border-radius:4px;">'
+        echo '</div>';
+        echo '<div>';
+        echo '<div style="margin-top:0;background:#fff;padding:15px;border:1px solid #ddd;border-radius:4px;">'
             . '<h3 style="margin:0 0 10px">Penjelasan & Dampak</h3>'
             . '<p>Kolom "Jumlah Baris" menampilkan jumlah row yang akan dihapus; "Estimasi Ukuran" adalah perkiraan total byte konten terkait.</p>'
             . '<ul style="margin:0 0 0 18px;list-style:disc">'
@@ -215,7 +265,8 @@ class Velocity_Addons_Optimasi
             . '</ul>'
             . '<p>Kompatibilitas: tidak menyentuh meta/page builder (mis. Beaver Builder); fokus pada data yatim/cadangan/sampah/cache.</p>'
             . '</div>';
-
+        echo '</div>';
+        echo '</div>';
 
         echo '<p style="margin-top:15px">';
         echo '<button class="button button-primary" type="submit" name="do" value="selected">Hapus Terpilih</button> ';
@@ -244,14 +295,22 @@ class Velocity_Addons_Optimasi
             $items = array_values(array_intersect($items, $keys));
         }
 
+        $pre = self::stats();
         $results = $this->delete_items($items);
 
+        $rows_total = 0;
+        $size_total = 0;
         $msg = [];
         foreach ($results as $k => $v) {
-            $msg[] = $items ? (ucwords(str_replace('_',' ',$k)) . ': ' . number_format((int)$v)) : '';
+            $rows_total += (int)$v;
+            $size = isset($pre[$k]['size']) ? (int)$pre[$k]['size'] : 0;
+            $size_total += $size;
+            $label = ucwords(str_replace('_',' ',$k));
+            $msg[] = sprintf('%s: %s (%s)', $label, number_format((int)$v), self::format_bytes($size));
         }
         $notice = implode(' | ', array_filter($msg));
-        $redirect = add_query_arg(['velocity_optimize_done' => rawurlencode($notice)], admin_url('admin.php?page=velocity_optimize_db'));
+        $summary = sprintf('Total: %s row, %s', number_format($rows_total), self::format_bytes($size_total));
+        $redirect = add_query_arg(['velocity_optimize_done' => rawurlencode($notice . ' || ' . $summary)], admin_url('admin.php?page=velocity_optimize_db'));
         wp_safe_redirect($redirect);
         exit;
     }
