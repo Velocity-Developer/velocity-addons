@@ -131,6 +131,18 @@ class Custom_Admin_Option_Page
             );
         }
 
+        $optimasi_velocity = get_option('velocity_optimasi', '1');
+        if ($optimasi_velocity == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Optimize Database',
+                'Optimize Database',
+                'manage_options',
+                'velocity_optimize_db',
+                array($this, 'optimize_db_page_callback')
+            );
+        }
+
     }
 
     public function velocity_seo_page()
@@ -189,6 +201,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'captcha_velocity');
         register_setting('custom_admin_options_group', 'news_generate');
         register_setting('custom_admin_options_group', 'velocity_gallery');
+        register_setting('custom_admin_options_group', 'velocity_optimasi');
         register_setting('custom_admin_options_group', 'velocity_duitku');
         register_setting('custom_admin_options_group', 'floating_whatsapp');
         register_setting('custom_admin_options_group', 'floating_scrollTop');
@@ -364,6 +377,13 @@ class Custom_Admin_Option_Page
                         'title' => 'Gallery Post Type',
                         'std'   => 0,
                         'label' => 'Aktifkan fungsi untuk menggunakan Gallery Post Type.',
+                    ],
+                    [
+                        'id'    => 'velocity_optimasi',
+                        'type'  => 'checkbox',
+                        'title' => 'Optimize Database',
+                        'std'   => 0,
+                        'label' => 'Aktifkan fungsi untuk mengoptimalkan situs dari database.',
                     ],
                     [
                         'id'    => 'velocity_duitku',
@@ -998,6 +1018,12 @@ class Custom_Admin_Option_Page
         .table-container code{background:#f1f1f1;padding:2px 6px;border-radius:4px;font-size:12px}
         </style>
         <?php
+    }
+
+    public function optimize_db_page_callback()
+    {
+        if (!current_user_can('manage_options')) return;
+        Velocity_Addons_Optimasi::render_optimize_db_page();
     }
 
 

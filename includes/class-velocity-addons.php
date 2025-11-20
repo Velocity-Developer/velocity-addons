@@ -221,6 +221,11 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-gallery.php';
 
         /**
+         * Class untuk menambah option optimasi
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-optimasi.php';
+
+        /**
          * Class untuk menambah option duitku
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-duitku.php';
