@@ -189,6 +189,7 @@ class Custom_Admin_Option_Page
         register_setting('custom_admin_options_group', 'captcha_velocity');
         register_setting('custom_admin_options_group', 'news_generate');
         register_setting('custom_admin_options_group', 'velocity_gallery');
+        register_setting('custom_admin_options_group', 'velocity_optimasi');
         register_setting('custom_admin_options_group', 'velocity_duitku');
         register_setting('custom_admin_options_group', 'floating_whatsapp');
         register_setting('custom_admin_options_group', 'floating_scrollTop');
@@ -364,6 +365,13 @@ class Custom_Admin_Option_Page
                         'title' => 'Gallery Post Type',
                         'std'   => 0,
                         'label' => 'Aktifkan fungsi untuk menggunakan Gallery Post Type.',
+                    ],
+                    [
+                        'id'    => 'velocity_optimasi',
+                        'type'  => 'checkbox',
+                        'title' => 'Optimize',
+                        'std'   => 0,
+                        'label' => 'Aktifkan fungsi untuk mengoptimalkan situs dari database.',
                     ],
                     [
                         'id'    => 'velocity_duitku',
