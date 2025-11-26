@@ -143,6 +143,14 @@ class Custom_Admin_Option_Page
             );
         }
 
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Pengaturan (React)',
+            'Pengaturan (React)',
+            'manage_options',
+            'velocity_react_options',
+            [$this, 'velocity_react_options_page'],
+        );
     }
 
     public function velocity_seo_page()
@@ -173,6 +181,70 @@ class Custom_Admin_Option_Page
     public function page_velocity_addons()
     {
         Velocity_Addons_Dashboard::render_dashboard_page();
+    }
+
+    public function velocity_react_options_page()
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        if (!class_exists('Velocity_Addons_REST_Options')) {
+            echo '<div class="notice notice-error"><p>REST controller belum dimuat.</p></div>';
+            return;
+        }
+
+        $schema = Velocity_Addons_REST_Options::get_fields_schema();
+        $fields = array_map(function ($field) {
+            $key = $field['id'];
+            if (isset($field['sub']) && $field['sub']) {
+                $key .= '__' . $field['sub'];
+            }
+            $field['key'] = $key;
+            return $field;
+        }, $schema);
+
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            plugin_dir_url(__FILE__) . 'js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
+
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            plugin_dir_url(__FILE__) . 'css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
+
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => $fields,
+                'routes'  => [
+                    'options' => '/velocity-addons/v1/options',
+                ],
+                'strings' => [
+                    'title'     => 'Pengaturan Velocity (React)',
+                    'save'      => 'Simpan',
+                    'saving'    => 'Menyimpan...',
+                    'updated'   => 'Pengaturan berhasil disimpan.',
+                    'loadError' => 'Gagal memuat pengaturan.',
+                    'saveError' => 'Gagal menyimpan pengaturan.',
+                ],
+            ]
+        );
+        ?>
+        <div class="wrap velocity-react-options-wrap">
+            <h1><?php esc_html_e('Pengaturan Velocity (React)', 'velocity-addons'); ?></h1>
+            <div id="velocity-addons-react-root"></div>
+        </div>
+        <?php
     }
 
     public function register_settings()

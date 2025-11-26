@@ -266,6 +266,11 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-option-page.php';
 
         /**
+         * REST controller untuk mengelola opsi via React app.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-rest-options.php';
+
+        /**
          * The class responsible for defining all actions that occur in the public-facing
          * side of the site.
          */
@@ -302,9 +307,11 @@ class Velocity_Addons
     {
 
         $plugin_admin = new Velocity_Addons_Admin($this->get_plugin_name(), $this->get_version());
+        $rest_options = new Velocity_Addons_REST_Options();
 
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
+        $this->loader->add_action('rest_api_init', $rest_options, 'register_routes');
     }
 
     /**
