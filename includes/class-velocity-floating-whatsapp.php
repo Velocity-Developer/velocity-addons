@@ -32,41 +32,66 @@ class Velocity_Addons_Floating_Whatsapp
 
     public static function floating_whatsapp_page()
     {
+        if (!class_exists('Velocity_Addons_REST_Options')) {
+            echo '<div class="notice notice-error"><p>REST controller belum dimuat.</p></div>';
+            return;
+        }
+
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
+
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
+
+        $fields = array_filter(
+            Velocity_Addons_REST_Options::get_fields_schema_for_frontend(),
+            function ($field) {
+                return in_array($field['id'], ['nomor_whatsapp', 'whatsapp_text', 'whatsapp_message', 'whatsapp_position'], true);
+            }
+        );
+
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => array_values($fields),
+                'tabs'    => [
+                    [
+                        'id'        => 'floating_whatsapp',
+                        'title'     => 'Floating Whatsapp',
+                        'fieldKeys' => array_map(function ($field) {
+                            return $field['key'] ?? $field['id'];
+                        }, $fields),
+                    ],
+                ],
+                'routes'  => [
+                    'options' => '/velocity-addons/v1/options',
+                ],
+                'strings' => [
+                    'title'     => 'Whatsapp Settings',
+                    'subtitle'  => 'Atur nomor, pesan, teks, dan posisi tombol floating WhatsApp.',
+                    'save'      => 'Simpan',
+                    'saving'    => 'Menyimpan...',
+                    'updated'   => 'Pengaturan berhasil disimpan.',
+                    'loadError' => 'Gagal memuat pengaturan.',
+                    'saveError' => 'Gagal menyimpan pengaturan.',
+                ],
+            ]
+        );
 ?>
-        <div class="wrap">
-            <h2>Whatsapp Settings</h2>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_floating_whatsapp_group'); ?>
-                <?php do_settings_sections('velocity_floating_whatsapp_group'); ?>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Nomor Whatsapp</th>
-                        <td>
-                            <input class="regular-text" type="text" name="nomor_whatsapp" value="<?php echo esc_attr(get_option('nomor_whatsapp', '')); ?>" placeholder="08xxx" /><br />
-                            <small for="nomor_whatsapp">Bisa diawali 62 atau 08</small>
-                        </td>
-                    <tr valign="top">
-                        <th scope="row">Text Whatsapp</th>
-                        <td>
-                            <input class="regular-text" type="text" name="whatsapp_text" value="<?php echo esc_attr(get_option('whatsapp_text', 'Butuh Bantuan?')); ?>" /><br />
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Pesan Whatsapp</th>
-                        <td><textarea class="large-text" name="whatsapp_message" rows="4" cols="40"><?php echo esc_textarea(get_option('whatsapp_message', 'Hallo...')); ?></textarea></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Whatsapp Position</th>
-                        <td>
-                            <select name="whatsapp_position">
-                                <option value="right" <?php selected(get_option('whatsapp_position'), 'right'); ?>>Right</option>
-                                <option value="left" <?php selected(get_option('whatsapp_position'), 'left'); ?>>Left</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-                <?php submit_button(); ?>
-            </form>
+        <div class="wrap velocity-react-options-wrap">
+            <div id="velocity-addons-react-root"></div>
         </div>
         <?php
     }

@@ -219,76 +219,64 @@ class Velocity_Addons_News
 
     public static function render_news_settings_page()
     {
-        ?>
-        <div class="wrap">
-            <h2>News Scraper</h2>
-            <h4>Ambil Artikel dari API Velocity</h4>
-            <form method="post">
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">Ambil Target</th>
-                        <td>
-                            <?php
-                            // Mengambil kategori dan post
-                            $get_categories = self::fetch_category();
-                            
-                            //jika tidak sukses, tampilkan pesan
-                            if(isset($get_categories['status']) && $get_categories['status'] == true){
-                                $categories = $get_categories['data']??[];
-                            } else {
-                                echo '<p>'.$get_categories['message'].'</p>';
-                                $categories = [];
-                            }
-                            ?>
-                            <select name="target" id="target" required>
-                                <option value="">Pilih Target</option>
-                                <?php foreach($categories as $category):
-                                echo '<option value="'.$category['id'].'">'.$category['name'].'</option>';
-                                endforeach;
-                                ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Tujuan Target</th>
-                        <td><?php
-                            wp_dropdown_categories(array(
-                                'show_option_none' => 'Pilih Kategori', 
-                                'option_none_value' => '', 
-                                'name' => 'category',
-                                'id' => 'category',
-                                'exclude'   =>1,
-                                'class' => 'postform',
-                                'hide_empty' => 0,
-                                'required' => 'required',
-                            ));?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Jumlah Artikel</th>
-                        <td><input type="number" name="jml_target" id="jml_target" min="1" value="5" required/></td>
-                    </tr>
-                    <tr>
-                        <th>Status</th>
-                        <td>
-                            <select id="status" name="status" required>
-                            <option value="publish">Publish</option>
-                            <option value="draft">Draft</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr><td colspan="2"><input class="button button-primary" type="submit" value="Ambil Artikel"></td></tr>
-                </table>
-            </form>
-        </div>
-        <?php
-        if (isset($_POST['category']) && isset($_POST['jml_target'])) {
-            $target = sanitize_text_field($_POST['target']);
-            $category = sanitize_text_field($_POST['category']);
-            $count = intval($_POST['jml_target']);
-            $status = sanitize_text_field($_POST['status']);
-            echo '<div class="vdaddons-notice">'.self::fetch_news_scraper($target, $category, $count, $status).'</div>';
+        if (!class_exists('Velocity_Addons_REST_Options')) {
+            echo '<div class="notice notice-error"><p>REST controller belum dimuat.</p></div>';
+            return;
         }
+
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
+
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
+
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => [], // tidak ada opsi permanen
+                'tabs'    => [
+                    [
+                        'id'        => 'import_news',
+                        'title'     => 'Import Artikel',
+                        'fieldKeys' => [],
+                    ],
+                ],
+                'routes'  => [
+                    'options' => '/velocity-addons/v1/options',
+                    'news'    => '/velocity-addons/v1/news',
+                ],
+                'strings' => [
+                    'title'        => 'News Scraper',
+                    'subtitle'     => 'Ambil artikel dari API Velocity dan import ke WordPress.',
+                    'save'         => 'Simpan',
+                    'saving'       => 'Menyimpan...',
+                    'updated'      => 'Pengaturan berhasil disimpan.',
+                    'loadError'    => 'Gagal memuat pengaturan.',
+                    'saveError'    => 'Gagal menyimpan pengaturan.',
+                    'import'       => 'Ambil Artikel',
+                    'importing'    => 'Mengambil...',
+                    'importDone'   => 'Import selesai.',
+                    'importFailed' => 'Gagal import artikel.',
+                ],
+            ]
+        );
+?>
+        <div class="wrap velocity-react-options-wrap">
+            <div id="velocity-addons-react-root"></div>
+        </div>
+<?php
     }
 }
 

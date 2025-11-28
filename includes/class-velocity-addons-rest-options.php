@@ -246,6 +246,141 @@ class Velocity_Addons_REST_Options
             'label'       => 'Max height',
             'description' => 'Tinggi maksimum gambar (px).',
         ],
+        // SEO
+        [
+            'id'          => 'home_title',
+            'type'        => 'text',
+            'default'     => '',
+            'label'       => 'Home Title',
+            'description' => 'Judul halaman utama untuk tag SEO.',
+        ],
+        [
+            'id'          => 'home_description',
+            'type'        => 'textarea',
+            'default'     => '',
+            'label'       => 'Home Description',
+            'description' => 'Deskripsi meta untuk halaman utama.',
+        ],
+        [
+            'id'          => 'home_keywords',
+            'type'        => 'textarea',
+            'default'     => '',
+            'label'       => 'Home Keywords',
+            'description' => 'Kata kunci meta (pisahkan dengan koma atau baris baru).',
+        ],
+        [
+            'id'          => 'share_image',
+            'type'        => 'text',
+            'default'     => '',
+            'label'       => 'Share Image URL',
+            'description' => 'URL gambar yang dipakai untuk Open Graph.',
+        ],
+        [
+            'id'          => 'seo_post_types',
+            'type'        => 'array',
+            'default'     => ['post', 'page'],
+            'label'       => 'SEO Post Types',
+            'description' => 'Pilih post type yang memakai meta SEO.',
+        ],
+        // Duitku
+        [
+            'id'          => 'velocity_duitku_options',
+            'sub'         => 'mode',
+            'type'        => 'select',
+            'default'     => 'sandbox',
+            'label'       => 'Mode',
+            'description' => 'Pilih mode sandbox atau production.',
+            'choices'     => ['sandbox', 'production'],
+        ],
+        [
+            'id'          => 'velocity_duitku_options',
+            'sub'         => 'kode_merchant',
+            'type'        => 'text',
+            'default'     => '',
+            'label'       => 'Kode Merchant',
+            'description' => 'Kode merchant dari proyek Duitku.',
+            'placeholder' => 'XXXXXXX',
+        ],
+        [
+            'id'          => 'velocity_duitku_options',
+            'sub'         => 'merchant_key',
+            'type'        => 'text',
+            'default'     => '',
+            'label'       => 'API Key (Merchant Key)',
+            'description' => 'Merchant key dari proyek Duitku.',
+            'placeholder' => 'XXXXXXX',
+        ],
+        [
+            'id'          => 'velocity_duitku_options',
+            'sub'         => 'callback_url',
+            'type'        => 'text',
+            'default'     => '',
+            'label'       => 'Callback Url',
+            'description' => 'URL callback transaksi.',
+            'placeholder' => 'http://example.com/api-pop/backend/callback.php',
+        ],
+        [
+            'id'          => 'velocity_duitku_options',
+            'sub'         => 'return_url',
+            'type'        => 'text',
+            'default'     => '',
+            'label'       => 'Return Url',
+            'description' => 'URL redirect setelah transaksi selesai/dibatalkan.',
+            'placeholder' => 'http://example.com/api-pop/backend/redirect.php',
+        ],
+        // Floating WhatsApp
+        [
+            'id'          => 'nomor_whatsapp',
+            'type'        => 'text',
+            'default'     => '',
+            'label'       => 'Nomor Whatsapp',
+            'description' => 'Nomor WA (diawali 62 atau 08).',
+            'placeholder' => '08xxx atau 62xxx',
+        ],
+        [
+            'id'          => 'whatsapp_text',
+            'type'        => 'text',
+            'default'     => 'Butuh Bantuan?',
+            'label'       => 'Text Whatsapp',
+            'description' => 'Teks pada tombol WhatsApp.',
+        ],
+        [
+            'id'          => 'whatsapp_message',
+            'type'        => 'textarea',
+            'default'     => 'Hallo...',
+            'label'       => 'Pesan Whatsapp',
+            'description' => 'Pesan default ketika membuka WA.',
+        ],
+        [
+            'id'          => 'whatsapp_position',
+            'type'        => 'select',
+            'default'     => 'right',
+            'label'       => 'Whatsapp Position',
+            'description' => 'Posisi tombol (right/left).',
+            'choices'     => ['right', 'left'],
+        ],
+        // Snippet
+        [
+            'id'          => 'header_snippet',
+            'type'        => 'textarea',
+            'default'     => '',
+            'label'       => 'Header Snippet',
+            'description' => 'Kode di dalam <head>.',
+        ],
+        [
+            'id'          => 'body_snippet',
+            'type'        => 'textarea',
+            'default'     => '',
+            'label'       => 'Body Snippet',
+            'description' => 'Kode tepat setelah <body> dibuka.',
+        ],
+        [
+            'id'          => 'footer_snippet',
+            'type'        => 'textarea',
+            'default'     => '',
+            'label'       => 'Footer Snippet',
+            'description' => 'Kode sebelum </body>.',
+        ],
     ];
 
     /**
@@ -405,6 +540,15 @@ class Velocity_Addons_REST_Options
                 return is_numeric($value) ? intval($value) : 0;
             case 'media':
                 return absint($value);
+            case 'array':
+                if (is_array($value)) {
+                    return array_values(array_map('sanitize_text_field', $value));
+                }
+                if (is_string($value) && strpos($value, ',') !== false) {
+                    $parts = array_map('trim', explode(',', $value));
+                    return array_values(array_filter($parts, 'strlen'));
+                }
+                return [];
             default:
                 return is_scalar($value) ? (string) $value : '';
         }
@@ -439,6 +583,18 @@ class Velocity_Addons_REST_Options
             return function_exists('sanitize_textarea_field')
                 ? sanitize_textarea_field((string) $value)
                 : sanitize_text_field((string) $value);
+        }
+
+        if ($type === 'array') {
+            if (is_string($value)) {
+                $value = explode(',', $value);
+            }
+            if (!is_array($value)) {
+                return [];
+            }
+            $value = array_map('sanitize_text_field', $value);
+            $value = array_filter($value, 'strlen');
+            return array_values($value);
         }
 
         return sanitize_text_field((string) $value);
@@ -509,6 +665,8 @@ class Velocity_Addons_REST_Options
             case 'number':
             case 'media':
                 return 0;
+            case 'array':
+                return [];
             default:
                 return '';
         }

@@ -53,42 +53,69 @@ class Velocity_Addons_Snippet
     }
     public static function snippet_page()
     {
-        ?>
-        <div class="wrap">
-            <h2>Snippet Settings</h2>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_snippet_group'); ?>
-                <?php do_settings_sections('velocity_snippet_group'); ?>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Header Snippet</th>
-                        <td>
-                            <textarea class="large-text code" name="header_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('header_snippet', '')); ?></textarea>
-                            <br/>
-                            <small>Kode ditempatkan di dalam &lt;head&gt;.</small>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Body Snippet</th>
-                        <td>
-                            <textarea class="large-text code" name="body_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('body_snippet', '')); ?></textarea>
-                            <br/>
-                            <small>Kode ditempatkan tepat setelah tag pembuka &lt;body&gt;.</small>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Footer Snippet</th>
-                        <td>
-                            <textarea class="large-text code" name="footer_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('footer_snippet', '')); ?></textarea>
-                            <br/>
-                            <small>Kode ditempatkan sebelum tag penutup &lt;/body&gt;.</small>
-                        </td>
-                    </tr>
-                </table>
-                <?php submit_button(); ?>
-            </form>
+        if (!class_exists('Velocity_Addons_REST_Options')) {
+            echo '<div class="notice notice-error"><p>REST controller belum dimuat.</p></div>';
+            return;
+        }
+
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
+
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
+
+        $fields = array_filter(
+            Velocity_Addons_REST_Options::get_fields_schema_for_frontend(),
+            function ($field) {
+                return in_array($field['id'], ['header_snippet', 'body_snippet', 'footer_snippet'], true);
+            }
+        );
+
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => array_values($fields),
+                'tabs'    => [
+                    [
+                        'id'        => 'snippet',
+                        'title'     => 'Snippet',
+                        'fieldKeys' => array_map(function ($field) {
+                            return $field['key'] ?? $field['id'];
+                        }, $fields),
+                    ],
+                ],
+                'routes'  => [
+                    'options' => '/velocity-addons/v1/options',
+                ],
+                'layout'  => 'list',
+                'strings' => [
+                    'title'     => 'Snippet Settings',
+                    'subtitle'  => 'Header, Body, dan Footer snippet.',
+                    'save'      => 'Simpan',
+                    'saving'    => 'Menyimpan...',
+                    'updated'   => 'Pengaturan berhasil disimpan.',
+                    'loadError' => 'Gagal memuat pengaturan.',
+                    'saveError' => 'Gagal menyimpan pengaturan.',
+                ],
+            ]
+        );
+?>
+        <div class="wrap velocity-react-options-wrap">
+            <div id="velocity-addons-react-root"></div>
         </div>
-        <?php
+<?php
     }
 
     /* ===================== Core Helpers ===================== */

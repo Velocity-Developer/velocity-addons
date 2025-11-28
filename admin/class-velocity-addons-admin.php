@@ -112,8 +112,8 @@ class Velocity_Addons_Admin {
 			wp_enqueue_script( array( 'jquery','jquery-ui-datepicker','jquery-ui-tooltip' ) );
 		}
 		if ($page == 'velocity_optimize_db') {
+			// React panel sudah memuat chart sendiri; hindari script lama yang mencari canvas lama.
 			wp_enqueue_script( 'chartjs-scripts', 'https://cdn.jsdelivr.net/npm/chart.js', array( 'jquery' ), $this->version, false );
-			wp_enqueue_script( 'velocity-addons-public', VELOCITY_ADDONS_PLUGIN_DIR_URL . 'public/js/velocity-addons-public.js', array('jquery','chartjs-scripts'), $this->version, true );
 		}
 	}
 

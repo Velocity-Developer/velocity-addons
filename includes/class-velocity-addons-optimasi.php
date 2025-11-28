@@ -25,7 +25,7 @@ class Velocity_Addons_Optimasi
         return number_format($bytes, $i ? 2 : 0) . ' ' . $units[$i];
     }
 
-    private static function stats()
+    public static function stats()
     {
         global $wpdb;
         $posts = $wpdb->posts;
@@ -103,7 +103,7 @@ class Velocity_Addons_Optimasi
         return $s;
     }
 
-    private function delete_items($items)
+    public function delete_items($items)
     {
         global $wpdb;
         $posts = $wpdb->posts;

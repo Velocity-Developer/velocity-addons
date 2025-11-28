@@ -142,15 +142,6 @@ class Custom_Admin_Option_Page
                 array($this, 'optimize_db_page_callback')
             );
         }
-
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Pengaturan (React)',
-            'Pengaturan (React)',
-            'manage_options',
-            'velocity_react_options',
-            [$this, 'velocity_react_options_page'],
-        );
     }
 
     public function velocity_seo_page()
@@ -241,7 +232,6 @@ class Custom_Admin_Option_Page
         );
         ?>
         <div class="wrap velocity-react-options-wrap">
-            <h1><?php esc_html_e('Pengaturan Velocity (React)', 'velocity-addons'); ?></h1>
             <div id="velocity-addons-react-root"></div>
         </div>
         <?php
@@ -622,161 +612,71 @@ class Custom_Admin_Option_Page
                 ],
             ],
         ];
-?>
-        <div class="wrap vd-ons">
-            <h1>Pengaturan Admin</h1>
+        $schema = Velocity_Addons_REST_Options::get_fields_schema();
+        $field_map = [];
+        foreach ($schema as $field) {
+            $key = isset($field['sub']) && $field['sub'] ? $field['id'] . '__' . $field['sub'] : $field['id'];
+            $field['key'] = $key;
+            $field_map[$key] = $field;
+        }
 
-            <form method="post" action="options.php">
-                <?php settings_fields('custom_admin_options_group'); ?>
-                <?php do_settings_sections('custom_admin_options_group'); ?>
+        $tabs_meta = [];
+        foreach ($pages as $tab_id => $tab) {
+            $fieldKeys = [];
+            foreach ($tab['fields'] as $f) {
+                $k = isset($f['sub']) && $f['sub'] ? $f['id'] . '__' . $f['sub'] : $f['id'];
+                if (isset($field_map[$k])) {
+                    $fieldKeys[] = $k;
+                }
+            }
+            $tabs_meta[] = [
+                'id'        => $tab_id,
+                'title'     => $tab['title'],
+                'fieldKeys' => $fieldKeys,
+            ];
+        }
 
-                <div class="nav-tab-wrapper">
-                    <?php foreach ($pages as $tab => $tabs) : ?>
-                        <a href="#<?php echo $tab; ?>" class="nav-tab">
-                            <?php echo $tabs['title']; ?>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            plugin_dir_url(__FILE__) . 'js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
 
-                <div class="tab-content">
-                    <?php foreach ($pages as $tab => $tabs) : ?>
-                        <div id="<?php echo $tab; ?>" class="content">
-                            <table class="form-table">
-                                <?php
-                                foreach ($tabs['fields'] as $ky => $data) :
-                                    echo '<tr>';
-                                    echo '<th scope="row">';
-                                    echo $data['title'];
-                                    echo '</th>';
-                                    echo '<td>';
-                                    $this->field($data);
-                                    echo '</td>';
-                                    echo '</tr>';
-                                endforeach;
-                                ?>
-                            </table>
-                            <hr>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            plugin_dir_url(__FILE__) . 'css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
 
-                <div style="float:right;">
-                    <?php submit_button(); ?>
-                </div>
-
-                <script>
-                    jQuery(document).ready(function($) {
-                        $('.check-license').click(function(e) {
-                            e.preventDefault();
-
-                            var licenseKey = $('#velocity_license__key').val();
-
-                            // Check if license key is not empty
-                            if (licenseKey === '') {
-                                alert('Please enter a license key.');
-                                return;
-                            }
-
-                            $('.check-license.button').html('Loading..');
-
-                            $.ajax({
-                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                                type: 'POST',
-                                data: {
-                                    action: 'check_license',
-                                    license_key: licenseKey
-                                },
-                                success: function(response) {
-                                    if (response.success) {} else {
-                                        $('.license-status').html(response.data);
-                                        $('#velocity_license__key').val('');
-                                    }
-                                    $('.check-license.button').html('License Verified!');
-                                },
-                                error: function() {
-                                    $('.license-status').html('Server not reachable');
-                                    $('#velocity_license__key').val('');
-                                    $('.check-license.button').html('Check License');
-                                }
-                            });
-                        });
-
-                        function activeTab(id) {
-                            $('.vd-ons .nav-tab').removeClass('nav-tab-active');
-                            $('.vd-ons .nav-tab[href="' + id + '"]').addClass('nav-tab-active');
-                            $('.vd-ons .tab-content .content').hide();
-                            $('.vd-ons .tab-content ' + id).show();
-                        }
-                        $('.vd-ons .nav-tab').on('click', function(event) {
-                            activeTab($(this).attr('href'));
-                            localStorage.setItem('vdons-tabs', $(this).attr('href'));
-                            event.preventDefault();
-                        });
-                        var act = localStorage.getItem('vdons-tabs');
-                        act = act ? act : '#umum';
-                        activeTab(act);
-
-                        if (typeof wp !== 'undefined' && wp.media) {
-                            $('.vd-media-upload').on('click', function(e) {
-                                e.preventDefault();
-                                var button = $(this);
-                                var field = button.closest('.vd-media-field');
-                                var mediaFrame = wp.media({
-                                    title: 'Pilih atau Upload Gambar',
-                                    button: {
-                                        text: 'Gunakan Gambar Ini'
-                                    },
-                                    library: {
-                                        type: 'image'
-                                    },
-                                    multiple: false
-                                });
-
-                                var currentId = field.find('input[type="hidden"]').val();
-                                if (currentId) {
-                                    mediaFrame.on('open', function() {
-                                        var selection = mediaFrame.state().get('selection');
-                                        selection.reset();
-                                        var attachment = wp.media.attachment(currentId);
-                                        attachment.fetch();
-                                        selection.add(attachment);
-                                    });
-                                }
-
-                                mediaFrame.on('select', function() {
-                                    var attachment = mediaFrame.state().get('selection').first().toJSON();
-                                    var imageUrl = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                                    field.find('input[type="hidden"]').val(attachment.id);
-                                    field.find('.vd-media-preview').html('<img src="' + imageUrl + '" alt="">');
-                                    field.find('.vd-media-remove').show();
-                                });
-
-                                mediaFrame.open();
-                            });
-
-                            $('.vd-media-remove').on('click', function(e) {
-                                e.preventDefault();
-                                var button = $(this);
-                                var field = button.closest('.vd-media-field');
-                                field.find('input[type="hidden"]').val('');
-                                field.find('.vd-media-preview').html('<span class="vd-media-placeholder">Belum ada gambar yang dipilih.</span>');
-                                button.hide();
-                            });
-                        }
-                    });
-                </script>
-                <style>
-                    .vd-media-field{display:flex;flex-direction:column;gap:10px;max-width:320px;}
-                    .vd-media-field .vd-media-preview{border:1px dashed #c3c4c7;min-height:120px;display:flex;align-items:center;justify-content:center;background:#f6f7f7;border-radius:4px;overflow:hidden;padding:12px;}
-                    .vd-media-field .vd-media-preview img{width:100%;height:auto;display:block;border-radius:4px;}
-                    .vd-media-field .vd-media-placeholder{color:#6c7781;font-style:italic;text-align:center;}
-                    .vd-media-field .vd-media-actions{display:flex;gap:8px;flex-wrap:wrap;}
-                </style>
-
-
-            </form>
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => array_values($field_map),
+                'tabs'    => $tabs_meta,
+                'routes'  => [
+                    'options' => '/velocity-addons/v1/options',
+                ],
+                'strings' => [
+                    'title'     => 'Pengaturan Admin',
+                    'save'      => 'Simpan',
+                    'saving'    => 'Menyimpan...',
+                    'updated'   => 'Pengaturan berhasil disimpan.',
+                    'loadError' => 'Gagal memuat pengaturan.',
+                    'saveError' => 'Gagal menyimpan pengaturan.',
+                ],
+            ]
+        );
+        ?>
+        <div class="wrap velocity-react-options-wrap">
+            <div id="velocity-addons-react-root"></div>
         </div>
-<?php
+        <?php
     }
 
 
@@ -1095,7 +995,52 @@ class Custom_Admin_Option_Page
     public function optimize_db_page_callback()
     {
         if (!current_user_can('manage_options')) return;
-        Velocity_Addons_Optimasi::render_optimize_db_page();
+
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            plugin_dir_url(__FILE__) . 'js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
+
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            plugin_dir_url(__FILE__) . 'css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
+
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => [],
+                'tabs'    => [],
+                'routes'  => [
+                    'options'   => '/velocity-addons/v1/options',
+                    'optimize'  => '/velocity-addons/v1/optimize',
+                ],
+                'strings' => [
+                    'title'     => 'Optimize Database',
+                    'subtitle'  => 'Kelola pembersihan data database melalui REST.',
+                    'save'      => 'Simpan',
+                    'saving'    => 'Menyimpan...',
+                    'updated'   => 'Berhasil disimpan.',
+                    'loadError' => 'Gagal memuat.',
+                    'saveError' => 'Gagal menyimpan.',
+                    'import'    => 'Ambil',
+                    'importing' => 'Memproses...',
+                ],
+            ]
+        );
+        ?>
+        <div class="wrap velocity-react-options-wrap">
+            <div id="velocity-addons-react-root"></div>
+        </div>
+        <?php
     }
 
 

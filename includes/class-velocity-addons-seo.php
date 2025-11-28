@@ -48,86 +48,75 @@ class Velocity_Addons_SEO
 
     public static function render_seo_settings_page()
     {
-        // Mendapatkan nilai default dari setting umum (general settings)
-        $default_title = get_bloginfo('name');
-        $default_description = get_bloginfo('description');
-        $seo_post_types = get_option('seo_post_types');
+        // Siapkan daftar post type yang boleh diatur SEO-nya
+        $all_post_types = get_post_types();
+        $excluded_post_types = ['wp_block', 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation', 'wp_font_family', 'wp_font_face', 'fl-builder-template', 'fl-builder-history', 'fl-builder-template', 'fl-theme-layout', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request'];
+        $post_types = array_values(array_diff($all_post_types, $excluded_post_types));
 
-        // Cek apakah kosong atau tidak valid
-        if (empty($seo_post_types) || !is_array($seo_post_types)) {
-            // Set nilai default
-            $seo_post_types = ['post', 'page'];
-
-            // Simpan ke database untuk penggunaan berikutnya
-            update_option('seo_post_types', $seo_post_types);
+        if (function_exists('wp_enqueue_media')) {
+            wp_enqueue_media();
         }
 
-        // Ambil semua post type yang terdaftar
-        $all_post_types = get_post_types();
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
 
-        // Post type Beaver Builder yang perlu dikecualikan
-        $excluded_post_types = ['wp_block', 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation', 'wp_font_family', 'wp_font_face', 'fl-builder-template', 'fl-builder-history', 'fl-builder-template', 'fl-theme-layout', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request'];
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
 
-        // Filter post type untuk menghapus Beaver Builder dan attachment
-        $post_types = array_diff($all_post_types, $excluded_post_types);
+        $fields = Velocity_Addons_REST_Options::get_fields_schema_for_frontend();
+        $fields = array_filter($fields, function ($field) {
+            return in_array($field['id'], ['home_title', 'home_description', 'home_keywords', 'share_image', 'seo_post_types'], true);
+        });
+        $fields = array_values(array_map(function ($field) use ($post_types) {
+            if ($field['id'] === 'seo_post_types') {
+                $field['choices'] = $post_types;
+                $field['type'] = 'array';
+            }
+            return $field;
+        }, $fields));
+
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => $fields,
+                'tabs'    => [
+                    [
+                        'id'        => 'seo',
+                        'title'     => 'SEO',
+                        'fieldKeys' => array_map(function ($field) {
+                            return $field['key'] ?? $field['id'];
+                        }, $fields),
+                    ],
+                ],
+                'routes'  => [
+                    'options' => '/velocity-addons/v1/options',
+                ],
+                'strings' => [
+                    'title'     => 'Pengaturan SEO',
+                    'subtitle'  => 'Atur meta SEO dasar dan post type yang menggunakan meta SEO.',
+                    'save'      => 'Simpan',
+                    'saving'    => 'Menyimpan...',
+                    'updated'   => 'Pengaturan berhasil disimpan.',
+                    'loadError' => 'Gagal memuat pengaturan.',
+                    'saveError' => 'Gagal menyimpan pengaturan.',
+                ],
+            ]
+        );
 ?>
-        <div class="wrap">
-            <h2>SEO Settings</h2>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_seo_group'); ?>
-                <?php do_settings_sections('velocity_seo_group'); ?>
-
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Home Title</th>
-                        <td><input class="regular-text" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" /></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Home Description</th>
-                        <td><textarea class="large-text" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Home Keywords</th>
-                        <td><textarea class="large-text" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Share Image</th>
-                        <td>
-                            <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
-                            <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
-                            <br>
-                            <div class="preview_share_image">
-                                <?php if (get_option('share_image')): ?>
-                                    <br>
-                                    <img id="preview_image" width="300" src="<?php echo esc_attr(get_option('share_image')); ?>" />
-                                    <br><span class="delete_share_image button">Delete</span>
-                                <?php endif; ?>
-                            </div>
-                            <br>
-                            <span class="dashicons dashicons-info-outline"></span> <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari tentang praktik terbaik untuk menerapkan <strong>"Berbagi di Facebook"</strong></a>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">SEO Single</th>
-                        <td>
-                            <?php foreach ($post_types as $post_type) : ?>
-                                <?php $label_post_type = str_replace('_', ' ', $post_type); ?>
-                                <div style="padding: 5px 0;">
-                                    <label>
-                                        <input type="checkbox" name="seo_post_types[]" value="<?php echo $post_type; ?>"
-                                            <?php
-                                            if (!empty($seo_post_types)) :
-                                                echo in_array($post_type, $seo_post_types) ? 'checked' : '';
-                                            endif; ?>>
-                                        <span style="text-transform: capitalize;"><?php echo $label_post_type; ?></span>
-                                    </label>
-                                </div>
-                            <?php endforeach; ?>
-                        </td>
-                    </tr>
-                </table>
-                <?php submit_button(); ?>
-            </form>
+        <div class="wrap velocity-react-options-wrap">
+            <div id="velocity-addons-react-root"></div>
         </div>
 <?php
     }

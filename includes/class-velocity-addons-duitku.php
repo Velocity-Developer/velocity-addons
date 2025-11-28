@@ -258,92 +258,79 @@ class Velocity_Addons_Duitku {
     }
 
     public static function render_settings_page() {
+        if (!class_exists('Velocity_Addons_REST_Options')) {
+            echo '<div class="notice notice-error"><p>REST controller belum dimuat.</p></div>';
+            return;
+        }
 
-        $mode = self::options()['mode'];
-        $kode_merchant = self::options()['kode_merchant'];
-        $merchant_key = self::options()['merchant_key'];
-        $callback_url = self::options()['callback_url'];
-        $return_url = self::options()['return_url'];
+        wp_enqueue_script(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/js/velocity-react-options.js',
+            ['wp-element', 'wp-api-fetch'],
+            VELOCITY_ADDONS_VERSION,
+            true
+        );
 
-        $url = get_admin_url().'admin.php?page=velocity_duitku_settings';
-        $tab_active = isset($_GET['tab'])?$_GET['tab']:'pengaturan';
+        wp_enqueue_style(
+            'velocity-addons-react-options',
+            VELOCITY_ADDONS_PLUGIN_DIR_URL . 'admin/css/velocity-react-options.css',
+            [],
+            VELOCITY_ADDONS_VERSION
+        );
+
+        $fields = array_filter(
+            Velocity_Addons_REST_Options::get_fields_schema_for_frontend(),
+            function ($field) {
+                return isset($field['id']) && $field['id'] === 'velocity_duitku_options';
+            }
+        );
+
+        wp_localize_script(
+            'velocity-addons-react-options',
+            'VelocityAddonsOptions',
+            [
+                'root'    => esc_url_raw(rest_url()),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'fields'  => array_values($fields),
+                'tabs'    => [
+                    [
+                        'id'        => 'duitku_settings',
+                        'title'     => 'Pengaturan',
+                        'fieldKeys' => array_map(function ($field) {
+                            return $field['key'] ?? $field['id'];
+                        }, $fields),
+                    ],
+                ],
+                'routes'  => [
+                    'options' => '/velocity-addons/v1/options',
+                ],
+                'strings' => [
+                    'title'     => 'Payment Gateway DUITKU',
+                    'subtitle'  => 'Pengaturan akun payment gateway Duitku.',
+                    'save'      => 'Simpan',
+                    'saving'    => 'Menyimpan...',
+                    'updated'   => 'Pengaturan berhasil disimpan.',
+                    'loadError' => 'Gagal memuat pengaturan.',
+                    'saveError' => 'Gagal menyimpan pengaturan.',
+                ],
+            ]
+        );
 
         ?>
-        <div class="wrap">
-            
-            <h2>Payment Gateway DUITKU</h2>
+        <div class="wrap velocity-react-options-wrap">
+            <div id="velocity-addons-react-root"></div>
 
-            <div class="nav-tab-wrapper">
-                <a href="<?php echo $url; ?>&tab=pengaturan" class="<?php echo $tab_active=='pengaturan'?'nav-tab nav-tab-active':'nav-tab'; ?>">
-                    Pengaturan
-                </a>
-                <a href="<?php echo $url; ?>&tab=invoice" class="<?php echo $tab_active=='invoice'?'nav-tab nav-tab-active':'nav-tab'; ?>">
-                    Riwayat Invoice
-                </a>
-                <a href="<?php echo $url; ?>&tab=callback" class="<?php echo $tab_active=='callback'?'nav-tab nav-tab-active':'nav-tab'; ?>">
-                    Riwayat Callback
-                </a>
-            </div>
-            
-            <?php if($tab_active == 'pengaturan'): ?>
-                <h4>Pengaturan akun payment gateway Duitku</h4>
-                <form method="post" action="options.php">
-                    <?php                   
-                    settings_fields('velocity_duitku_group');
-                    do_settings_sections('velocity_duitku_settings');
-                    ?>
-                    <table class="form-table">
-                        <tr valign="top">
-                            <th scope="row">Mode</th>
-                            <td>                            
-                                <select name="velocity_duitku_options[mode]">
-                                    <option value="sandbox" <?php selected($mode, 'sandbox'); ?>>Sandbox</option>
-                                    <option value="production" <?php selected($mode, 'production'); ?>>Production</option>
-                                </select> <br>
-                                <small for="mode">Pilih mode "sandbox" atau "production", sandbox untuk testing/uji coba </small>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row">Kode Merchant</th>
-                            <td>
-                                <input class="regular-text" type="text" name="velocity_duitku_options[kode_merchant]" value="<?php echo esc_attr($kode_merchant); ?>" placeholder="XXXXXXX" /><br/>
-                                <small for="kode_merchant">Ambil dari proyek Duitku, di halaman "Proyek Saya" </small>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row">API Key (Merchant Key)</th>
-                            <td>
-                                <input class="regular-text" type="text" name="velocity_duitku_options[merchant_key]" value="<?php echo esc_attr($merchant_key); ?>" placeholder="XXXXXXX" /><br/>
-                                <small for="merchant_key">Ambil dari proyek Duitku, di halaman "Proyek Saya" </small>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row">Callback Url</th>
-                            <td>
-                                <input class="regular-text" type="text" name="velocity_duitku_options[callback_url]" value="<?php echo esc_attr($callback_url); ?>" placeholder="http://example.com/api-pop/backend/callback.php" /><br/>
-                                <small for="callback_url">URL untuk transaksi callback.</small>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row">Return Url</th>
-                            <td>
-                                <input class="regular-text" type="text" name="velocity_duitku_options[return_url]" value="<?php echo esc_attr($return_url); ?>" placeholder="http://example.com/api-pop/backend/redirect.php" /><br/>
-                                <small for="return_url">URL untuk redirect apabila transaksi telah selesai atau dibatalkan..</small>
-                            </td>
-                        </tr>
-                    </table>
-                    <?php submit_button(); ?>
-                </form>
-            <?php elseif($tab_active == 'invoice'): ?>
+            <div class="vd-card" style="margin-top:16px;">
+                <h3>Riwayat Invoice</h3>
                 <?php echo self::table_riwayat_invoice(); ?>
-            <?php elseif($tab_active == 'callback'): ?>
-                <?php echo self::table_riwayat_callback(); ?>
-            <?php endif; ?>
-
-            <div class="alert">
-                Default callback url: <code><?php echo get_site_url().'/wp-json/velocityaddons/v1/duitku_callback'; ?></code> 
             </div>
-
+            <div class="vd-card" style="margin-top:16px;">
+                <h3>Riwayat Callback</h3>
+                <?php echo self::table_riwayat_callback(); ?>
+            </div>
+            <div class="vd-card" style="margin-top:16px;">
+                Default callback url: <code><?php echo esc_html(get_site_url().'/wp-json/velocityaddons/v1/duitku_callback'); ?></code>
+            </div>
         </div>
         <?php
     }
