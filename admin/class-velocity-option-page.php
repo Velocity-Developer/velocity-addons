@@ -180,59 +180,48 @@ class Custom_Admin_Option_Page
             return;
         }
 
-        if (!class_exists('Velocity_Addons_REST_Options')) {
-            echo '<div class="notice notice-error"><p>REST controller belum dimuat.</p></div>';
+        $manifest_path = plugin_dir_path(__DIR__) . 'admin/react-build/.vite/manifest.json';
+        if (!file_exists($manifest_path)) {
+            echo '<div class="notice notice-error"><p>Bundle React (Vite) belum dibuild. Jalankan <code>npm install</code> dan <code>npm run build</code> di folder <code>admin-react</code>.</p></div>';
             return;
         }
 
-        $schema = Velocity_Addons_REST_Options::get_fields_schema();
-        $fields = array_map(function ($field) {
-            $key = $field['id'];
-            if (isset($field['sub']) && $field['sub']) {
-                $key .= '__' . $field['sub'];
-            }
-            $field['key'] = $key;
-            return $field;
-        }, $schema);
+        $manifest = json_decode(file_get_contents($manifest_path), true);
+        if (empty($manifest['src/main.jsx'])) {
+            echo '<div class="notice notice-error"><p>Entry Vite tidak ditemukan di manifest.</p></div>';
+            return;
+        }
+
+        $entry = $manifest['src/main.jsx'];
+        if (!empty($entry['css'][0])) {
+            wp_enqueue_style(
+                'velocity-addons-admin-react',
+                plugins_url('admin/react-build/' . $entry['css'][0], dirname(__FILE__)),
+                [],
+                VELOCITY_ADDONS_VERSION
+            );
+        }
 
         wp_enqueue_script(
-            'velocity-addons-react-options',
-            plugin_dir_url(__FILE__) . 'js/velocity-react-options.js',
-            ['wp-element', 'wp-api-fetch'],
+            'velocity-addons-admin-react',
+            plugins_url('admin/react-build/' . $entry['file'], dirname(__FILE__)),
+            [],
             VELOCITY_ADDONS_VERSION,
             true
         );
 
-        wp_enqueue_style(
-            'velocity-addons-react-options',
-            plugin_dir_url(__FILE__) . 'css/velocity-react-options.css',
-            [],
-            VELOCITY_ADDONS_VERSION
-        );
-
         wp_localize_script(
-            'velocity-addons-react-options',
-            'VelocityAddonsOptions',
+            'velocity-addons-admin-react',
+            'VelocityOptionsData',
             [
-                'root'    => esc_url_raw(rest_url()),
-                'nonce'   => wp_create_nonce('wp_rest'),
-                'fields'  => $fields,
-                'routes'  => [
-                    'options' => '/velocity-addons/v1/options',
-                ],
-                'strings' => [
-                    'title'     => 'Pengaturan Velocity (React)',
-                    'save'      => 'Simpan',
-                    'saving'    => 'Menyimpan...',
-                    'updated'   => 'Pengaturan berhasil disimpan.',
-                    'loadError' => 'Gagal memuat pengaturan.',
-                    'saveError' => 'Gagal menyimpan pengaturan.',
-                ],
+                'nonce'           => wp_create_nonce('wp_rest'),
+                'restUrl'         => esc_url_raw(rest_url()),
+                'optionsEndpoint' => '/velocity-addons/v1/options',
             ]
         );
         ?>
         <div class="wrap velocity-react-options-wrap">
-            <div id="velocity-addons-react-root"></div>
+            <div id="plugin-admin-root"></div>
         </div>
         <?php
     }
