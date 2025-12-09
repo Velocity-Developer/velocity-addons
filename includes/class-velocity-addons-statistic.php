@@ -390,28 +390,47 @@ class Velocity_Addons_Statistic {
 
     private function aggregate_monthly_stats() {
         global $wpdb;
-        $ts = current_time('timestamp');
-        $current_month = (int) wp_date('n', $ts);
+
+        $ts   = current_time('timestamp');
+        $day  = (int) wp_date('j', $ts); // tanggal (1–31)
+
+        // Hanya jalan tiap tanggal 1 (untuk memfinalisasi bulan sebelumnya)
+        if ( $day !== 1 ) {
+            return;
+        }
+
+        $current_month = (int) wp_date('n', $ts); // 1–12
         $current_year  = (int) wp_date('Y', $ts);
 
+        // Hitung bulan & tahun yang mau direkap → bulan lalu
+        if ( $current_month === 1 ) {
+            $month = 12;
+            $year  = $current_year - 1;
+        } else {
+            $month = $current_month - 1;
+            $year  = $current_year;
+        }
+
+        // Ambil total dari daily stats utk bulan tersebut
         $monthly_data = $wpdb->get_row( $wpdb->prepare(
             "SELECT
-                SUM(unique_visitors) AS unique_visitors,
-                SUM(total_pageviews) AS total_pageviews
-             FROM {$this->daily_stats_table}
-             WHERE MONTH(stat_date) = %d AND YEAR(stat_date) = %d",
-            $current_month, $current_year
+                SUM(unique_visitors)   AS unique_visitors,
+                SUM(total_pageviews)   AS total_pageviews
+            FROM {$this->daily_stats_table}
+            WHERE MONTH(stat_date) = %d AND YEAR(stat_date) = %d",
+            $month, $year
         ) );
 
         if ( $monthly_data ) {
             $wpdb->query( $wpdb->prepare(
                 "INSERT INTO {$this->monthly_stats_table}
                     (stat_year, stat_month, unique_visitors, total_pageviews)
-                 VALUES (%d, %d, %d, %d)
-                 ON DUPLICATE KEY UPDATE
+                VALUES (%d, %d, %d, %d)
+                ON DUPLICATE KEY UPDATE
                     unique_visitors = VALUES(unique_visitors),
                     total_pageviews = VALUES(total_pageviews)",
-                $current_year, $current_month,
+                $year,
+                $month,
                 (int) $monthly_data->unique_visitors,
                 (int) $monthly_data->total_pageviews
             ) );
@@ -542,15 +561,25 @@ class Velocity_Addons_Statistic {
         // 2) jika tabel monthly ada, pakai akumulasi monthly + bulan berjalan
         $all_time = null;
         if ( $this->table_exists($this->monthly_stats_table) ) {
-            $all_time = $wpdb->get_row(
+            // Hindari double-count bulan berjalan: pakai monthly utk bulan lampau, daily utk bulan aktif.
+            $current_month = (int) wp_date('n', current_time('timestamp'));
+            $current_year  = (int) wp_date('Y', current_time('timestamp'));
+
+            $all_time = $wpdb->get_row( $wpdb->prepare(
                 "SELECT
-                    (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->monthly_stats_table}) +
-                    (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->daily_stats_table}
-                    WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS unique_visitors,
-                    (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->monthly_stats_table}) +
-                    (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->daily_stats_table}
-                    WHERE MONTH(stat_date)=MONTH(CURDATE()) AND YEAR(stat_date)=YEAR(CURDATE())) AS total_visits"
-            );
+                    (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->monthly_stats_table}
+                        WHERE NOT (stat_month = %d AND stat_year = %d))
+                    + (SELECT COALESCE(SUM(unique_visitors),0) FROM {$this->daily_stats_table}
+                        WHERE MONTH(stat_date) = %d AND YEAR(stat_date) = %d) AS unique_visitors,
+                    (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->monthly_stats_table}
+                        WHERE NOT (stat_month = %d AND stat_year = %d))
+                    + (SELECT COALESCE(SUM(total_pageviews),0) FROM {$this->daily_stats_table}
+                        WHERE MONTH(stat_date) = %d AND YEAR(stat_date) = %d) AS total_visits",
+                $current_month, $current_year,
+                $current_month, $current_year,
+                $current_month, $current_year,
+                $current_month, $current_year
+            ) );
         }
 
         if ( empty($all_time) ) {
