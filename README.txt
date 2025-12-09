@@ -22,6 +22,9 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.6.8=
+- Perbaiki hitungan total (all time) agar tidak double count bulan berjalan: data bulan aktif hanya diambil dari daily stats, bulan lampau dari monthly stats.
+
 =1.6.7=
 - Tambah fitur Optimize Database: hapus revisions, auto-draft, trash, orphan meta/term, komentar spam/trash/pending lama, transients kedaluwarsa, cache oEmbed. Tampilkan jumlah dan estimasi ukuran per item.
 - Opsi eksekusi: Hapus Terpilih atau Hapus Semua, dengan notifikasi hasil.
