@@ -368,6 +368,13 @@ body.admin_page_admin_velocity_addons .notice.notice-warning.notice-alt {
   cursor: not-allowed;
 }
 
+.vd-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 /* Toggle Switch */
 .vd-switch {
   position: relative;

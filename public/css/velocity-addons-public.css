@@ -2,6 +2,40 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+ .floating-footer {
+   position: fixed;
+   bottom: 16px;
+   left: 16px;
+   right: 16px;
+   pointer-events: none;
+   z-index: 9999;
+ }
+ .floating-footer.float-wa-right,
+ .floating-footer.float-scrolltop-right { text-align: right; }
+ .floating-footer.float-wa-left,
+ .floating-footer.float-scrolltop-left { text-align: left; }
+ 
+ .floating-button {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 40px;
+   height: 40px;
+   border-radius: 9999px;
+   background: #111827;
+   color: #ffffff;
+   box-shadow: 0 10px 20px rgba(0,0,0,0.08), 0 6px 6px rgba(0,0,0,0.1);
+   pointer-events: auto;
+   cursor: pointer;
+ }
+ .floating-button.right { float: right; }
+ .floating-button.left { float: left; }
+ 
+ .scroll-to-top svg {
+   width: 18px;
+   height: 18px;
+ }
+ 
 @media only screen and (max-width: 600px) {
     .whatsapp-floating svg {
         height: 30px;

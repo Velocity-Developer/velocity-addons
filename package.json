@@ -1,6 +1,6 @@
 {
   "name": "velocity-addons",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Additional functionality for Velocitydeveloper clients",
   "main": "index.js",
   "scripts": {

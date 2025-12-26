@@ -35,6 +35,27 @@
 	'use strict';
 
 	$(function(){
+		var $btn = $('.scroll-to-top.floating-button');
+		if ($btn.length) {
+			var last = 0;
+			var showThreshold = 200;
+			var onScroll = function() {
+				var y = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+				if (y > showThreshold) {
+					if (!$btn.is(':visible')) { $btn.stop(true, true).fadeIn(150); }
+				} else {
+					if ($btn.is(':visible')) { $btn.stop(true, true).fadeOut(150); }
+				}
+				last = y;
+			};
+			onScroll();
+			$(window).on('scroll.vdScrollTop', onScroll);
+			$btn.on('click', function(e){
+				e.preventDefault();
+				$('html, body').animate({ scrollTop: 0 }, 300);
+			});
+		}
+
 		var $canvas = $('#optimizeChart');
 		if (!$canvas.length) { console.warn('Optimize DB: canvas #optimizeChart not found'); return; }
 		if (typeof Chart === 'undefined') { console.warn('Optimize DB: Chart.js not loaded'); return; }

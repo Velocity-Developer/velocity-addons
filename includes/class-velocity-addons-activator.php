@@ -155,6 +155,10 @@ class Velocity_Addons_Activator {
 		}
 
 		update_option('velocity_addons_db_version', VELOCITY_ADDONS_DB_VERSION);
+
+		if ( get_option('seo_velocity', null) === null ) {
+			update_option('seo_velocity', '1');
+		}
 	}
 
 	/* ===== Helpers internal ===== */

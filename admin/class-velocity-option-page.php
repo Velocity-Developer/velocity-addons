@@ -38,6 +38,7 @@ class Custom_Admin_Option_Page
         // Daftarkan menu dan settings di admin
         add_action('admin_menu', array($this, 'add_menu_page'));
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_post_velocity_reset_general_defaults', array($this, 'reset_general_defaults'));
     }
 
     public function add_menu_page()
@@ -63,7 +64,6 @@ class Custom_Admin_Option_Page
                 array($this, 'velocity_seo_page'),
             );
         }
-
 
         $floating_whatsapp = get_option('floating_whatsapp', '1');
         if ($floating_whatsapp == '1') {
@@ -317,6 +317,18 @@ class Custom_Admin_Option_Page
             echo '</div>';
         }
 
+        if ($type == 'select') {
+            $options = isset($data['options']) && is_array($data['options']) ? $data['options'] : [];
+            echo '<div>';
+            echo '<select id="' . $id . '" name="' . $name . '">';
+            foreach ($options as $opt_val => $opt_label) {
+                $selected = ((string)$value === (string)$opt_val) ? 'selected' : '';
+                echo '<option value="' . esc_attr($opt_val) . '" ' . $selected . '>' . esc_html($opt_label) . '</option>';
+            }
+            echo '</select>';
+            echo '</div>';
+        }
+
         ///tampil label
         if (isset($data['label']) && !empty($data['label'])) {
             echo '<label for="' . $id . '">';
@@ -533,7 +545,7 @@ class Custom_Admin_Option_Page
                 <h1 class="vd-title">Pengaturan Umum</h1>
                 <p class="vd-subtitle">Pengaturan dasar fitur Velocity Addons.</p>
             </div>
-            <form method="post" action="options.php">
+            <form id="velocity-general-form" method="post" action="options.php">
                 <?php settings_fields('custom_admin_options_group'); ?>
                 <?php do_settings_sections('custom_admin_options_group'); ?>
                 <div class="vd-section">
@@ -579,13 +591,49 @@ class Custom_Admin_Option_Page
                         ?>
                     </div>
                 </div>
-                <?php submit_button(); ?>
             </form>
+            <div class="vd-actions">
+                <button type="submit" class="button button-primary" form="velocity-general-form">Simpan Perubahan</button>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <?php wp_nonce_field('velocity_reset_general_defaults'); ?>
+                    <input type="hidden" name="action" value="velocity_reset_general_defaults">
+                    <button type="submit" class="button">Set ke Default</button>
+                </form>
+            </div>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
         </div>
     <?php
+    }
+
+    public function reset_general_defaults()
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die('');
+        }
+        check_admin_referer('velocity_reset_general_defaults');
+        $defaults = [
+            'fully_disable_comment' => 1,
+            'hide_admin_notice' => 0,
+            'disable_gutenberg' => 0,
+            'classic_widget_velocity' => 1,
+            'enable_xml_sitemap' => 1,
+            'seo_velocity' => 1,
+            'statistik_velocity' => 1,
+            'floating_whatsapp' => 1,
+            'floating_scrollTop' => 1,
+            'remove_slug_category_velocity' => 0,
+            'news_generate' => 1,
+            'velocity_gallery' => 0,
+            'velocity_optimasi' => 0,
+            'velocity_duitku' => 0,
+        ];
+        foreach ($defaults as $k => $v) {
+            update_option($k, $v);
+        }
+        wp_safe_redirect(add_query_arg('reset', '1', admin_url('admin.php?page=velocity_general_settings')));
+        exit;
     }
 
     public function velocity_captcha_page()
@@ -595,7 +643,7 @@ class Custom_Admin_Option_Page
         <div class="velocity-dashboard-wrapper">
             <div class="vd-header">
                 <h1 class="vd-title">Captcha</h1>
-                <p class="vd-subtitle">Pengaturan Google reCaptcha v2.</p>
+                <p class="vd-subtitle">Pengaturan Captcha (Google reCaptcha v2 atau Gambar).</p>
             </div>
             <form method="post" action="options.php">
                 <?php settings_fields('custom_admin_options_group'); ?>
@@ -606,13 +654,23 @@ class Custom_Admin_Option_Page
                     </div>
                     <div class="vd-section-body">
                         <?php
+                        $opt = get_option('captcha_velocity', []);
+                        $providerVal = isset($opt['provider']) ? $opt['provider'] : 'google';
                         $fields = [
-                            ['id' => 'captcha_velocity', 'sub' => 'aktif', 'type' => 'checkbox', 'title' => 'Captcha', 'std' => 1, 'label' => 'Aktifkan Google reCaptcha v2', 'desc' => 'Gunakan reCaptcha v2 di Form Login, Komentar dan Velocity Toko. Untuk Contact Form 7 gunakan [velocity_captcha]'],
+                            ['id' => 'captcha_velocity', 'sub' => 'provider', 'type' => 'select', 'title' => 'Provider', 'label' => 'Pilih jenis captcha yang digunakan.', 'options' => ['google' => 'Google reCaptcha v2', 'image' => 'Captcha Gambar']],
+                            ['id' => 'captcha_velocity', 'sub' => 'aktif', 'type' => 'checkbox', 'title' => 'Captcha', 'std' => 1, 'label' => 'Aktifkan Captcha', 'desc' => 'Gunakan Captcha di Form Login, Komentar dan Velocity Toko. Untuk Contact Form 7 gunakan [velocity_captcha]'],
+                            ['id' => 'captcha_velocity', 'sub' => 'difficulty', 'type' => 'select', 'title' => 'Tingkat Kesulitan', 'label' => 'Untuk Captcha Gambar', 'options' => ['easy' => 'Mudah', 'medium' => 'Sedang', 'hard' => 'Sulit']],
                             ['id' => 'captcha_velocity', 'sub' => 'sitekey', 'type' => 'text', 'title' => 'Sitekey'],
                             ['id' => 'captcha_velocity', 'sub' => 'secretkey', 'type' => 'text', 'title' => 'Secretkey'],
                         ];
                         foreach ($fields as $data) {
                             $labelFor = isset($data['sub']) ? ($data['id'] . '__' . $data['sub']) : $data['id'];
+                            if (isset($data['sub']) && in_array($data['sub'], ['sitekey', 'secretkey'], true) && $providerVal !== 'google') {
+                                continue;
+                            }
+                            if (isset($data['sub']) && $data['sub'] === 'difficulty' && $providerVal !== 'image') {
+                                continue;
+                            }
                             echo '<div class="vd-form-group">';
                             echo '<div class="vd-form-left">';
                             echo '<label class="vd-form-label" for="' . esc_attr($labelFor) . '">' . esc_html($data['title']) . '</label>';
