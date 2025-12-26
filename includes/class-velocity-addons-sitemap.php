@@ -35,10 +35,10 @@ class Velocity_Addons_Sitemap
 
   public function maybe_flush_rewrite_rules()
   {
-    if (get_option('velocity_sitemap_flushed_v1') !== 'yes') {
+    if (get_option('velocity_sitemap_flushed_v2') !== 'yes') {
       $this->add_rewrite_rules();
       flush_rewrite_rules();
-      update_option('velocity_sitemap_flushed_v1', 'yes');
+      update_option('velocity_sitemap_flushed_v2', 'yes');
     }
   }
 
@@ -59,12 +59,14 @@ class Velocity_Addons_Sitemap
   {
     if (get_option('enable_xml_sitemap', '1') === '1') {
       add_rewrite_rule('^sitemap\.xml$', 'index.php?velocity_sitemap=1', 'top');
+      add_rewrite_rule('^wp-sitemap\.xml$', 'index.php?velocity_sitemap_redirect=1', 'top');
     }
   }
 
   public function add_query_vars($vars)
   {
     $vars[] = 'velocity_sitemap';
+    $vars[] = 'velocity_sitemap_redirect';
     return $vars;
   }
 
@@ -73,6 +75,12 @@ class Velocity_Addons_Sitemap
     // Double check option to prevent execution if disabled but rule persists
     if (get_option('enable_xml_sitemap', '1') !== '1') {
       return;
+    }
+
+    // Redirect wp-sitemap.xml to sitemap.xml
+    if (get_query_var('velocity_sitemap_redirect')) {
+      wp_redirect(home_url('/sitemap.xml'), 301);
+      exit;
     }
 
     if (get_query_var('velocity_sitemap')) {
