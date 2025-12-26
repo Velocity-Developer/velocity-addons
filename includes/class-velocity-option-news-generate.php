@@ -220,19 +220,20 @@ class Velocity_Addons_News
     public static function render_news_settings_page()
     {
         ?>
-        <div class="wrap">
-            <h2>News Scraper</h2>
-            <h4>Ambil Artikel dari API Velocity</h4>
+        <div class="velocity-dashboard-wrapper">
+            <div class="vd-header">
+                <h1 class="vd-title">News Scraper</h1>
+                <p class="vd-subtitle">Ambil artikel dari API Velocity.</p>
+            </div>
             <form method="post">
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">Ambil Target</th>
-                        <td>
+                <div class="vd-grid-2">
+                    <div class="vd-section">
+                        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Pengaturan Import</h3>
+                        </div>
+                        <div class="vd-section-body">
                             <?php
-                            // Mengambil kategori dan post
                             $get_categories = self::fetch_category();
-                            
-                            //jika tidak sukses, tampilkan pesan
                             if(isset($get_categories['status']) && $get_categories['status'] == true){
                                 $categories = $get_categories['data']??[];
                             } else {
@@ -240,55 +241,67 @@ class Velocity_Addons_News
                                 $categories = [];
                             }
                             ?>
-                            <select name="target" id="target" required>
-                                <option value="">Pilih Target</option>
-                                <?php foreach($categories as $category):
-                                echo '<option value="'.$category['id'].'">'.$category['name'].'</option>';
-                                endforeach;
+                            <div class="vd-form-group">
+                                <label for="target" class="vd-form-label">Ambil Target</label>
+                                <select name="target" id="target" required>
+                                    <option value="">Pilih Target</option>
+                                    <?php foreach($categories as $category){ echo '<option value="'.$category['id'].'">'.$category['name'].'</option>'; } ?>
+                                </select>
+                            </div>
+                            <div class="vd-form-group">
+                                <label for="category" class="vd-form-label">Tujuan Target</label>
+                                <?php
+                                wp_dropdown_categories(array(
+                                    'show_option_none' => 'Pilih Kategori',
+                                    'option_none_value' => '',
+                                    'name' => 'category',
+                                    'id' => 'category',
+                                    'exclude'   => 1,
+                                    'class' => 'postform',
+                                    'hide_empty' => 0,
+                                    'required' => 'required',
+                                ));
                                 ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Tujuan Target</th>
-                        <td><?php
-                            wp_dropdown_categories(array(
-                                'show_option_none' => 'Pilih Kategori', 
-                                'option_none_value' => '', 
-                                'name' => 'category',
-                                'id' => 'category',
-                                'exclude'   =>1,
-                                'class' => 'postform',
-                                'hide_empty' => 0,
-                                'required' => 'required',
-                            ));?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Jumlah Artikel</th>
-                        <td><input type="number" name="jml_target" id="jml_target" min="1" value="5" required/></td>
-                    </tr>
-                    <tr>
-                        <th>Status</th>
-                        <td>
-                            <select id="status" name="status" required>
-                            <option value="publish">Publish</option>
-                            <option value="draft">Draft</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr><td colspan="2"><input class="button button-primary" type="submit" value="Ambil Artikel"></td></tr>
-                </table>
+                            </div>
+                            <div class="vd-form-group">
+                                <label for="jml_target" class="vd-form-label">Jumlah Artikel</label>
+                                <input type="number" name="jml_target" id="jml_target" min="1" value="5" required/>
+                            </div>
+                            <div class="vd-form-group">
+                                <label for="status" class="vd-form-label">Status</label>
+                                <select id="status" name="status" required>
+                                    <option value="publish">Publish</option>
+                                    <option value="draft">Draft</option>
+                                </select>
+                            </div>
+                            <?php submit_button('Ambil Artikel'); ?>
+                        </div>
+                    </div>
+                    <div class="vd-section">
+                        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Hasil Import</h3>
+                        </div>
+                        <div class="vd-section-body">
+                            <?php
+                            if (isset($_POST['category']) && isset($_POST['jml_target'])) {
+                                $target = sanitize_text_field($_POST['target']);
+                                $category = sanitize_text_field($_POST['category']);
+                                $count = intval($_POST['jml_target']);
+                                $status = sanitize_text_field($_POST['status']);
+                                echo self::fetch_news_scraper($target, $category, $count, $status);
+                            } else {
+                                echo '<p>Belum ada proses import.</p>';
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
             </form>
+            <div class="vd-footer">
+                <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+            </div>
         </div>
         <?php
-        if (isset($_POST['category']) && isset($_POST['jml_target'])) {
-            $target = sanitize_text_field($_POST['target']);
-            $category = sanitize_text_field($_POST['category']);
-            $count = intval($_POST['jml_target']);
-            $status = sanitize_text_field($_POST['status']);
-            echo '<div class="vdaddons-notice">'.self::fetch_news_scraper($target, $category, $count, $status).'</div>';
-        }
     }
 }
 

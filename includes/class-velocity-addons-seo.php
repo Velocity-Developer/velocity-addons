@@ -48,86 +48,100 @@ class Velocity_Addons_SEO
 
     public static function render_seo_settings_page()
     {
-        // Mendapatkan nilai default dari setting umum (general settings)
         $default_title = get_bloginfo('name');
         $default_description = get_bloginfo('description');
         $seo_post_types = get_option('seo_post_types');
 
-        // Cek apakah kosong atau tidak valid
         if (empty($seo_post_types) || !is_array($seo_post_types)) {
-            // Set nilai default
             $seo_post_types = ['post', 'page'];
-
-            // Simpan ke database untuk penggunaan berikutnya
             update_option('seo_post_types', $seo_post_types);
         }
 
-        // Ambil semua post type yang terdaftar
         $all_post_types = get_post_types();
-
-        // Post type Beaver Builder yang perlu dikecualikan
         $excluded_post_types = ['wp_block', 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation', 'wp_font_family', 'wp_font_face', 'fl-builder-template', 'fl-builder-history', 'fl-builder-template', 'fl-theme-layout', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request'];
-
-        // Filter post type untuk menghapus Beaver Builder dan attachment
         $post_types = array_diff($all_post_types, $excluded_post_types);
 ?>
-        <div class="wrap">
-            <h2>SEO Settings</h2>
+        <div class="velocity-dashboard-wrapper">
+            <div class="vd-header">
+                <h1 class="vd-title">SEO Settings</h1>
+                <p class="vd-subtitle">Pengaturan meta dan sharing untuk situs.</p>
+            </div>
             <form method="post" action="options.php">
                 <?php settings_fields('velocity_seo_group'); ?>
                 <?php do_settings_sections('velocity_seo_group'); ?>
-
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Home Title</th>
-                        <td><input class="regular-text" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" /></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Home Description</th>
-                        <td><textarea class="large-text" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Home Keywords</th>
-                        <td><textarea class="large-text" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Share Image</th>
-                        <td>
-                            <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
-                            <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
-                            <br>
-                            <div class="preview_share_image">
-                                <?php if (get_option('share_image')): ?>
-                                    <br>
-                                    <img id="preview_image" width="300" src="<?php echo esc_attr(get_option('share_image')); ?>" />
-                                    <br><span class="delete_share_image button">Delete</span>
-                                <?php endif; ?>
+                <div class="vd-grid-2">
+                    <div>
+                        <div class="vd-section">
+                            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Home Meta</h3>
                             </div>
-                            <br>
-                            <span class="dashicons dashicons-info-outline"></span> <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari tentang praktik terbaik untuk menerapkan <strong>"Berbagi di Facebook"</strong></a>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">SEO Single</th>
-                        <td>
-                            <?php foreach ($post_types as $post_type) : ?>
-                                <?php $label_post_type = str_replace('_', ' ', $post_type); ?>
-                                <div style="padding: 5px 0;">
-                                    <label>
-                                        <input type="checkbox" name="seo_post_types[]" value="<?php echo $post_type; ?>"
-                                            <?php
-                                            if (!empty($seo_post_types)) :
-                                                echo in_array($post_type, $seo_post_types) ? 'checked' : '';
-                                            endif; ?>>
-                                        <span style="text-transform: capitalize;"><?php echo $label_post_type; ?></span>
-                                    </label>
+                            <div class="vd-section-body">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Home Title</label>
+                                    <input class="regular-text" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" />
                                 </div>
-                            <?php endforeach; ?>
-                        </td>
-                    </tr>
-                </table>
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Home Description</label>
+                                    <textarea class="large-text" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea>
+                                </div>
+                                <div style="margin-bottom: 0;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Home Keywords</label>
+                                    <textarea class="large-text" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="vd-section">
+                            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Share Image</h3>
+                            </div>
+                            <div class="vd-section-body">
+                                <?php $current_img = get_option('share_image'); ?>
+                                <div id="vd-share-dropzone" class="vd-dropzone<?php echo $current_img ? ' has-image' : ''; ?>">
+                                    <div class="vd-share-instruction">Drag & Drop gambar di sini atau klik untuk pilih</div>
+                                    <div class="vd-share-preview">
+                                        <?php if ($current_img): ?>
+                                            <img id="preview_image" src="<?php echo esc_attr($current_img); ?>" style="max-width:100%; border-radius:0.5rem;" />
+                                            <br><span class="delete_share_image button" style="margin-top:0.5rem;">Delete</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
+                                <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
+                                <br>
+                                <br>
+                                <span class="dashicons dashicons-info-outline"></span>
+                                <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari praktik terbaik <strong>Berbagi di Facebook</strong></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="vd-section">
+                            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                                <h3 style="margin:0; font-size:1.1rem; color:#374151;">SEO Single (Post Types)</h3>
+                            </div>
+                            <div class="vd-section-body">
+                                <?php foreach ($post_types as $post_type) : ?>
+                                    <?php $label_post_type = str_replace('_', ' ', $post_type); ?>
+                                    <div style="padding: 5px 0;">
+                                        <label>
+                                            <input type="checkbox" name="seo_post_types[]" value="<?php echo $post_type; ?>"
+                                                <?php
+                                                if (!empty($seo_post_types)) :
+                                                    echo in_array($post_type, $seo_post_types) ? 'checked' : '';
+                                                endif; ?>>
+                                            <span style="text-transform: capitalize;"><?php echo esc_html($label_post_type); ?></span>
+                                        </label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <?php submit_button(); ?>
             </form>
+            <div class="vd-footer">
+                <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+            </div>
         </div>
 <?php
     }

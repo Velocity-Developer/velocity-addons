@@ -33,40 +33,60 @@ class Velocity_Addons_Floating_Whatsapp
     public static function floating_whatsapp_page()
     {
 ?>
-        <div class="wrap">
-            <h2>Whatsapp Settings</h2>
+        <div class="velocity-dashboard-wrapper">
+            <div class="vd-header">
+                <h1 class="vd-title">Floating Whatsapp</h1>
+                <p class="vd-subtitle">Pengaturan tombol WhatsApp mengambang dan pesan default.</p>
+            </div>
             <form method="post" action="options.php">
                 <?php settings_fields('velocity_floating_whatsapp_group'); ?>
                 <?php do_settings_sections('velocity_floating_whatsapp_group'); ?>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Nomor Whatsapp</th>
-                        <td>
-                            <input class="regular-text" type="text" name="nomor_whatsapp" value="<?php echo esc_attr(get_option('nomor_whatsapp', '')); ?>" placeholder="08xxx" /><br />
-                            <small for="nomor_whatsapp">Bisa diawali 62 atau 08</small>
-                        </td>
-                    <tr valign="top">
-                        <th scope="row">Text Whatsapp</th>
-                        <td>
-                            <input class="regular-text" type="text" name="whatsapp_text" value="<?php echo esc_attr(get_option('whatsapp_text', 'Butuh Bantuan?')); ?>" /><br />
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Pesan Whatsapp</th>
-                        <td><textarea class="large-text" name="whatsapp_message" rows="4" cols="40"><?php echo esc_textarea(get_option('whatsapp_message', 'Hallo...')); ?></textarea></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Whatsapp Position</th>
-                        <td>
-                            <select name="whatsapp_position">
-                                <option value="right" <?php selected(get_option('whatsapp_position'), 'right'); ?>>Right</option>
-                                <option value="left" <?php selected(get_option('whatsapp_position'), 'left'); ?>>Left</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
+                <div class="vd-grid-2">
+                    <div>
+                        <div class="vd-section">
+                            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Detail Whatsapp</h3>
+                            </div>
+                            <div class="vd-section-body">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Nomor Whatsapp</label>
+                                    <input class="regular-text" type="text" name="nomor_whatsapp" value="<?php echo esc_attr(get_option('nomor_whatsapp', '')); ?>" placeholder="08xxx" />
+                                    <small>Bisa diawali 62 atau 08</small>
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Text Whatsapp</label>
+                                    <input class="regular-text" type="text" name="whatsapp_text" value="<?php echo esc_attr(get_option('whatsapp_text', 'Butuh Bantuan?')); ?>" />
+                                </div>
+                                <div style="margin-bottom: 0;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Pesan Whatsapp</label>
+                                    <textarea class="large-text" name="whatsapp_message" rows="4" cols="40"><?php echo esc_textarea(get_option('whatsapp_message', 'Hallo...')); ?></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="vd-section">
+                            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Posisi & Opsi</h3>
+                            </div>
+                            <div class="vd-section-body">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Whatsapp Position</label>
+                                    <select name="whatsapp_position">
+                                        <option value="right" <?php selected(get_option('whatsapp_position'), 'right'); ?>>Right</option>
+                                        <option value="left"  <?php selected(get_option('whatsapp_position'),  'left'); ?>>Left</option>
+                                    </select>
+                                </div>
+                                <p>Posisi tombol dan tombol scroll-to-top akan mengikuti pilihan kanan/kiri.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <?php submit_button(); ?>
             </form>
+            <div class="vd-footer">
+                <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+            </div>
         </div>
         <?php
     }
