@@ -75,6 +75,9 @@ class Velocity_Addons_Admin {
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/velocity-addons-admin.css', array(), $this->version, 'all' );
 
+        // Enqueue Chart.js
+        wp_enqueue_script( 'chart-js', 'https://cdn.jsdelivr.net/npm/chart.js', array(), '4.4.1', true );
+
 	}
 
 	/**
