@@ -45,6 +45,20 @@ class Velocity_Addons_Dashboard
             }
         }
 
+        $site_title    = get_bloginfo('name');
+        $home_url      = home_url('/');
+        $admin_email   = get_option('admin_email');
+        $wp_version    = get_bloginfo('version');
+        $theme         = wp_get_theme();
+        $theme_name    = $theme ? $theme->get('Name') : '';
+        $theme_version = $theme ? $theme->get('Version') : '';
+        $php_version   = PHP_VERSION;
+        $timezone      = function_exists('wp_timezone_string') ? wp_timezone_string() : get_option('timezone_string');
+        $server_time   = wp_date('d M Y H:i', current_time('timestamp'));
+        $active_plugins = count((array) get_option('active_plugins', array()));
+        $users_count    = function_exists('count_users') ? count_users() : array('total_users' => 0);
+        $total_users    = isset($users_count['total_users']) ? (int) $users_count['total_users'] : 0;
+
         // Menghitung jumlah post, page, dan media
         $post_count = wp_count_posts()->publish;
         $page_count = wp_count_posts('page')->publish;
@@ -110,13 +124,33 @@ class Velocity_Addons_Dashboard
                 </div>
             </div>
 
-            <!-- Visitor Graph -->
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Statistik Pengunjung (30 Hari Terakhir)</h3>
+            <div class="vd-grid-2">
+                <div class="vd-section">
+                    <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb; display:flex; align-items:center; justify-content:space-between;">
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Statistik Pengunjung (30 Hari Terakhir)</h3>
+                        <button id="vd-seed-statistics" class="button button-primary" data-nonce="<?php echo esc_attr(wp_create_nonce('vd_seed_statistics')); ?>">Seed Statistik</button>
+                    </div>
+                    <div class="vd-section-body" style="position: relative; height: 350px;">
+                        <canvas id="velocityVisitorChart"></canvas>
+                        <div id="seed-message"></div>
+                    </div>
                 </div>
-                <div class="vd-section-body" style="position: relative; height: 350px;">
-                    <canvas id="velocityVisitorChart"></canvas>
+                <div class="vd-section">
+                    <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Info Web</h3>
+                    </div>
+                    <div class="vd-section-body">
+                        <div class="vd-kv"><span class="vd-kv-label">Nama Situs</span><span class="vd-kv-value"><?php echo esc_html($site_title); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">URL</span><span class="vd-kv-value"><a href="<?php echo esc_url($home_url); ?>" target="_blank"><?php echo esc_html($home_url); ?></a></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">Email Admin</span><span class="vd-kv-value"><?php echo esc_html($admin_email); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">WordPress</span><span class="vd-kv-value"><?php echo esc_html($wp_version); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">Tema Aktif</span><span class="vd-kv-value"><?php echo esc_html($theme_name . ($theme_version ? ' v' . $theme_version : '')); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">PHP</span><span class="vd-kv-value"><?php echo esc_html($php_version); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">Timezone</span><span class="vd-kv-value"><?php echo esc_html($timezone ?: 'UTC'); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">Waktu Server</span><span class="vd-kv-value"><?php echo esc_html($server_time); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">Plugin Aktif</span><span class="vd-kv-value"><?php echo number_format_i18n($active_plugins); ?></span></div>
+                        <div class="vd-kv"><span class="vd-kv-label">Total User</span><span class="vd-kv-value"><?php echo number_format_i18n($total_users); ?></span></div>
+                    </div>
                 </div>
             </div>
 
@@ -128,20 +162,11 @@ class Velocity_Addons_Dashboard
                 };
             </script>
 
-            <!-- QC Check Section -->
-            <div class="vd-section">
-                <details open>
-                    <summary>QC List Check</summary>
-                    <div class="vd-section-body">
-                        <?php Velocity_Addons_Maintenance_Mode::qc_maintenance(); ?>
+            <div class="vd-grid-2">
+                <div class="vd-section">
+                    <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">List Shortcode</h3>
                     </div>
-                </details>
-            </div>
-
-            <!-- Shortcode List Section -->
-            <div class="vd-section">
-                <details open>
-                    <summary>List Shortcode</summary>
                     <div class="vd-section-body">
                         <h6>#Breadcrumbs</h6>
                         <p><span class="vd-code">[vd-breadcrumbs]</span></p>
@@ -186,7 +211,15 @@ class Velocity_Addons_Dashboard
                         <h6>#VD Gallery Slide</h6>
                         <p><span class="vd-code">[vdgalleryslide id='']</span></p>
                     </div>
-                </details>
+                </div>
+                <div class="vd-section">
+                    <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">QC List Check</h3>
+                    </div>
+                    <div class="vd-section-body">
+                        <?php Velocity_Addons_Maintenance_Mode::qc_maintenance_list(); ?>
+                    </div>
+                </div>
             </div>
 
             <div class="vd-footer">

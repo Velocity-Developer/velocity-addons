@@ -246,3 +246,40 @@
 .vd-section-body p {
   margin-bottom: 0.75rem;
 }
+body.toplevel_page_admin_velocity_addons .notice.notice-warning.notice-alt,
+body.admin_page_admin_velocity_addons .notice.notice-warning.notice-alt {
+  display: none !important;
+}
+
+/* Split Grid for chart + info card */
+.vd-grid-2 {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 768px) {
+  .vd-grid-2 {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.vd-kv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.vd-kv:last-child {
+  border-bottom: none;
+}
+.vd-kv-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+.vd-kv-value {
+  color: #111827;
+  font-weight: 600;
+  font-size: 0.95rem;
+}

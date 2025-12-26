@@ -88,6 +88,37 @@ class Velocity_Addons_Maintenance_Mode
         echo '</div>';
     }
 
+    public static function qc_maintenance_list()
+    {
+        $parts = array(
+            self::check_permalink_settings(),
+            self::check_site_icon(),
+            self::check_recaptcha(),
+            self::check_seo(),
+            self::check_domain_extension(),
+            self::check_installed_plugins(),
+        );
+        $items = array();
+        foreach ($parts as $html) {
+            $html = trim((string) $html);
+            if ($html === '') {
+                continue;
+            }
+            if (preg_match_all('~<p>(.*?)</p>~is', $html, $m)) {
+                foreach ($m[1] as $segment) {
+                    $items[] = '<li>' . $segment . '</li>';
+                }
+            } else {
+                $items[] = '<li>' . $html . '</li>';
+            }
+        }
+        if (empty($items)) {
+            echo '<p>Tidak ada item QC yang perlu ditampilkan.</p>';
+            return;
+        }
+        echo '<ul class="vd-list">' . implode('', $items) . '</ul>';
+    }
+
     public static function check_domain_extension()
     {
         ob_start();
