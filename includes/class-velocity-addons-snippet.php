@@ -54,39 +54,48 @@ class Velocity_Addons_Snippet
     public static function snippet_page()
     {
         ?>
-        <div class="wrap">
-            <h2>Snippet Settings</h2>
+        <div class="velocity-dashboard-wrapper">
+            <div class="vd-header">
+                <h1 class="vd-title">Code Snippet</h1>
+                <p class="vd-subtitle">Masukkan snippet untuk Head, Body, dan Footer.</p>
+            </div>
             <form method="post" action="options.php">
                 <?php settings_fields('velocity_snippet_group'); ?>
                 <?php do_settings_sections('velocity_snippet_group'); ?>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Header Snippet</th>
-                        <td>
-                            <textarea class="large-text code" name="header_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('header_snippet', '')); ?></textarea>
-                            <br/>
-                            <small>Kode ditempatkan di dalam &lt;head&gt;.</small>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Body Snippet</th>
-                        <td>
-                            <textarea class="large-text code" name="body_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('body_snippet', '')); ?></textarea>
-                            <br/>
-                            <small>Kode ditempatkan tepat setelah tag pembuka &lt;body&gt;.</small>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Footer Snippet</th>
-                        <td>
-                            <textarea class="large-text code" name="footer_snippet" rows="10" cols="40"><?php echo esc_textarea(get_option('footer_snippet', '')); ?></textarea>
-                            <br/>
-                            <small>Kode ditempatkan sebelum tag penutup &lt;/body&gt;.</small>
-                        </td>
-                    </tr>
-                </table>
+                <div class="vd-section">
+                    <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Snippet</h3>
+                    </div>
+                    <div class="vd-section-body">
+                        <?php
+                        $fields = [
+                            ['id' => 'header_snippet', 'type' => 'textarea', 'title' => 'Header Snippet', 'label' => 'Kode ditempatkan di dalam <head>.'],
+                            ['id' => 'body_snippet', 'type' => 'textarea', 'title' => 'Body Snippet', 'label' => 'Kode ditempatkan tepat setelah tag pembuka <body>.'],
+                            ['id' => 'footer_snippet', 'type' => 'textarea', 'title' => 'Footer Snippet', 'label' => 'Kode ditempatkan sebelum tag penutup </body>.'],
+                        ];
+                        foreach ($fields as $data) {
+                            $id = $data['id'];
+                            $title = $data['title'];
+                            $label = isset($data['label']) ? $data['label'] : '';
+                            $val = get_option($id, '');
+                            echo '<div class="vd-form-group">';
+                            echo '<div class="vd-form-left">';
+                            echo '<label class="vd-form-label" for="' . esc_attr($id) . '">' . esc_html($title) . '</label>';
+                            if ($label) echo '<small class="vd-form-hint">' . esc_html($label) . '</small>';
+                            echo '</div>';
+                            echo '<div class="vd-form-right">';
+                            echo '<textarea class="large-text code" id="' . esc_attr($id) . '" name="' . esc_attr($id) . '" rows="10" cols="40">' . esc_textarea($val) . '</textarea>';
+                            echo '</div>';
+                            echo '</div>';
+                        }
+                        ?>
+                    </div>
+                </div>
                 <?php submit_button(); ?>
             </form>
+            <div class="vd-footer">
+                <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+            </div>
         </div>
         <?php
     }

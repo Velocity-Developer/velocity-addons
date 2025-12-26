@@ -16,7 +16,7 @@
  * Plugin Name:       Velocity Addons
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Additional functionality for Velocitydeveloper clients
- * Version:           1.6.8
+ * Version:           1.7.0
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
@@ -76,13 +76,14 @@ register_deactivation_hook(__FILE__, 'deactivate_velocity_addons');
 /**
  * Ensure DB schema/setup runs after silent core/plugin updates.
  */
-function velocity_addons_maybe_upgrade_after_update() {
-    if ( ! is_admin() || ! current_user_can('activate_plugins') ) {
+function velocity_addons_maybe_upgrade_after_update()
+{
+    if (! is_admin() || ! current_user_can('activate_plugins')) {
         return;
     }
 
     $installed_version = get_option('velocity_addons_db_version');
-    if ( $installed_version && version_compare($installed_version, VELOCITY_ADDONS_DB_VERSION, '>=') ) {
+    if ($installed_version && version_compare($installed_version, VELOCITY_ADDONS_DB_VERSION, '>=')) {
         return;
     }
 
@@ -117,10 +118,10 @@ function run_velocity_addons()
 run_velocity_addons();
 
 // One-time additive import from legacy statistics (if site updated without re-activation)
-add_action('admin_init', function(){
-    if ( get_option('velocity_addons_stats_legacy_added') || get_option('velocity_addons_stats_migrated') ) return;
+add_action('admin_init', function () {
+    if (get_option('velocity_addons_stats_legacy_added') || get_option('velocity_addons_stats_migrated')) return;
     // Run only for users who can manage options to avoid front-end overhead
-    if ( ! current_user_can('manage_options') ) return;
+    if (! current_user_can('manage_options')) return;
     require_once plugin_dir_path(__FILE__) . 'includes/class-velocity-addons-statistic-legacy.php';
     $migrator = new Velocity_Addons_Statistic_Legacy(null, false);
     ob_start();

@@ -242,37 +242,57 @@ class Velocity_Addons_News
                             }
                             ?>
                             <div class="vd-form-group">
-                                <label for="target" class="vd-form-label">Ambil Target</label>
-                                <select name="target" id="target" required>
-                                    <option value="">Pilih Target</option>
-                                    <?php foreach($categories as $category){ echo '<option value="'.$category['id'].'">'.$category['name'].'</option>'; } ?>
-                                </select>
+                                <div class="vd-form-left">
+                                    <label for="target" class="vd-form-label">Ambil Target</label>
+                                    <small class="vd-form-hint">Pilih sumber kategori dari API Velocity.</small>
+                                </div>
+                                <div class="vd-form-right">
+                                    <select name="target" id="target" required>
+                                        <option value="">Pilih Target</option>
+                                        <?php foreach($categories as $category){ echo '<option value="'.$category['id'].'">'.$category['name'].'</option>'; } ?>
+                                    </select>
+                                </div>
                             </div>
                             <div class="vd-form-group">
-                                <label for="category" class="vd-form-label">Tujuan Target</label>
-                                <?php
-                                wp_dropdown_categories(array(
-                                    'show_option_none' => 'Pilih Kategori',
-                                    'option_none_value' => '',
-                                    'name' => 'category',
-                                    'id' => 'category',
-                                    'exclude'   => 1,
-                                    'class' => 'postform',
-                                    'hide_empty' => 0,
-                                    'required' => 'required',
-                                ));
-                                ?>
+                                <div class="vd-form-left">
+                                    <label for="category" class="vd-form-label">Tujuan Target</label>
+                                    <small class="vd-form-hint">Kategori WordPress yang akan diisi.</small>
+                                </div>
+                                <div class="vd-form-right">
+                                    <?php
+                                    wp_dropdown_categories(array(
+                                        'show_option_none' => 'Pilih Kategori',
+                                        'option_none_value' => '',
+                                        'name' => 'category',
+                                        'id' => 'category',
+                                        'exclude'   => 1,
+                                        'class' => 'postform',
+                                        'hide_empty' => 0,
+                                        'required' => 'required',
+                                    ));
+                                    ?>
+                                </div>
                             </div>
                             <div class="vd-form-group">
-                                <label for="jml_target" class="vd-form-label">Jumlah Artikel</label>
-                                <input type="number" name="jml_target" id="jml_target" min="1" value="5" required/>
+                                <div class="vd-form-left">
+                                    <label for="jml_target" class="vd-form-label">Jumlah Artikel</label>
+                                    <small class="vd-form-hint">Jumlah artikel yang akan diimport.</small>
+                                </div>
+                                <div class="vd-form-right">
+                                    <input type="number" name="jml_target" id="jml_target" min="1" value="5" required/>
+                                </div>
                             </div>
                             <div class="vd-form-group">
-                                <label for="status" class="vd-form-label">Status</label>
-                                <select id="status" name="status" required>
-                                    <option value="publish">Publish</option>
-                                    <option value="draft">Draft</option>
-                                </select>
+                                <div class="vd-form-left">
+                                    <label for="status" class="vd-form-label">Status</label>
+                                    <small class="vd-form-hint">Status publikasi untuk artikel hasil import.</small>
+                                </div>
+                                <div class="vd-form-right">
+                                    <select id="status" name="status" required>
+                                        <option value="publish">Publish</option>
+                                        <option value="draft">Draft</option>
+                                    </select>
+                                </div>
                             </div>
                             <?php submit_button('Ambil Artikel'); ?>
                         </div>

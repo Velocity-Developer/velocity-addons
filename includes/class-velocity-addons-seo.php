@@ -76,17 +76,32 @@ class Velocity_Addons_SEO
                                 <h3 style="margin:0; font-size:1.1rem; color:#374151;">Home Meta</h3>
                             </div>
                             <div class="vd-section-body">
-                                <div style="margin-bottom: 1rem;">
-                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Home Title</label>
-                                    <input class="regular-text" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" />
+                                <div class="vd-form-group">
+                                    <div class="vd-form-left">
+                                        <label class="vd-form-label" for="home_title">Home Title</label>
+                                        <small class="vd-form-hint">Judul default untuk halaman beranda.</small>
+                                    </div>
+                                    <div class="vd-form-right">
+                                        <input class="regular-text" id="home_title" type="text" name="home_title" value="<?php echo esc_attr(get_option('home_title', $default_title)); ?>" />
+                                    </div>
                                 </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Home Description</label>
-                                    <textarea class="large-text" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea>
+                                <div class="vd-form-group">
+                                    <div class="vd-form-left">
+                                        <label class="vd-form-label" for="home_description">Home Description</label>
+                                        <small class="vd-form-hint">Deskripsi singkat untuk beranda.</small>
+                                    </div>
+                                    <div class="vd-form-right">
+                                        <textarea class="large-text" id="home_description" name="home_description" rows="4" cols="40"><?php echo esc_textarea(get_option('home_description', $default_description)); ?></textarea>
+                                    </div>
                                 </div>
-                                <div style="margin-bottom: 0;">
-                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Home Keywords</label>
-                                    <textarea class="large-text" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea>
+                                <div class="vd-form-group">
+                                    <div class="vd-form-left">
+                                        <label class="vd-form-label" for="home_keywords">Home Keywords</label>
+                                        <small class="vd-form-hint">Pisahkan dengan koma atau baris baru.</small>
+                                    </div>
+                                    <div class="vd-form-right">
+                                        <textarea class="large-text" id="home_keywords" name="home_keywords" rows="4" cols="40"><?php echo esc_textarea(get_option('home_keywords')); ?></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -96,21 +111,29 @@ class Velocity_Addons_SEO
                             </div>
                             <div class="vd-section-body">
                                 <?php $current_img = get_option('share_image'); ?>
-                                <div id="vd-share-dropzone" class="vd-dropzone<?php echo $current_img ? ' has-image' : ''; ?>">
-                                    <div class="vd-share-instruction">Drag & Drop gambar di sini atau klik untuk pilih</div>
-                                    <div class="vd-share-preview">
-                                        <?php if ($current_img): ?>
-                                            <img id="preview_image" src="<?php echo esc_attr($current_img); ?>" style="max-width:100%; border-radius:0.5rem;" />
-                                            <br><span class="delete_share_image button" style="margin-top:0.5rem;">Delete</span>
-                                        <?php endif; ?>
+                                <div class="vd-form-group">
+                                    <div class="vd-form-left">
+                                        <label class="vd-form-label" for="share_image">Gambar Share</label>
+                                        <small class="vd-form-hint">Digunakan untuk Open Graph jika tidak ada featured image.</small>
+                                    </div>
+                                    <div class="vd-form-right">
+                                        <div id="vd-share-dropzone" class="vd-dropzone<?php echo $current_img ? ' has-image' : ''; ?>">
+                                            <div class="vd-share-instruction">Drag & Drop gambar di sini atau klik untuk pilih</div>
+                                            <div class="vd-share-preview">
+                                                <?php if ($current_img): ?>
+                                                    <img id="preview_image" src="<?php echo esc_attr($current_img); ?>" />
+                                                    <br><span class="delete_share_image button" style="margin-top:0.5rem;">Delete</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
+                                        <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
+                                        <div style="margin-top:10px;">
+                                            <span class="dashicons dashicons-info-outline"></span>
+                                            <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari praktik terbaik <strong>Berbagi di Facebook</strong></a>
+                                        </div>
                                     </div>
                                 </div>
-                                <input type="text" class="regular-text" name="share_image" id="share_image" value="<?php echo esc_attr(get_option('share_image')); ?>" />
-                                <button type="button" class="button button-secondary" id="upload_image_button">Upload Image</button>
-                                <br>
-                                <br>
-                                <span class="dashicons dashicons-info-outline"></span>
-                                <a href="https://developers.facebook.com/docs/sharing/best-practices#gambar" target="_blank">Pelajari praktik terbaik <strong>Berbagi di Facebook</strong></a>
                             </div>
                         </div>
                     </div>
@@ -121,16 +144,19 @@ class Velocity_Addons_SEO
                             </div>
                             <div class="vd-section-body">
                                 <?php foreach ($post_types as $post_type) : ?>
-                                    <?php $label_post_type = str_replace('_', ' ', $post_type); ?>
-                                    <div style="padding: 5px 0;">
-                                        <label>
-                                            <input type="checkbox" name="seo_post_types[]" value="<?php echo $post_type; ?>"
-                                                <?php
-                                                if (!empty($seo_post_types)) :
-                                                    echo in_array($post_type, $seo_post_types) ? 'checked' : '';
-                                                endif; ?>>
-                                            <span style="text-transform: capitalize;"><?php echo esc_html($label_post_type); ?></span>
-                                        </label>
+                                    <?php $label_post_type = str_replace('_', ' ', $post_type);
+                                    $checked = (!empty($seo_post_types) && in_array($post_type, $seo_post_types)) ? 'checked' : ''; ?>
+                                    <div class="vd-form-group">
+                                        <div class="vd-form-left">
+                                            <label class="vd-form-label" for="seo_post_types__<?php echo esc_attr($post_type); ?>"><?php echo esc_html(ucwords($label_post_type)); ?></label>
+                                            <small class="vd-form-hint">Aktifkan meta SEO di single untuk tipe ini.</small>
+                                        </div>
+                                        <div class="vd-form-right">
+                                            <label class="vd-switch">
+                                                <input type="checkbox" id="seo_post_types__<?php echo esc_attr($post_type); ?>" name="seo_post_types[]" value="<?php echo esc_attr($post_type); ?>" <?php echo $checked; ?>>
+                                                <span class="vd-switch-slider" aria-hidden="true"></span>
+                                            </label>
+                                        </div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>

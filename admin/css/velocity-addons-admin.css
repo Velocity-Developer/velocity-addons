@@ -439,3 +439,44 @@ body.admin_page_admin_velocity_addons .notice.notice-warning.notice-alt {
   color: #6b7280;
   font-size: 0.85rem;
 }
+
+/* Media field (global) */
+.vd-media-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 320px;
+}
+.vd-media-field .vd-media-preview {
+  border: 1px dashed #c3c4c7;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f6f7f7;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 12px;
+}
+.vd-media-field .vd-media-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+.vd-media-field .vd-media-placeholder {
+  color: #6c7781;
+  font-style: italic;
+  text-align: center;
+}
+.vd-media-field .vd-media-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Right column for form fields */
+.velocity-dashboard-wrapper .vd-form-right {
+  flex: 0 0 48%;
+  max-width: 520px;
+}
