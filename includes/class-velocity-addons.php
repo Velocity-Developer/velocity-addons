@@ -196,6 +196,11 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-seo.php';
 
         /**
+         * Berisi Class untuk handle sitemap
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-sitemap.php';
+
+        /**
          * Berisi Class untuk handle shortcode
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-shortcode.php';

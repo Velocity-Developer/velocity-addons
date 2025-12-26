@@ -142,7 +142,6 @@ class Custom_Admin_Option_Page
                 array($this, 'optimize_db_page_callback')
             );
         }
-
     }
 
     public function velocity_seo_page()
@@ -195,6 +194,7 @@ class Custom_Admin_Option_Page
         // register_setting('custom_admin_options_group', 'standar_editor_velocity');
         register_setting('custom_admin_options_group', 'classic_widget_velocity');
         register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
+        register_setting('custom_admin_options_group', 'enable_xml_sitemap');
         register_setting('custom_admin_options_group', 'seo_velocity');
         register_setting('custom_admin_options_group', 'statistik_velocity');
         register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
@@ -328,6 +328,13 @@ class Custom_Admin_Option_Page
                         'title' => 'Classic Widget',
                         'std'   => 1,
                         'label' => 'Aktifkan widget klasik.',
+                    ],
+                    [
+                        'id'    => 'enable_xml_sitemap',
+                        'type'  => 'checkbox',
+                        'title' => 'XML Sitemap',
+                        'std'   => 1,
+                        'label' => 'Aktifkan XML Sitemap Generator (sitemap.xml).',
                     ],
                     [
                         'id'    => 'seo_velocity',
@@ -694,33 +701,66 @@ class Custom_Admin_Option_Page
                     });
                 </script>
                 <style>
-                    .vd-media-field{display:flex;flex-direction:column;gap:10px;max-width:320px;}
-                    .vd-media-field .vd-media-preview{border:1px dashed #c3c4c7;min-height:120px;display:flex;align-items:center;justify-content:center;background:#f6f7f7;border-radius:4px;overflow:hidden;padding:12px;}
-                    .vd-media-field .vd-media-preview img{width:100%;height:auto;display:block;border-radius:4px;}
-                    .vd-media-field .vd-media-placeholder{color:#6c7781;font-style:italic;text-align:center;}
-                    .vd-media-field .vd-media-actions{display:flex;gap:8px;flex-wrap:wrap;}
+                    .vd-media-field {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        max-width: 320px;
+                    }
+
+                    .vd-media-field .vd-media-preview {
+                        border: 1px dashed #c3c4c7;
+                        min-height: 120px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: #f6f7f7;
+                        border-radius: 4px;
+                        overflow: hidden;
+                        padding: 12px;
+                    }
+
+                    .vd-media-field .vd-media-preview img {
+                        width: 100%;
+                        height: auto;
+                        display: block;
+                        border-radius: 4px;
+                    }
+
+                    .vd-media-field .vd-media-placeholder {
+                        color: #6c7781;
+                        font-style: italic;
+                        text-align: center;
+                    }
+
+                    .vd-media-field .vd-media-actions {
+                        display: flex;
+                        gap: 8px;
+                        flex-wrap: wrap;
+                    }
                 </style>
 
 
             </form>
         </div>
-<?php
+    <?php
     }
 
 
-    public function visitor_stats_page_callback() {
-        if ( ! current_user_can('manage_options') ) {
+    public function visitor_stats_page_callback()
+    {
+        if (! current_user_can('manage_options')) {
             wp_die(__('You do not have sufficient permissions to access this page.'));
         }
 
         // Gunakan satu instance per request (hindari double hook)
         static $stats_handler = null;
-        if ( ! $stats_handler ) {
+        if (! $stats_handler) {
             $stats_handler = new Velocity_Addons_Statistic();
         }
         // Handle RESET request (POST + nonce)
         $rebuild_message = '';
-        if ( isset($_POST['reset_stats']) && check_admin_referer('reset_stats') ) {
+        if (isset($_POST['reset_stats']) && check_admin_referer('reset_stats')) {
             $stats_handler->reset_statistics();
             $rebuild_message = "<div class='notice notice-success is-dismissible'><p>Statistik berhasil di-reset. Semua data statistik dan meta 'hit' telah dihapus.</p></div>";
         }
@@ -730,7 +770,7 @@ class Custom_Admin_Option_Page
         $referer_stats = $stats_handler->get_referer_stats(30);
 
         // Siapkan data untuk Chart.js (gunakan wp_json_encode)
-        $daily_payload = array_map(function($stat){
+        $daily_payload = array_map(function ($stat) {
             return array(
                 'date'          => $stat->visit_date,
                 'unique_visits' => (int) $stat->unique_visits,
@@ -738,14 +778,14 @@ class Custom_Admin_Option_Page
             );
         }, $daily_stats);
 
-        $page_payload = array_map(function($p){
+        $page_payload = array_map(function ($p) {
             return array(
                 'url'   => $p->page_url,
                 'views' => (int) $p->total_views,
             );
         }, array_slice($page_stats, 0, 8));
 
-        ?>
+    ?>
         <div class="wrap vd-ons">
             <h1>📊 Statistik Pengunjung</h1>
 
@@ -768,7 +808,7 @@ class Custom_Admin_Option_Page
                 <?php
                 $cards = array(
                     'Hari Ini'  => $summary_stats['today'],
-                    'Minggu Ini'=> $summary_stats['this_week'],
+                    'Minggu Ini' => $summary_stats['this_week'],
                     'Bulan Ini' => $summary_stats['this_month'],
                     'All Time'  => $summary_stats['all_time'],
                 );
@@ -908,23 +948,30 @@ class Custom_Admin_Option_Page
                     <h3 style="margin-top:0;color:#23282d;">🏆 Halaman Teratas (30 Hari Terakhir)</h3>
                     <table class="widefat striped" style="margin-top:15px;">
                         <thead>
-                            <tr><th>Page URL</th><th>Pengunjung Unik</th><th>Total Tampilan</th></tr>
+                            <tr>
+                                <th>Page URL</th>
+                                <th>Pengunjung Unik</th>
+                                <th>Total Tampilan</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <?php if (empty($page_stats)) : ?>
-                            <tr><td colspan="3" style="text-align:center;color:#666;">No data available</td></tr>
-                        <?php else: foreach ($page_stats as $page): ?>
-                            <tr>
-                                <td>
-                                    <?php
-                                    $full = home_url($page->page_url);
-                                    echo '<a href="'.esc_url($full).'" target="_blank" rel="noopener noreferrer"><code>'.esc_html($page->page_url).'</code></a>';
-                                    ?>
-                                </td>
-                                <td><?php echo number_format_i18n((int)$page->unique_visitors); ?></td>
-                                <td><?php echo number_format_i18n((int)$page->total_views); ?></td>
-                            </tr>
-                        <?php endforeach; endif; ?>
+                            <?php if (empty($page_stats)) : ?>
+                                <tr>
+                                    <td colspan="3" style="text-align:center;color:#666;">No data available</td>
+                                </tr>
+                                <?php else: foreach ($page_stats as $page): ?>
+                                    <tr>
+                                        <td>
+                                            <?php
+                                            $full = home_url($page->page_url);
+                                            echo '<a href="' . esc_url($full) . '" target="_blank" rel="noopener noreferrer"><code>' . esc_html($page->page_url) . '</code></a>';
+                                            ?>
+                                        </td>
+                                        <td><?php echo number_format_i18n((int)$page->unique_visitors); ?></td>
+                                        <td><?php echo number_format_i18n((int)$page->total_views); ?></td>
+                                    </tr>
+                            <?php endforeach;
+                            endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -933,17 +980,23 @@ class Custom_Admin_Option_Page
                     <h3 style="margin-top:0;color:#23282d;">🔗 Rujukan Teratas (30 Hari Terakhir)</h3>
                     <table class="widefat striped" style="margin-top:15px;">
                         <thead>
-                            <tr><th>Referrer</th><th>Visits</th></tr>
+                            <tr>
+                                <th>Referrer</th>
+                                <th>Visits</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <?php if (empty($referer_stats)) : ?>
-                            <tr><td colspan="2" style="text-align:center;color:#666;">No data available</td></tr>
-                        <?php else: foreach ($referer_stats as $ref): ?>
-                            <tr>
-                                <td><code><?php echo esc_html(parse_url($ref->referer, PHP_URL_HOST) ?: $ref->referer); ?></code></td>
-                                <td><?php echo number_format_i18n((int)$ref->visits); ?></td>
-                            </tr>
-                        <?php endforeach; endif; ?>
+                            <?php if (empty($referer_stats)) : ?>
+                                <tr>
+                                    <td colspan="2" style="text-align:center;color:#666;">No data available</td>
+                                </tr>
+                                <?php else: foreach ($referer_stats as $ref): ?>
+                                    <tr>
+                                        <td><code><?php echo esc_html(parse_url($ref->referer, PHP_URL_HOST) ?: $ref->referer); ?></code></td>
+                                        <td><?php echo number_format_i18n((int)$ref->visits); ?></td>
+                                    </tr>
+                            <?php endforeach;
+                            endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -953,71 +1006,151 @@ class Custom_Admin_Option_Page
         <!-- Chart.js -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-        (function(){
-            const dailyData = <?php echo wp_json_encode($daily_payload); ?>;
-            const pageData  = <?php echo wp_json_encode($page_payload); ?>;
+            (function() {
+                const dailyData = <?php echo wp_json_encode($daily_payload); ?>;
+                const pageData = <?php echo wp_json_encode($page_payload); ?>;
 
-            const dailyLabels = dailyData.map(i => i.date);
-            const uniqueVisitsData = dailyData.map(i => i.unique_visits);
-            const totalVisitsData  = dailyData.map(i => i.total_visits);
+                const dailyLabels = dailyData.map(i => i.date);
+                const uniqueVisitsData = dailyData.map(i => i.unique_visits);
+                const totalVisitsData = dailyData.map(i => i.total_visits);
 
-            const dailyCtx = document.getElementById('dailyVisitsChart').getContext('2d');
-            new Chart(dailyCtx, {
-                type: 'line',
-                data: {
-                    labels: dailyLabels,
-                    datasets: [
-                        { label: 'Pengunjung Unik', data: uniqueVisitsData, borderColor: '#0073aa', backgroundColor: 'rgba(0,115,170,0.1)', tension: .4, fill: true },
-                        { label: 'Total Kunjungan', data: totalVisitsData,  borderColor: '#00a32a', backgroundColor: 'rgba(0,163,42,0.1)', tension: .4, fill: false }
-                    ]
-                },
-                options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true } }, plugins:{ legend:{ position:'top' } } }
-            });
+                const dailyCtx = document.getElementById('dailyVisitsChart').getContext('2d');
+                new Chart(dailyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dailyLabels,
+                        datasets: [{
+                                label: 'Pengunjung Unik',
+                                data: uniqueVisitsData,
+                                borderColor: '#0073aa',
+                                backgroundColor: 'rgba(0,115,170,0.1)',
+                                tension: .4,
+                                fill: true
+                            },
+                            {
+                                label: 'Total Kunjungan',
+                                data: totalVisitsData,
+                                borderColor: '#00a32a',
+                                backgroundColor: 'rgba(0,163,42,0.1)',
+                                tension: .4,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
 
-            const pageLabels = pageData.map(i => i.url);
-            const pageViews  = pageData.map(i => i.views);
+                const pageLabels = pageData.map(i => i.url);
+                const pageViews = pageData.map(i => i.views);
 
-            const pageCtx = document.getElementById('topPagesChart').getContext('2d');
-            new Chart(pageCtx, {
-                type: 'bar',
-                data: { labels: pageLabels, datasets: [{ label:'Page Views', data: pageViews, backgroundColor:['#0073aa','#00a32a','#d63638','#ff922b','#7c3aed','#db2777','#059669','#dc2626'] }] },
-                options: {
-                    responsive:true, maintainAspectRatio:false,
-                    scales:{ y:{ beginAtZero:true }, x:{ ticks:{ maxRotation:45, callback:(v,i)=>{ const l=pageLabels[i]||''; return l.length>20?l.substring(0,20)+'…':l; } } } },
-                    plugins:{ legend:{ display:false } }
+                const pageCtx = document.getElementById('topPagesChart').getContext('2d');
+                new Chart(pageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: pageLabels,
+                        datasets: [{
+                            label: 'Page Views',
+                            data: pageViews,
+                            backgroundColor: ['#0073aa', '#00a32a', '#d63638', '#ff922b', '#7c3aed', '#db2777', '#059669', '#dc2626']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    callback: (v, i) => {
+                                        const l = pageLabels[i] || '';
+                                        return l.length > 20 ? l.substring(0, 20) + '…' : l;
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                window.copyToClipboard = function(text) {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text).then(showCopySuccess);
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.left = '-9999px';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        try {
+                            document.execCommand('copy');
+                            showCopySuccess();
+                        } catch (e) {}
+                        document.body.removeChild(ta);
+                    }
+                };
+
+                function showCopySuccess() {
+                    const el = document.createElement('div');
+                    el.style.cssText = 'position:fixed;top:50px;right:20px;background:#00a32a;color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:all .3s';
+                    el.textContent = '✅ Shortcode copied to clipboard!';
+                    document.body.appendChild(el);
+                    setTimeout(() => {
+                        el.style.opacity = '0';
+                        el.style.transform = 'translateY(-20px)';
+                        setTimeout(() => document.body.removeChild(el), 300)
+                    }, 2000);
                 }
-            });
-
-            window.copyToClipboard = function(text){
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(text).then(showCopySuccess);
-                } else {
-                    const ta = document.createElement('textarea');
-                    ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
-                    document.body.appendChild(ta); ta.select();
-                    try { document.execCommand('copy'); showCopySuccess(); } catch(e){}
-                    document.body.removeChild(ta);
-                }
-            };
-            function showCopySuccess(){
-                const el=document.createElement('div');
-                el.style.cssText='position:fixed;top:50px;right:20px;background:#00a32a;color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:all .3s';
-                el.textContent='✅ Shortcode copied to clipboard!';
-                document.body.appendChild(el);
-                setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-20px)';setTimeout(()=>document.body.removeChild(el),300)},2000);
-            }
-        })();
+            })();
         </script>
 
         <style>
-        @media (max-width: 768px){
-            .stats-summary,.charts-section,.tables-section,.shortcode-examples{grid-template-columns:1fr!important}
-        }
-        .chart-container canvas{height:200px!important}
-        .table-container table{font-size:14px}
-        .table-container code{background:#f1f1f1;padding:2px 6px;border-radius:4px;font-size:12px}
+            @media (max-width: 768px) {
+
+                .stats-summary,
+                .charts-section,
+                .tables-section,
+                .shortcode-examples {
+                    grid-template-columns: 1fr !important
+                }
+            }
+
+            .chart-container canvas {
+                height: 200px !important
+            }
+
+            .table-container table {
+                font-size: 14px
+            }
+
+            .table-container code {
+                background: #f1f1f1;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 12px
+            }
         </style>
-        <?php
+<?php
     }
 
     public function optimize_db_page_callback()
@@ -1025,11 +1158,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
         Velocity_Addons_Optimasi::render_optimize_db_page();
     }
-
-
-
 }
 
 // Initialize the Pengaturan Admin page
 $custom_admin_options_page = new Custom_Admin_Option_Page();
-
