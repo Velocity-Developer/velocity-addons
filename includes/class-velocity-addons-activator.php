@@ -159,6 +159,9 @@ class Velocity_Addons_Activator {
 		if ( get_option('seo_velocity', null) === null ) {
 			update_option('seo_velocity', '1');
 		}
+
+		// Flush rewrite rules agar sitemap.xml terbaca
+		flush_rewrite_rules();
 	}
 
 	/* ===== Helpers internal ===== */
