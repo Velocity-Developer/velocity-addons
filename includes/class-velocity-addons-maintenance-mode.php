@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Register all actions and filters for the plugin
  *
@@ -54,26 +55,137 @@ class Velocity_Addons_Maintenance_Mode
 
         $heading        = esc_html($hd);
         $body_content   = wpautop(wp_kses_post($bd));
-        $background_css = $bg_url
-            ? 'background-color:#0f172a;background-image:url(' . esc_url($bg_url) . ');background-size:cover;background-position:center;'
-            : 'background:linear-gradient(135deg,#0f172a,#1e293b);';
 
-        $message  = '<style>body#error-page{width:100%;max-width:100%;overflow:hidden;margin:0;padding:0;border:0;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#fff;' . $background_css . '}';
-        $message .= 'body#error-page:before{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.1);}';
-        $message .= '#velocity-maintenance__wrapper{position:relative;z-index:1;padding:30px;background:rgba(12,19,33,0.85);border-radius:10px;text-align:center;box-shadow:0 20px 45px rgba(0,0,0,0.35);}';
-        $message .= '#velocity-maintenance__wrapper h1{margin:0 0 17px;padding-bottom:17px;font-size:29px;line-height:1.2;color:#fff;}';
-        $message .= '#velocity-maintenance__wrapper .velocity-maintenance__body{font-size:18px;line-height:1.7;color:#e2e8f0;}';
-        $message .= '#velocity-maintenance__wrapper .velocity-maintenance__body p{margin:0 0 16px;padding:0;}';
-        $message .= '#velocity-maintenance__wrapper .velocity-maintenance__body p:last-child{margin-bottom:0;}';
-        $message .= '#error-page p,#error-page .wp-die-message{margin:0 auto;padding:20px;}';
-        $message .= '</style>';
-        $message .= '<div id="velocity-maintenance__wrapper">';
-        $message .= '<h1>' . $heading . '</h1>';
-        $message .= '<div class="velocity-maintenance__body">' . $body_content . '</div>';
-        $message .= '</div>';
+        // Setup background style
+        $style_bg = $bg_url
+            ? "background: url('" . esc_url($bg_url) . "') no-repeat center center fixed; background-size: cover;"
+            : "background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);";
 
-        // 503 supaya SEO paham sedang perawatan
-        wp_die($message, $heading, ['response' => 503]);
+        // Set Headers for 503 Service Unavailable
+        if (!headers_sent()) {
+            header('HTTP/1.1 503 Service Unavailable');
+            header('Status: 503 Service Unavailable');
+            header('Retry-After: 3600');
+        }
+?>
+        <!DOCTYPE html>
+        <html lang="<?php echo get_locale(); ?>">
+
+        <head>
+            <meta charset="<?php bloginfo('charset'); ?>">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title><?php echo $heading; ?> - <?php bloginfo('name'); ?></title>
+            <style>
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    <?php echo $style_bg; ?>min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                    color: #fff;
+                    margin: 0;
+                    padding: 20px;
+                }
+
+                .maintenance-card {
+                    background: rgba(255, 255, 255, 0.98);
+                    color: #1e293b;
+                    border-radius: 16px;
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                    padding: 3rem;
+                    max-width: 600px;
+                    width: 100%;
+                    position: relative;
+                    overflow: hidden;
+                    text-align: center;
+                }
+
+                .maintenance-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 6px;
+                    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+                }
+
+                .maintenance-card h1 {
+                    font-weight: 800;
+                    color: #0f172a;
+                    margin: 0 0 1.5rem 0;
+                    font-size: 2rem;
+                    line-height: 1.2;
+                }
+
+                .maintenance-card .content {
+                    font-size: 1.1rem;
+                    color: #475569;
+                    line-height: 1.7;
+                    margin-bottom: 2rem;
+                }
+
+                .maintenance-card .content p {
+                    margin-top: 0;
+                    margin-bottom: 1rem;
+                }
+
+                .maintenance-card .content p:last-child {
+                    margin-bottom: 0;
+                }
+
+                .btn-reload {
+                    background-color: #0f172a;
+                    color: #fff;
+                    padding: 0.75rem 2rem;
+                    border-radius: 50px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: inline-block;
+                    cursor: pointer;
+                    border: none;
+                    font-size: 1rem;
+                }
+
+                .btn-reload:hover {
+                    background-color: #334155;
+                    color: #fff;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                }
+
+                @media (max-width: 640px) {
+                    .maintenance-card {
+                        padding: 2rem;
+                    }
+
+                    .maintenance-card h1 {
+                        font-size: 1.75rem;
+                    }
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="maintenance-card">
+                <h1><?php echo $heading; ?></h1>
+                <div class="content">
+                    <?php echo $body_content; ?>
+                </div>
+                <a href="<?php echo esc_url(home_url()); ?>" class="btn-reload">
+                    Muat Ulang
+                </a>
+            </div>
+        </body>
+
+        </html>
+<?php
+        exit();
     }
 
     public static function qc_maintenance()
@@ -126,7 +238,7 @@ class Velocity_Addons_Maintenance_Mode
         $domain   = parse_url($site_url, PHP_URL_HOST);
         $domain_parts = explode('.', (string) $domain);
         $extension    = array_pop($domain_parts);
-        $sub_extension= array_pop($domain_parts);
+        $sub_extension = array_pop($domain_parts);
         $valid_extensions = ['go.id', 'desa.id', 'sch.id', 'ac.id'];
 
         if (in_array($sub_extension . '.' . $extension, $valid_extensions, true)) {
@@ -151,7 +263,7 @@ class Velocity_Addons_Maintenance_Mode
     {
         ob_start();
         $site_icon  = get_site_icon_url();
-        $linksetting= admin_url('options-general.php');
+        $linksetting = admin_url('options-general.php');
         if (empty($site_icon)) {
             echo '<p>Peringatan: Favicon belum disetting. Silakan setting <a href="' . $linksetting . '"><b>disini.</b></a></p>';
         }
@@ -164,7 +276,7 @@ class Velocity_Addons_Maintenance_Mode
         $linksetting     = admin_url('admin.php?page=custom_admin_options');
         $check_recaptcha = get_option('captcha_velocity');
         $sitekey  = $check_recaptcha['sitekey']  ?? '';
-        $secretkey= $check_recaptcha['secretkey']?? '';
+        $secretkey = $check_recaptcha['secretkey'] ?? '';
         if (empty($sitekey) || empty($secretkey)) {
             echo '<p>Peringatan: Recaptcha belum disetting. Silakan setting <a href="' . $linksetting . '"><b>disini.</b></a></p>';
         }
@@ -175,7 +287,7 @@ class Velocity_Addons_Maintenance_Mode
     {
         ob_start();
         $linksetting  = admin_url('admin.php?page=velocity_seo_settings');
-        $home_keywords= get_option('home_keywords');
+        $home_keywords = get_option('home_keywords');
         $share_image  = get_option('share_image');
         if (empty($home_keywords) || empty($share_image)) {
             echo '<p>Peringatan: SEO belum disetting. Silakan setting <a href="' . $linksetting . '"><b>disini.</b></a></p>';
@@ -190,7 +302,7 @@ class Velocity_Addons_Maintenance_Mode
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
         }
         $plugins            = get_plugins();
-        $auto_update_plugins= get_site_option('auto_update_plugins', []);
+        $auto_update_plugins = get_site_option('auto_update_plugins', []);
         $excluded_plugins = [
             'bb-ultimate-addon/bb-ultimate-addon.php',
             'velocity-toko/velocity-toko.php',
