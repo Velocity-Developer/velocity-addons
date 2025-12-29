@@ -216,35 +216,46 @@ class Custom_Admin_Option_Page
 
     public function register_settings()
     {
-        register_setting('custom_admin_options_group', 'fully_disable_comment');
-        register_setting('custom_admin_options_group', 'hide_admin_notice');
-        register_setting('custom_admin_options_group', 'limit_login_attempts');
-        register_setting('custom_admin_options_group', 'maintenance_mode');
-        register_setting('custom_admin_options_group', 'maintenance_mode_data');
-        register_setting('custom_admin_options_group', 'license_key');
-        register_setting('custom_admin_options_group', 'auto_resize_mode');
-        register_setting('custom_admin_options_group', 'auto_resize_mode_data');
-        register_setting('custom_admin_options_group', 'disable_xmlrpc');
-        register_setting('custom_admin_options_group', 'disable_rest_api');
-        register_setting('custom_admin_options_group', 'disable_gutenberg');
-        register_setting('custom_admin_options_group', 'block_wp_login');
-        register_setting('custom_admin_options_group', 'whitelist_block_wp_login');
-        register_setting('custom_admin_options_group', 'whitelist_country');
-        register_setting('custom_admin_options_group', 'redirect_to');
-        // register_setting('custom_admin_options_group', 'standar_editor_velocity');
-        register_setting('custom_admin_options_group', 'classic_widget_velocity');
-        register_setting('custom_admin_options_group', 'remove_slug_category_velocity');
-        register_setting('custom_admin_options_group', 'enable_xml_sitemap');
-        register_setting('custom_admin_options_group', 'seo_velocity');
-        register_setting('custom_admin_options_group', 'statistik_velocity');
-        register_setting('custom_admin_options_group', 'auto_resize_image_velocity');
-        register_setting('custom_admin_options_group', 'captcha_velocity');
-        register_setting('custom_admin_options_group', 'news_generate');
-        register_setting('custom_admin_options_group', 'velocity_gallery');
-        register_setting('custom_admin_options_group', 'velocity_optimasi');
-        register_setting('custom_admin_options_group', 'velocity_duitku');
-        register_setting('custom_admin_options_group', 'floating_whatsapp');
-        register_setting('custom_admin_options_group', 'floating_scrollTop');
+        // General
+        register_setting('velocity_general_options_group', 'fully_disable_comment');
+        register_setting('velocity_general_options_group', 'hide_admin_notice');
+        register_setting('velocity_general_options_group', 'disable_gutenberg');
+        register_setting('velocity_general_options_group', 'classic_widget_velocity');
+        register_setting('velocity_general_options_group', 'remove_slug_category_velocity');
+        register_setting('velocity_general_options_group', 'enable_xml_sitemap');
+        register_setting('velocity_general_options_group', 'seo_velocity');
+        register_setting('velocity_general_options_group', 'statistik_velocity');
+        register_setting('velocity_general_options_group', 'floating_whatsapp');
+        register_setting('velocity_general_options_group', 'floating_scrollTop');
+        register_setting('velocity_general_options_group', 'news_generate');
+        register_setting('velocity_general_options_group', 'velocity_gallery');
+        register_setting('velocity_general_options_group', 'velocity_optimasi');
+        register_setting('velocity_general_options_group', 'velocity_duitku');
+
+        // Security
+        register_setting('velocity_security_options_group', 'limit_login_attempts');
+        register_setting('velocity_security_options_group', 'disable_xmlrpc');
+        register_setting('velocity_security_options_group', 'disable_rest_api');
+        register_setting('velocity_security_options_group', 'block_wp_login');
+        register_setting('velocity_security_options_group', 'whitelist_block_wp_login');
+        register_setting('velocity_security_options_group', 'whitelist_country');
+        register_setting('velocity_security_options_group', 'redirect_to');
+
+        // Maintenance
+        register_setting('velocity_maintenance_options_group', 'maintenance_mode');
+        register_setting('velocity_maintenance_options_group', 'maintenance_mode_data');
+
+        // License
+        register_setting('velocity_license_options_group', 'license_key');
+        register_setting('velocity_license_options_group', 'velocity_license');
+
+        // Auto Resize
+        register_setting('velocity_auto_resize_options_group', 'auto_resize_mode');
+        register_setting('velocity_auto_resize_options_group', 'auto_resize_mode_data');
+        register_setting('velocity_auto_resize_options_group', 'auto_resize_image_velocity');
+
+        // Captcha
+        register_setting('velocity_captcha_options_group', 'captcha_velocity');
     }
 
     public function field($data)
@@ -546,8 +557,8 @@ class Custom_Admin_Option_Page
                 <p class="vd-subtitle">Pengaturan dasar fitur Velocity Addons.</p>
             </div>
             <form id="velocity-general-form" method="post" action="options.php">
-                <?php settings_fields('custom_admin_options_group'); ?>
-                <?php do_settings_sections('custom_admin_options_group'); ?>
+                <?php settings_fields('velocity_general_options_group'); ?>
+                <?php do_settings_sections('velocity_general_options_group'); ?>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Umum</h3>
@@ -646,8 +657,8 @@ class Custom_Admin_Option_Page
                 <p class="vd-subtitle">Pengaturan Captcha (Google reCaptcha v2 atau Gambar).</p>
             </div>
             <form method="post" action="options.php">
-                <?php settings_fields('custom_admin_options_group'); ?>
-                <?php do_settings_sections('custom_admin_options_group'); ?>
+                <?php settings_fields('velocity_captcha_options_group'); ?>
+                <?php do_settings_sections('velocity_captcha_options_group'); ?>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Captcha</h3>
@@ -720,8 +731,8 @@ class Custom_Admin_Option_Page
                 <p class="vd-subtitle">Pengaturan tampilan dan status maintenance situs.</p>
             </div>
             <form method="post" action="options.php">
-                <?php settings_fields('custom_admin_options_group'); ?>
-                <?php do_settings_sections('custom_admin_options_group'); ?>
+                <?php settings_fields('velocity_maintenance_options_group'); ?>
+                <?php do_settings_sections('velocity_maintenance_options_group'); ?>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Maintenance Mode</h3>
@@ -843,8 +854,8 @@ class Custom_Admin_Option_Page
                 <p class="vd-subtitle">Verifikasi lisensi Velocity Addons.</p>
             </div>
             <form method="post" action="options.php">
-                <?php settings_fields('custom_admin_options_group'); ?>
-                <?php do_settings_sections('custom_admin_options_group'); ?>
+                <?php settings_fields('velocity_license_options_group'); ?>
+                <?php do_settings_sections('velocity_license_options_group'); ?>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">License Key</h3>
@@ -920,8 +931,8 @@ class Custom_Admin_Option_Page
                 <p class="vd-subtitle">Pengaturan keamanan akses dan login.</p>
             </div>
             <form method="post" action="options.php">
-                <?php settings_fields('custom_admin_options_group'); ?>
-                <?php do_settings_sections('custom_admin_options_group'); ?>
+                <?php settings_fields('velocity_security_options_group'); ?>
+                <?php do_settings_sections('velocity_security_options_group'); ?>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Security</h3>
@@ -984,8 +995,8 @@ class Custom_Admin_Option_Page
                 <p class="vd-subtitle">Pengaturan re-sizing otomatis untuk gambar.</p>
             </div>
             <form method="post" action="options.php">
-                <?php settings_fields('custom_admin_options_group'); ?>
-                <?php do_settings_sections('custom_admin_options_group'); ?>
+                <?php settings_fields('velocity_auto_resize_options_group'); ?>
+                <?php do_settings_sections('velocity_auto_resize_options_group'); ?>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Auto Resize</h3>
