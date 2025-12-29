@@ -63,6 +63,20 @@ class Velocity_Addons_Dashboard
         $post_count = wp_count_posts()->publish;
         $page_count = wp_count_posts('page')->publish;
         $media_count = wp_count_posts('attachment')->inherit;
+        $license_opt = get_option('velocity_license');
+        $license_active = is_array($license_opt) && isset($license_opt['status']) && $license_opt['status'] === 'active';
+        $license_exp = is_array($license_opt) && isset($license_opt['expire_date']) ? $license_opt['expire_date'] : '';
+        $summary_stats = null;
+        $online_count  = null;
+        if (class_exists('Velocity_Addons_Statistic')) {
+            $stats_handler = new Velocity_Addons_Statistic();
+            $summary_stats = $stats_handler->get_summary_stats();
+            if (method_exists($stats_handler, 'online_users_count')) {
+                $online_count = (int) $stats_handler->online_users_count();
+            }
+        }
+        $draft_count = (int) (wp_count_posts()->draft ?? 0);
+        $moderated_comments = (int) (wp_count_comments()->moderated ?? 0);
 ?>
         <div class="velocity-dashboard-wrapper">
 
@@ -70,6 +84,17 @@ class Velocity_Addons_Dashboard
             <div class="vd-header">
                 <h1 class="vd-title">Dashboard</h1>
                 <p class="vd-subtitle">Ringkasan status dan informasi Velocity Addons.</p>
+            </div>
+
+            <div class="vd-section" style="margin-top:-10px">
+                <div class="vd-section-body" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <?php if ($license_active): ?>
+                        <span style="display:inline-flex;align-items:center;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;border-radius:9999px;padding:6px 10px;font-size:12px;font-weight:600">License Verified<?php echo $license_exp ? ' • Exp: ' . esc_html($license_exp) : ''; ?></span>
+                    <?php else: ?>
+                        <span style="display:inline-flex;align-items:center;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:9999px;padding:6px 10px;font-size:12px;font-weight:600">License belum diaktifkan</span>
+                        <a class="button button-primary" href="<?php echo esc_url(admin_url('admin.php?page=velocity_license_settings')); ?>">Atur Lisensi</a>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="vd-grid">
@@ -122,6 +147,55 @@ class Velocity_Addons_Dashboard
                     </div>
                     <div class="vd-stat-desc">Total file media yang diupload.</div>
                 </div>
+
+                <!-- Visitors Today Card -->
+                <div class="vd-card">
+                    <div class="vd-card-header">
+                        <div class="vd-icon-wrapper vd-icon-blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M1 8s3-5.5 7-5.5S15 8 15 8s-3 5.5-7 5.5S1 8 1 8zm7 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                                <path d="M8 10a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
+                            </svg>
+                        </div>
+                        <div class="vd-stat-content">
+                            <div class="vd-stat-label">Pengunjung Hari Ini</div>
+                            <div class="vd-stat-value"><?php echo number_format_i18n((int) ($summary_stats['today']->unique_visitors ?? 0)); ?></div>
+                        </div>
+                    </div>
+                    <div class="vd-stat-desc">Total pengunjung unik hari ini.</div>
+                </div>
+
+                <!-- Online Users Card -->
+                <div class="vd-card">
+                    <div class="vd-card-header">
+                        <div class="vd-icon-wrapper vd-icon-red">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                            </svg>
+                        </div>
+                        <div class="vd-stat-content">
+                            <div class="vd-stat-label">Online Sekarang</div>
+                            <div class="vd-stat-value"><?php echo number_format_i18n((int) ($online_count ?? 0)); ?></div>
+                        </div>
+                    </div>
+                    <div class="vd-stat-desc">Perkiraan pengunjung aktif dalam 5 menit terakhir.</div>
+                </div>
+
+                <!-- Pageviews Today Card -->
+                <div class="vd-card">
+                    <div class="vd-card-header">
+                        <div class="vd-icon-wrapper vd-icon-blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M0 0h1v16H0V0zm4 6h1v10H4V6zm4-3h1v13H8V3zm4 8h1v5h-1v-5z" />
+                            </svg>
+                        </div>
+                        <div class="vd-stat-content">
+                            <div class="vd-stat-label">Pageviews Hari Ini</div>
+                            <div class="vd-stat-value"><?php echo number_format_i18n((int) ($summary_stats['today']->total_visits ?? 0)); ?></div>
+                        </div>
+                    </div>
+                    <div class="vd-stat-desc">Total halaman dilihat hari ini.</div>
+                </div>
             </div>
 
             <div class="vd-grid-2">
@@ -131,6 +205,9 @@ class Velocity_Addons_Dashboard
                         <button id="vd-seed-statistics" class="button button-primary" data-nonce="<?php echo esc_attr(wp_create_nonce('vd_seed_statistics')); ?>">Seed Statistik</button>
                     </div>
                     <div class="vd-section-body" style="position: relative; height: 350px;">
+                        <?php if (empty($labels)): ?>
+                            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#6b7280">Belum ada data statistik</div>
+                        <?php endif; ?>
                         <canvas id="velocityVisitorChart"></canvas>
                         <div id="seed-message"></div>
                     </div>
@@ -151,6 +228,28 @@ class Velocity_Addons_Dashboard
                         <div class="vd-kv"><span class="vd-kv-label">Plugin Aktif</span><span class="vd-kv-value"><?php echo number_format_i18n($active_plugins); ?></span></div>
                         <div class="vd-kv"><span class="vd-kv-label">Total User</span><span class="vd-kv-value"><?php echo number_format_i18n($total_users); ?></span></div>
                     </div>
+                </div>
+            </div>
+
+            <div class="vd-section">
+                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Quick Links</h3>
+                </div>
+                <div class="vd-section-body">
+                    <ul class="vd-list">
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">Pengaturan Umum</a></li>
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_captcha_settings'); ?>">Captcha</a></li>
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_maintenance_settings'); ?>">Maintenance Mode</a></li>
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_license_settings'); ?>">License</a></li>
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_security_settings'); ?>">Security</a></li>
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_auto_resize_settings'); ?>">Auto Resize</a></li>
+                        <?php if (get_option('statistik_velocity', '1') === '1'): ?>
+                            <li><a href="<?php echo admin_url('admin.php?page=velocity_statistics'); ?>">Statistik Pengunjung</a></li>
+                        <?php endif; ?>
+                        <?php if (get_option('velocity_optimasi', '1') === '1'): ?>
+                            <li><a href="<?php echo admin_url('admin.php?page=velocity_optimize_db'); ?>">Optimize Database</a></li>
+                        <?php endif; ?>
+                    </ul>
                 </div>
             </div>
 

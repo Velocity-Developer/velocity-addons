@@ -217,6 +217,10 @@ class Velocity_Addons_Statistic {
         ) );
         return (int) $count;
     }
+    
+    public function online_users_count($ttl = null) {
+        return $this->get_online_users_count($ttl);
+    }
 
     /** ============================
      *  Helper: filter request & URL
