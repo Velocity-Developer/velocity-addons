@@ -102,9 +102,10 @@ class Velocity_Addons_News
                 $num_time++;
             endforeach;
         } else {
+            $btn = '<a href="'.esc_url(admin_url('admin.php?page=velocity_license_settings')).'" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
             echo '<p><svg xmlns="XXXXXXXXXXXXXXXXXXXXXXXXXX" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
-                </svg> Gagal import! '.$get_datas['message'].'</p>';
+                </svg> Gagal import! '.esc_html($get_datas['message']).($get_datas['message']==='License Key is required' ? $btn : '').'</p>';
         }
 
         return ob_get_clean();
@@ -237,7 +238,9 @@ class Velocity_Addons_News
                             if(isset($get_categories['status']) && $get_categories['status'] == true){
                                 $categories = $get_categories['data']??[];
                             } else {
-                                echo '<p>'.$get_categories['message'].'</p>';
+                                $msg = isset($get_categories['message']) ? $get_categories['message'] : 'Gagal mengambil kategori.';
+                                $btn = '<a href="'.esc_url(admin_url('admin.php?page=velocity_license_settings')).'" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
+                                echo '<p>'.esc_html($msg).($msg === 'License Key is required' ? $btn : '').'</p>';
                                 $categories = [];
                             }
                             ?>

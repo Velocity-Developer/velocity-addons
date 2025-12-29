@@ -20,7 +20,8 @@ class Velocity_Addons_License
     }
 
     public function headers_api(){
-        $license_key = get_option($this->option_name)['key'];
+        $opt = get_option($this->option_name);
+        $license_key = is_array($opt) && isset($opt['key']) ? $opt['key'] : '';
         return [
             'Content-Type' => 'application/json',
             'license_key' => $license_key,
@@ -69,7 +70,12 @@ class Velocity_Addons_License
 
     public function check_license()
     {
-        $license_key = get_option($this->option_name)['key'];
+        $opt = get_option($this->option_name);
+        $license_key = is_array($opt) && isset($opt['key']) ? $opt['key'] : '';
+        if (empty($license_key)) {
+            $this->handle_license_error('License Key is required');
+            return;
+        }
         $response = $this->send_request($license_key);
 
         if ($response) {
