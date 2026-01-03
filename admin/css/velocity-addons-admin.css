@@ -487,3 +487,81 @@ body.admin_page_admin_velocity_addons .notice.notice-warning.notice-alt {
   flex: 0 0 48%;
   max-width: 520px;
 }
+
+/* Floating WhatsApp admin */
+.wa-contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wa-contact-item {
+  padding: 0.25rem 0 0.5rem;
+  position: relative;
+}
+
+.wa-contact-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.wa-contact-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.wa-contact-field .regular-text {
+  width: 100%;
+  max-width: 100%;
+}
+
+.wa-contact-field small {
+  display: block;
+  color: #6b7280;
+  margin-top: 0.35rem;
+}
+
+.wa-remove-contact {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #dc3545;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.wa-remove-contact svg {
+  fill: currentColor;
+}
+
+.wa-remove-contact--hidden {
+  visibility: hidden;
+}
+
+.wa-contact-separator {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 0.75rem 0 0;
+}
+
+.wa-contact-item:last-child .wa-contact-separator {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .wa-contact-row {
+    grid-template-columns: 1fr;
+  }
+
+  .wa-contact-field + .wa-contact-field {
+    margin-top: 0.5rem;
+  }
+}

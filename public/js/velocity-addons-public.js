@@ -56,6 +56,35 @@
 			});
 		}
 
+		// Floating WhatsApp multi-contact toggle
+		var $waToggle = $('.wa-multi-toggle');
+		var $waList = $('#wa-multi-list');
+		if ($waToggle.length && $waList.length) {
+			var closeList = function() {
+				$waList.removeClass('is-open');
+				$waToggle.attr('aria-expanded', 'false').removeClass('is-open');
+			};
+			var openList = function() {
+				$waList.addClass('is-open');
+				$waToggle.attr('aria-expanded', 'true').addClass('is-open');
+			};
+			$waToggle.on('click', function(e) {
+				e.preventDefault();
+				var isOpen = $waList.hasClass('is-open');
+				var isCloseIcon = $(e.target).closest('.wa-toggle-close').length > 0;
+
+				if (!isOpen) {
+					openList();
+					return;
+				}
+
+				// Only close when clicking the close icon.
+				if (isOpen && isCloseIcon) {
+					closeList();
+				}
+			});
+		}
+
 		var $canvas = $('#optimizeChart');
 		if (!$canvas.length) { console.warn('Optimize DB: canvas #optimizeChart not found'); return; }
 		if (typeof Chart === 'undefined') { console.warn('Optimize DB: Chart.js not loaded'); return; }
