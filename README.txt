@@ -22,6 +22,16 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.8.0=
+- Floating WhatsApp: dukung multi-kontak dengan opsi baru `nomor_whatsapp_contacts`, sinkronisasi nomor legacy, dan toggle UI baru (ikon X).
+- Perapian UI/UX tombol floating (tidak bertabrakan dengan scroll-to-top, dropdown lebih rapi).
+- Perubahan kecil lain untuk menjaga kompatibilitas dan kestabilan.
+
+=1.7.14=
+- Link sitemap ke sitemap.xml
+- Captcha gambar
+- Clean UI dashboard
+
 =1.6.8=
 - Perbaiki hitungan total (all time) agar tidak double count bulan berjalan: data bulan aktif hanya diambil dari daily stats, bulan lampau dari monthly stats.
 
