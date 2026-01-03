@@ -127,7 +127,8 @@ class Velocity_Addons_Auto_Updater
   public function add_link_to_settings($actions, $plugin_file)
   {
     if ($plugin_file === 'velocity-addons/velocity-addons.php') {
-      $url = admin_url('admin.php?page=custom_admin_options');
+      // Point to the main Velocity Addons settings page.
+      $url = admin_url('admin.php?page=admin_velocity_addons');
       $actions['link_to_settings'] = '<a href="' . $url . '">Pengaturan Admin</a>';
     }
     return $actions;

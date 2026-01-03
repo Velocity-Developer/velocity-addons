@@ -273,7 +273,7 @@ class Velocity_Addons_Maintenance_Mode
     public static function check_recaptcha()
     {
         ob_start();
-        $linksetting     = admin_url('admin.php?page=custom_admin_options');
+        $linksetting     = admin_url('admin.php?page=admin_velocity_addons');
         $check_recaptcha = get_option('captcha_velocity');
         $sitekey  = $check_recaptcha['sitekey']  ?? '';
         $secretkey = $check_recaptcha['secretkey'] ?? '';
