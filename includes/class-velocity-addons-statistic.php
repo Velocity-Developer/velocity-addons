@@ -163,6 +163,9 @@ class Velocity_Addons_Statistic {
     private function upsert_online_session() {
         global $wpdb;
         $table = $this->online_sessions_table;
+        if ( ! $this->table_exists($table) ) {
+            return;
+        }
 
         // Pastikan ada session id
         $sid = $this->visitor_id ?: '';
@@ -198,6 +201,9 @@ class Velocity_Addons_Statistic {
     public function cleanup_online_sessions() {
         global $wpdb;
         $table = $this->online_sessions_table;
+        if ( ! $this->table_exists($table) ) {
+            return;
+        }
         $ttl = $this->get_online_ttl();
         $wpdb->query( $wpdb->prepare(
             "DELETE FROM {$table} WHERE last_seen < (NOW() - INTERVAL %d SECOND)",
@@ -208,6 +214,9 @@ class Velocity_Addons_Statistic {
     private function get_online_users_count($ttl = null) {
         global $wpdb;
         $table = $this->online_sessions_table;
+        if ( ! $this->table_exists($table) ) {
+            return 0;
+        }
         if ($ttl === null) {
             $ttl = $this->get_online_ttl();
         }
@@ -336,9 +345,9 @@ class Velocity_Addons_Statistic {
     }
 
     // Cek apakah sebuah tabel ada di DB
-    private function table_exists(string $table_name): bool {
+    private function table_exists($table_name): bool {
         global $wpdb;
-        if ('' === trim($table_name)) return false;
+        if (!is_string($table_name) || '' === trim($table_name)) return false;
         // exact match terhadap nama tabel lengkap (termasuk prefix)
         $found = $wpdb->get_var( $wpdb->prepare('SHOW TABLES LIKE %s', $table_name) );
         return $found === $table_name;
@@ -533,6 +542,15 @@ class Velocity_Addons_Statistic {
 
     public function get_summary_stats() {
         global $wpdb;
+
+        if ( ! $this->table_exists($this->daily_stats_table) ) {
+            return array(
+                'today'      => (object) ['unique_visitors'=>0, 'total_visits'=>0],
+                'this_week'  => (object) ['unique_visitors'=>0, 'total_visits'=>0],
+                'this_month' => (object) ['unique_visitors'=>0, 'total_visits'=>0],
+                'all_time'   => (object) ['unique_visitors'=>0, 'total_visits'=>0],
+            );
+        }
 
         // Pakai tanggal WP, hindari selisih timezone dengan CURDATE()
         $today_str = wp_date('Y-m-d', current_time('timestamp'));
