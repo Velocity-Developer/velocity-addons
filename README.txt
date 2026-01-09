@@ -22,6 +22,9 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.8.1=
+- Perbaikan fatal error statistik saat tabel belum tersedia (guard table_exists).
+
 =1.8.0=
 - Floating WhatsApp: dukung multi-kontak dengan opsi baru `nomor_whatsapp_contacts`, sinkronisasi nomor legacy, dan toggle UI baru (ikon X).
 - Perapian UI/UX tombol floating (tidak bertabrakan dengan scroll-to-top, dropdown lebih rapi).
