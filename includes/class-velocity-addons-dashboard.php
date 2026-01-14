@@ -246,7 +246,7 @@ class Velocity_Addons_Dashboard
                         <?php if (get_option('statistik_velocity', '1') === '1'): ?>
                             <li><a href="<?php echo admin_url('admin.php?page=velocity_statistics'); ?>">Statistik Pengunjung</a></li>
                         <?php endif; ?>
-                        <?php if (get_option('velocity_optimasi', '1') === '1'): ?>
+                        <?php if (get_option('velocity_optimasi', '0') === '1'): ?>
                             <li><a href="<?php echo admin_url('admin.php?page=velocity_optimize_db'); ?>">Optimize Database</a></li>
                         <?php endif; ?>
                     </ul>

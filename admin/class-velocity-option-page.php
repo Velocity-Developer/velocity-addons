@@ -171,7 +171,7 @@ class Custom_Admin_Option_Page
             );
         }
 
-        $optimasi_velocity = get_option('velocity_optimasi', '1');
+        $optimasi_velocity = get_option('velocity_optimasi', '0');
         if ($optimasi_velocity == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
