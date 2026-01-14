@@ -22,6 +22,10 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.8.2=
+- Default fitur Optimize Database kini nonaktif sampai diaktifkan manual.
+- Perbaikan kecil lainnya.
+
 =1.8.1=
 - Perbaikan fatal error statistik saat tabel belum tersedia (guard table_exists).
 
