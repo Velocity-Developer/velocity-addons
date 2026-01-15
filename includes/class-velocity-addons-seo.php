@@ -186,6 +186,7 @@ class Velocity_Addons_SEO
         $image_id = $this->get_seo_image_id();
         // Mendapatkan URL gambar
         $meta_img = $image_id ? wp_get_attachment_image_src($image_id, 'large')[0] : $share_image;
+        $fallback_img = $meta_img;
 
         ///jika halaman HOME
         if (is_home() || is_front_page()) {
@@ -193,6 +194,10 @@ class Velocity_Addons_SEO
             $meta_title     = $home_title;
             $meta_desc      = $home_description;
             $meta_keywords  = $home_keywords;
+            $meta_img       = $share_image;
+            if (empty($meta_img)) {
+                $meta_img = $fallback_img;
+            }
             $meta_type      = 'website';
         } else if (is_archive()) {
             //jika halaman ARCHIVE
@@ -202,6 +207,9 @@ class Velocity_Addons_SEO
             $meta_desc      = $meta_desc ? $meta_desc : $home_description;
             $meta_keywords  = $home_keywords;
             $meta_img       = $share_image;
+            if (empty($meta_img)) {
+                $meta_img = $fallback_img;
+            }
             $meta_type      = 'article';
         } else {
             $meta_url       = get_permalink();

@@ -22,6 +22,9 @@ This section describes how to install the plugin and get it working.
 
 == Changelog ==
 
+=1.8.3=
+- SEO: og:image untuk halaman home/front dan archive pakai share image; jika kosong fallback ke gambar dari konten/featured image.
+
 =1.8.2=
 - Default fitur Optimize Database kini nonaktif sampai diaktifkan manual.
 - Perbaikan kecil lainnya.
