@@ -271,6 +271,11 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-option-page.php';
 
         /**
+         * REST endpoints for settings pages in admin.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-settings-rest.php';
+
+        /**
          * The class responsible for defining all actions that occur in the public-facing
          * side of the site.
          */

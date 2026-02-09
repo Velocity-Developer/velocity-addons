@@ -22,6 +22,8 @@ class Velocity_Addons_News
 
         if ($news_generate !== '1')
             return false;
+
+        add_action('wp_ajax_velocity_news_import', array($this, 'ajax_import_news'));
     }
 
     // Fungsi statis untuk mengakses $api_url
@@ -41,10 +43,23 @@ class Velocity_Addons_News
         ];
         $url = self::$api_url.'/'.$item.'?'.implode("&",$data);
         
-        $response   = wp_remote_get( $url,$args );
-        $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : [];
-        
-        return $response; // Mengembalikan data dalam bentuk array
+        $response = wp_remote_get($url, $args);
+        if (is_wp_error($response)) {
+            return array(
+                'status'  => false,
+                'message' => $response->get_error_message(),
+            );
+        }
+
+        $decoded = json_decode(wp_remote_retrieve_body($response), true);
+        if (!is_array($decoded)) {
+            return array(
+                'status'  => false,
+                'message' => 'Invalid response from API.',
+            );
+        }
+
+        return $decoded; // Mengembalikan data dalam bentuk array
     }
 
     public static function fetch_category() {
@@ -59,8 +74,21 @@ class Velocity_Addons_News
             );
             $url        = self::$api_url.'/cat';
             
-            $response   = wp_remote_get( $url,$args );
-            $response   = !is_wp_error( $response ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : $response->get_error_message();
+            $response = wp_remote_get($url, $args);
+            if (is_wp_error($response)) {
+                return array(
+                    'status'  => false,
+                    'message' => $response->get_error_message(),
+                );
+            }
+
+            $response = json_decode(wp_remote_retrieve_body($response), true);
+            if (!is_array($response)) {
+                return array(
+                    'status'  => false,
+                    'message' => 'Invalid response from API.',
+                );
+            }
             
             // jika sukses Simpan data dalam transient selama 5 menit (300 detik)
             if(isset($response['status']) && $response['status'] == true){
@@ -102,10 +130,17 @@ class Velocity_Addons_News
                 $num_time++;
             endforeach;
         } else {
+            $error_message = 'Gagal mengambil data dari API.';
+            if (is_array($get_datas) && isset($get_datas['message']) && is_scalar($get_datas['message'])) {
+                $error_message = (string) $get_datas['message'];
+            } elseif (is_string($get_datas) && $get_datas !== '') {
+                $error_message = $get_datas;
+            }
+
             $btn = '<a href="'.esc_url(admin_url('admin.php?page=velocity_license_settings')).'" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
             echo '<p><svg xmlns="XXXXXXXXXXXXXXXXXXXXXXXXXX" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
-                </svg> Gagal import! '.esc_html($get_datas['message']).($get_datas['message']==='License Key is required' ? $btn : '').'</p>';
+                </svg> Gagal import! '.esc_html($error_message).($error_message === 'License Key is required' ? $btn : '').'</p>';
         }
 
         return ob_get_clean();
@@ -125,23 +160,23 @@ class Velocity_Addons_News
         ", $title);
 
         // Execute the query and get the result
-        $post_id = $wpdb->get_var($query);
+        $post_id = absint($wpdb->get_var($query));
 
-        if ($post_id) {
+        if ($post_id > 0) {
             return $post_id;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Fungsi untuk menyimpan artikel sebagai post di WordPress
     public static function save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date) {
         ob_start();
-        $existing_post = self::cek_posts_by_title($title);
-        if ($existing_post) {
+        $existing_post_id = self::cek_posts_by_title($title);
+        if ($existing_post_id) {
             // Update category kalau disediakan
             if ($category) {
-                wp_set_post_terms($existing_post->ID, $category, 'category');
+                wp_set_post_terms((int) $existing_post_id, $category, 'category');
                 echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#51b20c" class="bi bi-check-circle" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                     <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
@@ -226,7 +261,8 @@ class Velocity_Addons_News
                 <h1 class="vd-title">News Scraper</h1>
                 <p class="vd-subtitle">Ambil artikel dari API Velocity.</p>
             </div>
-            <form method="post">
+            <form method="post" id="velocity-news-import-form">
+                <?php wp_nonce_field('velocity_news_import_action', 'velocity_news_import_nonce'); ?>
                 <div class="vd-grid-2">
                     <div class="vd-section">
                         <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -238,7 +274,13 @@ class Velocity_Addons_News
                             if(isset($get_categories['status']) && $get_categories['status'] == true){
                                 $categories = $get_categories['data']??[];
                             } else {
-                                $msg = isset($get_categories['message']) ? $get_categories['message'] : 'Gagal mengambil kategori.';
+                                if (is_array($get_categories) && isset($get_categories['message']) && is_scalar($get_categories['message'])) {
+                                    $msg = (string) $get_categories['message'];
+                                } elseif (is_string($get_categories) && $get_categories !== '') {
+                                    $msg = $get_categories;
+                                } else {
+                                    $msg = 'Gagal mengambil kategori.';
+                                }
                                 $btn = '<a href="'.esc_url(admin_url('admin.php?page=velocity_license_settings')).'" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
                                 echo '<p>'.esc_html($msg).($msg === 'License Key is required' ? $btn : '').'</p>';
                                 $categories = [];
@@ -297,14 +339,14 @@ class Velocity_Addons_News
                                     </select>
                                 </div>
                             </div>
-                            <?php submit_button('Ambil Artikel'); ?>
+                            <?php submit_button('Ambil Artikel', 'primary', 'submit', false, array('id' => 'velocity-news-submit')); ?>
                         </div>
                     </div>
                     <div class="vd-section">
                         <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                             <h3 style="margin:0; font-size:1.1rem; color:#374151;">Hasil Import</h3>
                         </div>
-                        <div class="vd-section-body">
+                        <div class="vd-section-body" id="velocity-news-import-result">
                             <?php
                             if (isset($_POST['category']) && isset($_POST['jml_target'])) {
                                 $target = sanitize_text_field($_POST['target']);
@@ -320,11 +362,92 @@ class Velocity_Addons_News
                     </div>
                 </div>
             </form>
+            <script>
+                jQuery(function($) {
+                    var $form = $('#velocity-news-import-form');
+                    if (!$form.length) return;
+
+                    var $result = $('#velocity-news-import-result');
+                    var $submit = $('#velocity-news-submit');
+
+                    function escHtml(text) {
+                        return $('<div/>').text(text || '').html();
+                    }
+
+                    $form.on('submit', function(e) {
+                        e.preventDefault();
+
+                        var originalLabel = $submit.text();
+                        var payload = {
+                            action: 'velocity_news_import',
+                            nonce: $form.find('input[name="velocity_news_import_nonce"]').val(),
+                            target: $form.find('#target').val(),
+                            category: $form.find('#category').val(),
+                            jml_target: $form.find('#jml_target').val(),
+                            status: $form.find('#status').val()
+                        };
+
+                        $submit.prop('disabled', true).text('Memproses...');
+                        $result.html('<p>Sedang memproses import...</p>');
+
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: payload
+                        }).done(function(response) {
+                            if (response && response.success && response.data && typeof response.data.html === 'string') {
+                                $result.html(response.data.html);
+                                return;
+                            }
+
+                            var msg = (response && response.data && response.data.message) ? response.data.message : 'Import gagal.';
+                            $result.html('<p style="color:#b32d2e;">' + escHtml(msg) + '</p>');
+                        }).fail(function(xhr) {
+                            var msg = 'Import gagal. Coba lagi.';
+                            if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                                msg = xhr.responseJSON.data.message;
+                            }
+                            $result.html('<p style="color:#b32d2e;">' + escHtml(msg) + '</p>');
+                        }).always(function() {
+                            $submit.prop('disabled', false).text(originalLabel);
+                        });
+                    });
+                });
+            </script>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
         </div>
         <?php
+    }
+
+    public function ajax_import_news()
+    {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Akses ditolak.'), 403);
+        }
+
+        check_ajax_referer('velocity_news_import_action', 'nonce');
+
+        $target   = isset($_POST['target']) ? absint($_POST['target']) : 0;
+        $category = isset($_POST['category']) ? absint($_POST['category']) : 0;
+        $count    = isset($_POST['jml_target']) ? absint($_POST['jml_target']) : 0;
+        $status   = isset($_POST['status']) ? sanitize_key($_POST['status']) : 'publish';
+
+        if ($target < 1 || $category < 1 || $count < 1) {
+            wp_send_json_error(array('message' => 'Parameter import belum lengkap.'), 400);
+        }
+
+        if (!in_array($status, array('publish', 'draft'), true)) {
+            $status = 'publish';
+        }
+
+        $count = min($count, 50);
+
+        $html = self::fetch_news_scraper((string) $target, (string) $category, $count, $status);
+
+        wp_send_json_success(array('html' => $html));
     }
 }
 

@@ -881,39 +881,6 @@ class Custom_Admin_Option_Page
                 </div>
                 <?php submit_button(); ?>
             </form>
-            <script>
-                jQuery(document).ready(function($) {
-                    $('.check-license').click(function(e) {
-                        e.preventDefault();
-                        var licenseKey = $('#velocity_license__key').val();
-                        if (licenseKey === '') {
-                            alert('Please enter a license key.');
-                            return;
-                        }
-                        $('.check-license.button').html('Loading..');
-                        $.ajax({
-                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                            type: 'POST',
-                            data: {
-                                action: 'check_license',
-                                license_key: licenseKey
-                            },
-                            success: function(response) {
-                                if (response.success) {} else {
-                                    $('.license-status').html(response.data);
-                                    $('#velocity_license__key').val('');
-                                }
-                                $('.check-license.button').html('License Verified!');
-                            },
-                            error: function() {
-                                $('.license-status').html('Server not reachable');
-                                $('#velocity_license__key').val('');
-                                $('.check-license.button').html('Check License');
-                            }
-                        });
-                    });
-                });
-            </script>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
