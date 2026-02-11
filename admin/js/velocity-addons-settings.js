@@ -11,40 +11,40 @@
     },
     velocity_captcha_settings: {
       route: "captcha",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
     },
     velocity_maintenance_settings: {
       route: "maintenance",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
     },
     velocity_license_settings: {
       route: "license",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
       withLicenseCheck: true,
     },
     velocity_security_settings: {
       route: "security",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
     },
     velocity_auto_resize_settings: {
       route: "auto_resize",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
     },
     velocity_seo_settings: {
       route: "seo",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
     },
     velocity_floating_whatsapp: {
       route: "floating_whatsapp",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
     },
     velocity_snippet_settings: {
       route: "snippet",
-      formSelector: ".velocity-dashboard-wrapper form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
     },
     velocity_duitku_settings: {
       route: "duitku",
-      formSelector: ".wrap form[action='options.php']",
+      formSelector: "form[data-velocity-settings='1']",
       onlyTab: "pengaturan",
     },
   };
@@ -58,9 +58,10 @@
   }
 
   // Alpine factory used by every settings page.
-  window.velocitySettingsPage = function (route) {
+  window.velocitySettingsPage = function (route, initialModel) {
     return {
       route: route,
+      model: deepClone(initialModel || {}),
       form: null,
       noticeEl: null,
       saveButtons: [],
@@ -86,6 +87,7 @@
         try {
           var response = await apiRequest("/settings/" + this.route, "GET");
           if (response && response.settings) {
+            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
             applyValuesToForm(this.form, response.settings);
             if (this.route === "general") {
               syncGeneralDynamicMenu(response.settings);
@@ -101,11 +103,12 @@
         }
         this.setSaving(true);
         try {
-          var payload = serializeForm(this.form);
+          var payload = buildPayloadFromModelAndForm(this.model, this.form);
           var response = await apiRequest("/settings/" + this.route, "POST", {
             settings: payload,
           });
           if (response && response.settings) {
+            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
             applyValuesToForm(this.form, response.settings);
             if (this.route === "general") {
               syncGeneralDynamicMenu(response.settings);
@@ -123,6 +126,7 @@
         try {
           var response = await apiRequest("/settings/general/reset", "POST", {});
           if (response && response.settings) {
+            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
             applyValuesToForm(this.form, response.settings);
             syncGeneralDynamicMenu(response.settings);
           }
@@ -152,6 +156,7 @@
         try {
           var response = await apiRequest("/license/check", "POST", { license_key: key });
           if (response && response.settings) {
+            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
             applyValuesToForm(this.form, response.settings);
           }
           if (this.licenseStatusEl) {
@@ -235,7 +240,12 @@
     if (!form) {
       return;
     }
-    form.setAttribute("x-data", "velocitySettingsPage('" + activeBinding.route + "')");
+    decorateFieldsWithXModel(form);
+    var initialModel = buildInitialModelFromForm(form);
+    form.setAttribute(
+      "x-data",
+      "velocitySettingsPage('" + activeBinding.route + "', " + JSON.stringify(initialModel) + ")"
+    );
     form.setAttribute("x-init", "boot($el)");
     form.setAttribute("x-on:submit.prevent", "submit($event)");
   }
@@ -479,6 +489,160 @@
     var div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  function decorateFieldsWithXModel(form) {
+    var elements = form.elements || [];
+    for (var i = 0; i < elements.length; i++) {
+      var field = elements[i];
+      if (shouldSkipFieldForModel(field)) {
+        continue;
+      }
+      if (field.hasAttribute("x-model")) {
+        continue;
+      }
+      var expression = toModelExpression(field.name);
+      if (!expression) {
+        continue;
+      }
+      field.setAttribute("x-model", expression);
+    }
+  }
+
+  function shouldSkipFieldForModel(field) {
+    if (!field || !field.name || field.disabled) {
+      return true;
+    }
+    if (
+      field.name === "option_page" ||
+      field.name === "action" ||
+      field.name === "submit" ||
+      field.name.indexOf("_wp") === 0 ||
+      field.name === "velocity_news_import_nonce"
+    ) {
+      return true;
+    }
+    if (field.type === "submit" || field.type === "button" || field.type === "reset") {
+      return true;
+    }
+    return false;
+  }
+
+  function toModelExpression(inputName) {
+    var parsed = parseInputName(inputName);
+    if (!parsed.parts.length) {
+      return "";
+    }
+    var expr = "model";
+    for (var i = 0; i < parsed.parts.length; i++) {
+      var part = parsed.parts[i];
+      if (/^\d+$/.test(part)) {
+        expr += "[" + part + "]";
+      } else {
+        expr += "['" + String(part).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "']";
+      }
+    }
+    return expr;
+  }
+
+  function deepClone(value) {
+    if (typeof value === "undefined") {
+      return {};
+    }
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (_e) {
+      return value;
+    }
+  }
+
+  function buildPayloadFromModelAndForm(model, form) {
+    var modelPayload = deepClone(model || {});
+    var formPayload = serializeForm(form);
+    return deepMergePreferRight(modelPayload, formPayload);
+  }
+
+  function buildInitialModelFromForm(form) {
+    var model = {};
+    var elements = form.elements || [];
+    for (var i = 0; i < elements.length; i++) {
+      var field = elements[i];
+      if (shouldSkipFieldForModel(field)) {
+        continue;
+      }
+      var parsed = parseInputName(field.name);
+      if (!parsed.parts.length) {
+        continue;
+      }
+
+      if (parsed.isList) {
+        if (typeof getByPath(model, parsed.parts) === "undefined") {
+          setByPath(model, parsed.parts, [], false);
+        }
+        continue;
+      }
+
+      if (field.type === "checkbox") {
+        setByPath(model, parsed.parts, field.checked ? 1 : 0, false);
+        continue;
+      }
+
+      if (field.type === "radio") {
+        var current = getByPath(model, parsed.parts);
+        if (typeof current === "undefined") {
+          setByPath(model, parsed.parts, "", false);
+        }
+        if (field.checked) {
+          setByPath(model, parsed.parts, field.value, false);
+        }
+        continue;
+      }
+
+      if (field.tagName === "SELECT" && field.multiple) {
+        var selected = [];
+        for (var x = 0; x < field.options.length; x++) {
+          if (field.options[x].selected) {
+            selected.push(field.options[x].value);
+          }
+        }
+        setByPath(model, parsed.parts, selected, false);
+        continue;
+      }
+
+      setByPath(model, parsed.parts, field.value, false);
+    }
+
+    return model;
+  }
+
+  function deepMergePreferRight(left, right) {
+    if (Array.isArray(right)) {
+      return right.slice();
+    }
+    if (!isPlainObject(right)) {
+      return typeof right === "undefined" ? left : right;
+    }
+
+    var out = isPlainObject(left) ? left : {};
+    var keys = Object.keys(right);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var rightValue = right[key];
+      if (isPlainObject(rightValue) && isPlainObject(out[key])) {
+        out[key] = deepMergePreferRight(out[key], rightValue);
+      } else if (isPlainObject(rightValue)) {
+        out[key] = deepMergePreferRight({}, rightValue);
+      } else if (Array.isArray(rightValue)) {
+        out[key] = rightValue.slice();
+      } else {
+        out[key] = rightValue;
+      }
+    }
+    return out;
+  }
+
+  function isPlainObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value);
   }
 
   function syncGeneralDynamicMenu(settings) {

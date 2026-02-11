@@ -574,7 +574,6 @@ class Velocity_Addons_Admin_Settings_REST
                 'options' => array(
                     'limit_login_attempts'      => array('type' => 'bool', 'default' => 1),
                     'disable_xmlrpc'            => array('type' => 'bool', 'default' => 1),
-                    'disable_rest_api'          => array('type' => 'bool', 'default' => 0),
                     'block_wp_login'            => array('type' => 'bool', 'default' => 0),
                     'whitelist_block_wp_login'  => array('type' => 'text', 'default' => ''),
                     'whitelist_country'         => array('type' => 'text', 'default' => 'ID'),

@@ -56,9 +56,7 @@ class Velocity_Addons_Floating_Whatsapp
                 <h1 class="vd-title">Floating Whatsapp</h1>
                 <p class="vd-subtitle">Pengaturan tombol WhatsApp mengambang dan pesan default.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_floating_whatsapp_group'); ?>
-                <?php do_settings_sections('velocity_floating_whatsapp_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-grid-2">
                     <div>
                         <div class="vd-section">

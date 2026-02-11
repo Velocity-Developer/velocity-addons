@@ -59,9 +59,7 @@ class Velocity_Addons_Snippet
                 <h1 class="vd-title">Code Snippet</h1>
                 <p class="vd-subtitle">Masukkan snippet untuk Head, Body, dan Footer.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_snippet_group'); ?>
-                <?php do_settings_sections('velocity_snippet_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Snippet</h3>

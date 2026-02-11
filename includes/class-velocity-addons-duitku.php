@@ -287,11 +287,7 @@ class Velocity_Addons_Duitku {
             
             <?php if($tab_active == 'pengaturan'): ?>
                 <h4>Pengaturan akun payment gateway Duitku</h4>
-                <form method="post" action="options.php">
-                    <?php                   
-                    settings_fields('velocity_duitku_group');
-                    do_settings_sections('velocity_duitku_settings');
-                    ?>
+                <form method="post" data-velocity-settings="1">
                     <table class="form-table">
                         <tr valign="top">
                             <th scope="row">Mode</th>

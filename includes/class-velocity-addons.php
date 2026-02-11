@@ -276,6 +276,16 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-settings-rest.php';
 
         /**
+         * REST endpoints for statistics actions in admin.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-statistics-rest.php';
+
+        /**
+         * REST endpoints for optimize database actions in admin.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-optimize-rest.php';
+
+        /**
          * The class responsible for defining all actions that occur in the public-facing
          * side of the site.
          */
