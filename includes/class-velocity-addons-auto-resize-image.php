@@ -30,45 +30,135 @@ class Velocity_Addons_Auto_Resize_Image
 
     public function resize_image($file)
     {
-        $opt        = get_option('auto_resize_mode_data', []);
-        $maxwidth   = isset($opt['maxwidth']) && !empty($opt['maxwidth']) ? $opt['maxwidth'] : '';
-        $maxheight  = isset($opt['maxheight']) && !empty($opt['maxheight']) ? $opt['maxheight'] : '';
+        $opt = $this->get_resize_options();
 
-        if ($maxwidth > 0 || $maxheight > 0) {
-            // Mendapatkan path direktori upload gambar
-            $file_path = $file['file'];
+        $maxwidth      = (int) $opt['maxwidth'];
+        $maxheight     = (int) $opt['maxheight'];
+        $quality       = (int) $opt['quality'];
+        $output_format = (string) $opt['output_format'];
 
-            $image_editor = wp_get_image_editor($file_path);
+        $file_path = isset($file['file']) ? (string) $file['file'] : '';
+        if ($file_path === '' || !file_exists($file_path)) {
+            return $file;
+        }
 
-            if (!is_wp_error($image_editor)) {
-                $size = $image_editor->get_size();
-                $orig_width = $size['width'];
-                $orig_height = $size['height'];
+        $image_editor = wp_get_image_editor($file_path);
+        if (is_wp_error($image_editor)) {
+            error_log('Image Resize Error: ' . $image_editor->get_error_message());
+            return $file;
+        }
 
-                if ($orig_width > $maxwidth || $orig_height > $maxheight) {
+        $size = $image_editor->get_size();
+        if (is_wp_error($size) || !is_array($size)) {
+            return $file;
+        }
 
-                    $image_editor->resize($maxwidth, $maxheight, false);
+        $orig_width  = isset($size['width']) ? (int) $size['width'] : 0;
+        $orig_height = isset($size['height']) ? (int) $size['height'] : 0;
 
-                    // Setting quality gambar
-                    $image_editor->set_quality(90);
+        $needs_resize = false;
+        if ($maxwidth > 0 && $orig_width > $maxwidth) {
+            $needs_resize = true;
+        }
+        if ($maxheight > 0 && $orig_height > $maxheight) {
+            $needs_resize = true;
+        }
 
-                    // Menyimpan gambar yang sudah dimanipulasi
-                    $saved_image = $image_editor->save($file_path);
+        $target_mime = $this->format_to_mime($output_format);
+        if ($target_mime !== '' && !wp_image_editor_supports(array('mime_type' => $target_mime))) {
+            $target_mime = '';
+        }
+        $needs_convert = ($target_mime !== '');
 
-                    if (!is_wp_error($saved_image)) {
-                        // Mengembalikan URL gambar yang sudah diresize
-                        $image_editor->multi_resize(array('full' => array($maxwidth, $maxheight)));
-                    } else {
-                        // Terjadi kesalahan saat menyimpan gambar
-                        error_log('Terjadi kesalahan saat menyimpan gambar: ' . $saved_image->get_error_message());
-                    }
-                }
-            } else {
-                $error_message = $image_editor->get_error_message();
-                error_log("Image Resize Error: $error_message");
+        if (!$needs_resize && !$needs_convert) {
+            return $file;
+        }
+
+        $resize_width  = $maxwidth > 0 ? $maxwidth : 0;
+        $resize_height = $maxheight > 0 ? $maxheight : 0;
+
+        if ($needs_resize) {
+            $resized = $image_editor->resize($resize_width, $resize_height, false);
+            if (is_wp_error($resized)) {
+                error_log('Image Resize Error: ' . $resized->get_error_message());
+                return $file;
             }
         }
+
+        $image_editor->set_quality($quality);
+
+        $saved_image = $target_mime !== ''
+            ? $image_editor->save(null, $target_mime)
+            : $image_editor->save($file_path);
+
+        if (is_wp_error($saved_image)) {
+            error_log('Image Save Error: ' . $saved_image->get_error_message());
+            return $file;
+        }
+
+        if (isset($saved_image['path']) && !empty($saved_image['path'])) {
+            $new_path = (string) $saved_image['path'];
+            $old_path = $file_path;
+
+            $file['file'] = $new_path;
+            if (!empty($file['url'])) {
+                $file['url'] = str_replace(wp_basename($file['url']), wp_basename($new_path), $file['url']);
+            }
+            if (!empty($saved_image['mime-type'])) {
+                $file['type'] = (string) $saved_image['mime-type'];
+            }
+
+            if ($new_path !== $old_path && file_exists($old_path)) {
+                @unlink($old_path);
+            }
+        }
+
         return $file;
+    }
+
+    private function get_resize_options()
+    {
+        $opt = get_option('auto_resize_mode_data', array());
+        if (!is_array($opt)) {
+            $opt = array();
+        }
+
+        $maxwidth = isset($opt['maxwidth']) ? absint($opt['maxwidth']) : 1200;
+        $maxheight = isset($opt['maxheight']) ? absint($opt['maxheight']) : 1200;
+        $quality = isset($opt['quality']) ? absint($opt['quality']) : 90;
+        if ($quality < 10) {
+            $quality = 10;
+        }
+        if ($quality > 100) {
+            $quality = 100;
+        }
+
+        $output_format = isset($opt['output_format']) ? sanitize_key((string) $opt['output_format']) : 'original';
+        $allowed_formats = array('original', 'jpeg', 'webp', 'avif');
+        if (!in_array($output_format, $allowed_formats, true)) {
+            $output_format = 'original';
+        }
+
+        return array(
+            'maxwidth'      => $maxwidth,
+            'maxheight'     => $maxheight,
+            'quality'       => $quality,
+            'output_format' => $output_format,
+        );
+    }
+
+    private function format_to_mime($format)
+    {
+        switch ($format) {
+            case 'jpeg':
+                return 'image/jpeg';
+            case 'webp':
+                return 'image/webp';
+            case 'avif':
+                return 'image/avif';
+            default:
+                return '';
+        }
     }
 }
 

@@ -34,7 +34,10 @@ class Velocity_Addons_Floating_Whatsapp
             'type'              => 'string',
             'sanitize_callback' => 'sanitize_text_field',
         ]);
-        register_setting('velocity_floating_whatsapp_group', 'whatsapp_message');
+        register_setting('velocity_floating_whatsapp_group', 'whatsapp_message', [
+            'type'              => 'string',
+            'sanitize_callback' => [$this, 'sanitize_whatsapp_message'],
+        ]);
         register_setting('velocity_floating_whatsapp_group', 'whatsapp_text');
         register_setting('velocity_floating_whatsapp_group', 'whatsapp_position');
     }
@@ -53,9 +56,7 @@ class Velocity_Addons_Floating_Whatsapp
                 <h1 class="vd-title">Floating Whatsapp</h1>
                 <p class="vd-subtitle">Pengaturan tombol WhatsApp mengambang dan pesan default.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_floating_whatsapp_group'); ?>
-                <?php do_settings_sections('velocity_floating_whatsapp_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-grid-2">
                     <div>
                         <div class="vd-section">
@@ -181,7 +182,7 @@ class Velocity_Addons_Floating_Whatsapp
         $whatsapp_position      = get_option('whatsapp_position', 'right');
         $scroll_to_top_enable   = 'scroll-active scroll-' . $whatsapp_position;
         $position_class         = $whatsapp_position === 'left' ? 'left' : 'right';
-        $encoded_message        = rawurlencode(str_replace(["\r\n", "\r"], "\n", (string) $whatsapp_message));
+        $encoded_message        = self::encode_whatsapp_message($whatsapp_message);
 
         $floating_whatsapp = get_option('floating_whatsapp', '1');
         if ($floating_whatsapp == '1' && !empty($contacts)) {
@@ -259,6 +260,11 @@ class Velocity_Addons_Floating_Whatsapp
         return $normalized;
     }
 
+    public function sanitize_whatsapp_message($value)
+    {
+        return self::normalize_whatsapp_message((string) $value);
+    }
+
     private static function normalize_whatsapp_contacts($value)
     {
         if (!is_array($value)) {
@@ -285,6 +291,25 @@ class Velocity_Addons_Floating_Whatsapp
         }
 
         return $clean;
+    }
+
+    public static function normalize_whatsapp_message($value)
+    {
+        if (!is_string($value)) {
+            return '';
+        }
+
+        $normalized = str_replace(["\r\n", "\r"], "\n", $value);
+        $normalized = str_replace(['\\r\\n', '\\n', '\\r'], "\n", $normalized);
+        $normalized = str_ireplace(['%0D%0A', '%0A', '%0D'], "\n", $normalized);
+
+        return sanitize_textarea_field($normalized);
+    }
+
+    private static function encode_whatsapp_message($value)
+    {
+        $normalized = self::normalize_whatsapp_message((string) $value);
+        return rawurlencode($normalized);
     }
 
     /**

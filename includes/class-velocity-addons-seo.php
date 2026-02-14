@@ -66,9 +66,7 @@ class Velocity_Addons_SEO
                 <h1 class="vd-title">SEO Settings</h1>
                 <p class="vd-subtitle">Pengaturan meta dan sharing untuk situs.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_seo_group'); ?>
-                <?php do_settings_sections('velocity_seo_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-grid-2">
                     <div>
                         <div class="vd-section">

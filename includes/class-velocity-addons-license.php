@@ -31,19 +31,65 @@ class Velocity_Addons_License
    
     private function send_request($license_key)
     {
+        $timeout  = max(5, (int) apply_filters('velocity_addons_license_timeout', 20));
+        $attempts = max(1, (int) apply_filters('velocity_addons_license_attempts', 2));
+        $retry_delay_ms = max(0, (int) apply_filters('velocity_addons_license_retry_delay_ms', 400));
+
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
                 'license_key' => $license_key,
                 'source' => parse_url(get_site_url(), PHP_URL_HOST),
             ),
+            'timeout'     => $timeout,
+            'redirection' => 3,
+            'sslverify'   => true,
+            'user-agent'  => 'Velocity-Addons/' . (defined('VELOCITY_ADDONS_VERSION') ? VELOCITY_ADDONS_VERSION : 'unknown'),
         );
-    
-        $response = wp_remote_get($this->api_url, $args); // Ganti ke wp_remote_get
-    
+
+        $response = null;
+        $last_error_message = '';
+
+        for ($i = 1; $i <= $attempts; $i++) {
+            $response = wp_remote_get($this->api_url, $args);
+            if (!is_wp_error($response)) {
+                break;
+            }
+
+            $last_error_message = $response->get_error_message();
+            error_log('License request error (attempt ' . $i . '/' . $attempts . '): ' . $last_error_message);
+
+            if ($i < $attempts && $retry_delay_ms > 0) {
+                usleep($retry_delay_ms * 1000);
+            }
+        }
+
         if (is_wp_error($response)) {
-            error_log('Error: ' . $response->get_error_message());
-            return null; // Kembali jika ada error
+            $message = $last_error_message ?: $response->get_error_message();
+            if (stripos($message, 'cURL error 28') !== false) {
+                $message = 'Koneksi ke server lisensi timeout. Silakan coba lagi beberapa saat.';
+            }
+
+            return array(
+                'status'  => false,
+                'message' => $message,
+            );
+        }
+
+        $http_code = (int) wp_remote_retrieve_response_code($response);
+        if ($http_code < 200 || $http_code >= 300) {
+            $body_message = '';
+            $decoded_error = json_decode((string) wp_remote_retrieve_body($response), true);
+            if (is_array($decoded_error) && isset($decoded_error['message']) && is_scalar($decoded_error['message'])) {
+                $body_message = (string) $decoded_error['message'];
+            }
+            $message = $body_message !== '' ? $body_message : ('License server returned HTTP ' . $http_code . '.');
+            error_log('License request HTTP error: ' . $message);
+
+            return array(
+                'status'  => false,
+                'message' => $message,
+            );
         }
     
         $body = wp_remote_retrieve_body($response);
@@ -51,7 +97,10 @@ class Velocity_Addons_License
     
         if (json_last_error() !== JSON_ERROR_NONE) {
             error_log('JSON Decode Error: ' . json_last_error_msg());
-            return null; // Kembali jika ada error
+            return array(
+                'status'  => false,
+                'message' => 'Invalid response from license server.',
+            );
         }
     
         return $data;
@@ -78,9 +127,11 @@ class Velocity_Addons_License
         }
         $response = $this->send_request($license_key);
 
-        if ($response) {
-            if ($response['status'] !== 200) {
-                $this->handle_license_error($response['message']);
+        if (is_array($response)) {
+            $status = isset($response['status']) ? $response['status'] : false;
+            if ($status !== 200 && $status !== true) {
+                $message = isset($response['message']) ? $response['message'] : 'License check failed.';
+                $this->handle_license_error($message);
             }
         } else {
             $this->handle_server_error();
@@ -93,47 +144,98 @@ class Velocity_Addons_License
         // Check if license key is provided
         if (isset($_POST['license_key'])) {
             $license_key = sanitize_text_field($_POST['license_key']);
-            $response = $this->activate_license($license_key);
+            $result = $this->verify_license_key($license_key);
 
-            if ($response && $response['status'] == true) {
+            if (!empty($result['success'])) {
                 // Success response
-                wp_send_json_success($response);
+                wp_send_json_success($result['response']);
             } else {
                 // Error response
-                wp_send_json_error($response ? $response : 'Server not reachable');
+                wp_send_json_error(isset($result['message']) ? $result['message'] : 'Server not reachable');
             }
         }
         wp_die(); // Required to properly terminate AJAX requests
     }
 
+    public function verify_license_key($license_key)
+    {
+        $license_key = sanitize_text_field((string) $license_key);
+
+        if (empty($license_key)) {
+            return array(
+                'success' => false,
+                'message' => 'License Key is required',
+            );
+        }
+
+        $response = $this->send_request($license_key);
+
+        if ($response && isset($response['status']) && $response['status']) {
+            $data = isset($response['data']) && is_array($response['data']) ? $response['data'] : array();
+            $status = isset($data['status']) ? $data['status'] : '';
+            $expire = isset($data['exp']) ? $data['exp'] : '';
+            $this->store_license_data($license_key, $status, $expire);
+
+            return array(
+                'success'  => true,
+                'message'  => isset($response['message']) ? $response['message'] : 'License verified.',
+                'response' => $response,
+            );
+        }
+
+        if (is_array($response) && isset($response['data']['message'])) {
+            $message = $response['data']['message'];
+            $this->handle_license_error($message);
+        } elseif (is_array($response) && isset($response['message'])) {
+            $message = (string) $response['message'];
+            $this->handle_license_error($message);
+        } else {
+            $message = 'Server not reachable';
+            $this->handle_server_error();
+        }
+
+        delete_option($this->option_name);
+
+        return array(
+            'success'  => false,
+            'message'  => $message,
+            'response' => $response,
+        );
+    }
+
     public function activate_license($license_key)
     {
-        $response = $this->send_request($license_key);
-    
-        if ($response && isset($response['status']) && $response['status']) {
-            $this->store_license_data($license_key,$response['data']['status'],$response['data']['exp']); // Akses data yang benar
-            return $response;
-        } else {
-            if ($response && isset($response['data']['message'])) {
-                $this->handle_license_error($response['data']['message']); // Akses message yang benar
-            } else {
-                $this->handle_server_error();
-            }
-            delete_option( $this->option_name );
-            return false;
+        $result = $this->verify_license_key($license_key);
+        if (!empty($result['success'])) {
+            return $result['response'];
         }
+        return false;
     }
 
     private function handle_license_error($message)
     {
-        add_settings_error('license_activation', 'license_error', $message, 'error');
+        $this->add_settings_error_safe('license_activation', 'license_error', $message, 'error');
         error_log('License Check Error: ' . $message);
     }
 
     private function handle_server_error()
     {
-        add_settings_error('license_activation', 'server_error', 'Tidak dapat menghubungi server. Silakan coba lagi nanti.', 'error');
+        $this->add_settings_error_safe('license_activation', 'server_error', 'Tidak dapat menghubungi server. Silakan coba lagi nanti.', 'error');
         error_log('License Check Error: Server not reachable.');
+    }
+
+    private function add_settings_error_safe($setting, $code, $message, $type = 'error')
+    {
+        if (!function_exists('add_settings_error')) {
+            $template_file = ABSPATH . 'wp-admin/includes/template.php';
+            if (file_exists($template_file)) {
+                require_once $template_file;
+            }
+        }
+
+        if (function_exists('add_settings_error')) {
+            add_settings_error($setting, $code, $message, $type);
+        }
     }
 
     public function enqueue_scripts()

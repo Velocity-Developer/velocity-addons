@@ -235,7 +235,6 @@ class Custom_Admin_Option_Page
         // Security
         register_setting('velocity_security_options_group', 'limit_login_attempts');
         register_setting('velocity_security_options_group', 'disable_xmlrpc');
-        register_setting('velocity_security_options_group', 'disable_rest_api');
         register_setting('velocity_security_options_group', 'block_wp_login');
         register_setting('velocity_security_options_group', 'whitelist_block_wp_login');
         register_setting('velocity_security_options_group', 'whitelist_country');
@@ -452,13 +451,6 @@ class Custom_Admin_Option_Page
                         'label' => 'Nonaktifkan protokol XML-RPC pada situs. XML-RPC digunakan oleh beberapa aplikasi atau layanan pihak ketiga untuk berinteraksi dengan situs WordPress.',
                     ],
                     [
-                        'id'    => 'disable_rest_api',
-                        'type'  => 'checkbox',
-                        'title' => 'Disable REST API / JSON',
-                        'std'   => 0,
-                        'label' => 'Nonaktifkan akses ke REST API untuk keperluan keamanan atau privasi.',
-                    ],
-                    [
                         'id'    => 'block_wp_login',
                         'type'  => 'checkbox',
                         'title' => 'Block wp-login.php',
@@ -513,6 +505,27 @@ class Custom_Admin_Option_Page
                         'title' => 'Max height',
                         'std'   => 1200,
                         'step'  => 1,
+                    ],
+                    [
+                        'id'    => 'auto_resize_mode_data',
+                        'sub'   => 'quality',
+                        'type'  => 'number',
+                        'title' => 'Quality',
+                        'std'   => 90,
+                        'step'  => 1,
+                    ],
+                    [
+                        'id'      => 'auto_resize_mode_data',
+                        'sub'     => 'output_format',
+                        'type'    => 'select',
+                        'title'   => 'Output format',
+                        'std'     => 'original',
+                        'options' => [
+                            'original' => 'Original',
+                            'jpeg'     => 'JPEG',
+                            'webp'     => 'WebP',
+                            'avif'     => 'AVIF',
+                        ],
                     ]
                 ],
             ],
@@ -523,7 +536,7 @@ class Custom_Admin_Option_Page
         <div class="velocity-dashboard-wrapper vd-ons">
             <div class="vd-header">
                 <h1 class="vd-title">Pengaturan Admin</h1>
-                <p class="vd-subtitle">Gunakan submenu di bawah “Velocity Addons” untuk mengakses masing-masing pengaturan.</p>
+                <p class="vd-subtitle">Gunakan submenu di bawah "Velocity Addons" untuk mengakses masing-masing pengaturan.</p>
             </div>
             <div class="vd-section">
                 <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -556,9 +569,7 @@ class Custom_Admin_Option_Page
                 <h1 class="vd-title">Pengaturan Umum</h1>
                 <p class="vd-subtitle">Pengaturan dasar fitur Velocity Addons.</p>
             </div>
-            <form id="velocity-general-form" method="post" action="options.php">
-                <?php settings_fields('velocity_general_options_group'); ?>
-                <?php do_settings_sections('velocity_general_options_group'); ?>
+            <form id="velocity-general-form" method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Umum</h3>
@@ -656,9 +667,7 @@ class Custom_Admin_Option_Page
                 <h1 class="vd-title">Captcha</h1>
                 <p class="vd-subtitle">Pengaturan Captcha (Google reCaptcha v2 atau Gambar).</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_captcha_options_group'); ?>
-                <?php do_settings_sections('velocity_captcha_options_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Captcha</h3>
@@ -676,13 +685,30 @@ class Custom_Admin_Option_Page
                         ];
                         foreach ($fields as $data) {
                             $labelFor = isset($data['sub']) ? ($data['id'] . '__' . $data['sub']) : $data['id'];
-                            if (isset($data['sub']) && in_array($data['sub'], ['sitekey', 'secretkey'], true) && $providerVal !== 'google') {
-                                continue;
+                            $visibilityExpr = '';
+                            $visibilityStyle = '';
+                            if (isset($data['sub']) && in_array($data['sub'], ['sitekey', 'secretkey'], true)) {
+                                $visibilityExpr = "(model['captcha_velocity'] && model['captcha_velocity']['provider'] === 'google')";
+                                if ($providerVal !== 'google') {
+                                    $visibilityStyle = 'display:none;';
+                                }
                             }
-                            if (isset($data['sub']) && $data['sub'] === 'difficulty' && $providerVal !== 'image') {
-                                continue;
+                            if (isset($data['sub']) && $data['sub'] === 'difficulty') {
+                                $visibilityExpr = "(model['captcha_velocity'] && model['captcha_velocity']['provider'] === 'image')";
+                                if ($providerVal !== 'image') {
+                                    $visibilityStyle = 'display:none;';
+                                }
                             }
-                            echo '<div class="vd-form-group">';
+
+                            $groupAttrs = ' class="vd-form-group"';
+                            if ($visibilityExpr !== '') {
+                                $groupAttrs .= ' x-show="' . esc_attr($visibilityExpr) . '"';
+                            }
+                            if ($visibilityStyle !== '') {
+                                $groupAttrs .= ' style="' . esc_attr($visibilityStyle) . '"';
+                            }
+
+                            echo '<div' . $groupAttrs . '>';
                             echo '<div class="vd-form-left">';
                             echo '<label class="vd-form-label" for="' . esc_attr($labelFor) . '">' . esc_html($data['title']) . '</label>';
                             if (isset($data['desc'])) echo '<small class="vd-form-hint">' . esc_html($data['desc']) . '</small>';
@@ -730,9 +756,7 @@ class Custom_Admin_Option_Page
                 <h1 class="vd-title">Maintenance Mode</h1>
                 <p class="vd-subtitle">Pengaturan tampilan dan status maintenance situs.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_maintenance_options_group'); ?>
-                <?php do_settings_sections('velocity_maintenance_options_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Maintenance Mode</h3>
@@ -853,9 +877,7 @@ class Custom_Admin_Option_Page
                 <h1 class="vd-title">License</h1>
                 <p class="vd-subtitle">Verifikasi lisensi Velocity Addons.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_license_options_group'); ?>
-                <?php do_settings_sections('velocity_license_options_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">License Key</h3>
@@ -881,39 +903,6 @@ class Custom_Admin_Option_Page
                 </div>
                 <?php submit_button(); ?>
             </form>
-            <script>
-                jQuery(document).ready(function($) {
-                    $('.check-license').click(function(e) {
-                        e.preventDefault();
-                        var licenseKey = $('#velocity_license__key').val();
-                        if (licenseKey === '') {
-                            alert('Please enter a license key.');
-                            return;
-                        }
-                        $('.check-license.button').html('Loading..');
-                        $.ajax({
-                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                            type: 'POST',
-                            data: {
-                                action: 'check_license',
-                                license_key: licenseKey
-                            },
-                            success: function(response) {
-                                if (response.success) {} else {
-                                    $('.license-status').html(response.data);
-                                    $('#velocity_license__key').val('');
-                                }
-                                $('.check-license.button').html('License Verified!');
-                            },
-                            error: function() {
-                                $('.license-status').html('Server not reachable');
-                                $('#velocity_license__key').val('');
-                                $('.check-license.button').html('Check License');
-                            }
-                        });
-                    });
-                });
-            </script>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
@@ -930,9 +919,7 @@ class Custom_Admin_Option_Page
                 <h1 class="vd-title">Security</h1>
                 <p class="vd-subtitle">Pengaturan keamanan akses dan login.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_security_options_group'); ?>
-                <?php do_settings_sections('velocity_security_options_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Security</h3>
@@ -942,7 +929,6 @@ class Custom_Admin_Option_Page
                         $fields = [
                             ['id' => 'limit_login_attempts', 'type' => 'checkbox', 'title' => 'Limit Login Attempts', 'std' => 1, 'label' => 'Batasi jumlah percobaan login.'],
                             ['id' => 'disable_xmlrpc', 'type' => 'checkbox', 'title' => 'Disable XML-RPC', 'std' => 1, 'label' => 'Nonaktifkan protokol XML-RPC.'],
-                            ['id' => 'disable_rest_api', 'type' => 'checkbox', 'title' => 'Disable REST API / JSON', 'std' => 0, 'label' => 'Nonaktifkan akses REST API.'],
                             ['id' => 'block_wp_login', 'type' => 'checkbox', 'title' => 'Block wp-login.php', 'std' => 0, 'label' => 'Blokir akses wp-login.php.'],
                             ['id' => 'whitelist_block_wp_login', 'type' => 'text', 'title' => 'Whitelist IP Block wp-login.php', 'std' => '', 'label' => 'Daftar IP whitelist.'],
                             ['id' => 'whitelist_country', 'type' => 'text', 'title' => 'Whitelist Country', 'std' => 'ID', 'label' => 'Contoh: ID,MY,US'],
@@ -994,9 +980,7 @@ class Custom_Admin_Option_Page
                 <h1 class="vd-title">Auto Resize Image</h1>
                 <p class="vd-subtitle">Pengaturan re-sizing otomatis untuk gambar.</p>
             </div>
-            <form method="post" action="options.php">
-                <?php settings_fields('velocity_auto_resize_options_group'); ?>
-                <?php do_settings_sections('velocity_auto_resize_options_group'); ?>
+            <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;">Auto Resize</h3>
@@ -1007,6 +991,8 @@ class Custom_Admin_Option_Page
                             ['id' => 'auto_resize_mode', 'type' => 'checkbox', 'title' => 'Enable re-sizing', 'label' => 'Aktifkan re-sizing pada situs.'],
                             ['id' => 'auto_resize_mode_data', 'sub' => 'maxwidth', 'type' => 'number', 'title' => 'Max width', 'std' => 1200, 'step' => 1],
                             ['id' => 'auto_resize_mode_data', 'sub' => 'maxheight', 'type' => 'number', 'title' => 'Max height', 'std' => 1200, 'step' => 1],
+                            ['id' => 'auto_resize_mode_data', 'sub' => 'quality', 'type' => 'number', 'title' => 'Quality', 'std' => 90, 'step' => 1, 'label' => 'Range 10-100. Direkomendasikan 80-90.'],
+                            ['id' => 'auto_resize_mode_data', 'sub' => 'output_format', 'type' => 'select', 'title' => 'Output format', 'std' => 'original', 'options' => ['original' => 'Original', 'jpeg' => 'JPEG', 'webp' => 'WebP', 'avif' => 'AVIF'], 'label' => 'Jika format tidak didukung editor server, otomatis fallback ke format asli.'],
                         ];
                         foreach ($fields as $data) {
                             $labelFor = isset($data['sub']) ? ($data['id'] . '__' . $data['sub']) : $data['id'];
@@ -1050,55 +1036,43 @@ class Custom_Admin_Option_Page
             wp_die(__('You do not have sufficient permissions to access this page.'));
         }
 
-        // Gunakan satu instance per request (hindari double hook)
         static $stats_handler = null;
         if (! $stats_handler) {
             $stats_handler = new Velocity_Addons_Statistic();
         }
-        // Handle RESET request (POST + nonce)
+
         $rebuild_message = '';
         if (isset($_POST['reset_stats']) && check_admin_referer('reset_stats')) {
             $stats_handler->reset_statistics();
-            $rebuild_message = "<div class='notice notice-success is-dismissible'><p>Statistik berhasil di-reset. Semua data statistik dan meta 'hit' telah dihapus.</p></div>";
+            $rebuild_message = 'Statistik berhasil di-reset. Semua data statistik dan meta hit telah dihapus.';
         }
+
         $summary_stats = $stats_handler->get_summary_stats();
-        $daily_stats   = $stats_handler->get_daily_stats(30);
         $page_stats    = $stats_handler->get_page_stats(30);
         $referer_stats = $stats_handler->get_referer_stats(30);
 
-        // Siapkan data untuk Chart.js (gunakan wp_json_encode)
-        $daily_payload = array_map(function ($stat) {
-            return array(
-                'date'          => $stat->visit_date,
-                'unique_visits' => (int) $stat->unique_visits,
-                'total_visits'  => (int) $stat->total_visits,
-            );
-        }, $daily_stats);
-
-        $page_payload = array_map(function ($p) {
-            return array(
-                'url'   => $p->page_url,
-                'views' => (int) $p->total_views,
-            );
-        }, array_slice($page_stats, 0, 8));
-
     ?>
-        <div class="velocity-dashboard-wrapper vd-ons">
+        <div class="velocity-dashboard-wrapper vd-ons" id="velocity-statistics-page">
             <div class="vd-header">
                 <h1 class="vd-title">Statistik Pengunjung</h1>
                 <p class="vd-subtitle">Ringkasan trafik dan halaman populer situs.</p>
+            </div>
+            <div id="velocity-statistics-notice" class="notice <?php echo $rebuild_message ? 'notice-success' : ''; ?>" style="display:<?php echo $rebuild_message ? 'block' : 'none'; ?>">
+                <?php if ($rebuild_message): ?>
+                    <p><?php echo esc_html($rebuild_message); ?></p>
+                <?php endif; ?>
             </div>
             <div class="vd-section">
                 <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                     <h3 style="margin:0; font-size:1.1rem; color:#374151;">Reset & Tools</h3>
                 </div>
                 <div class="vd-section-body">
-                    <?php echo $rebuild_message; ?>
-                    <form method="post" style="display:inline;">
+                    <form method="post" style="display:inline;" id="velocity-statistics-reset-form">
                         <?php wp_nonce_field('reset_stats'); ?>
                         <input type="hidden" name="reset_stats" value="1">
                         <button type="submit" class="button button-secondary"
-                            onclick="return confirm('Apakah Anda yakin ingin me-reset statistik? Tindakan ini akan menghapus semua data statistik dan meta hit secara permanen.')">
+                            id="velocity-statistics-reset-button"
+                            data-confirm-message="Apakah Anda yakin ingin me-reset statistik? Tindakan ini akan menghapus semua data statistik dan meta hit secara permanen.">
                             Reset Statistik
                         </button>
                         <span style="vertical-align:middle;margin-left:10px;color:#666;font-size:13px;">Gunakan ini untuk mengosongkan seluruh data statistik</span>
@@ -1113,17 +1087,20 @@ class Custom_Admin_Option_Page
                     <div class="vd-grid">
                         <?php
                         $cards = array(
-                            'Hari Ini'  => $summary_stats['today'],
-                            'Minggu Ini' => $summary_stats['this_week'],
-                            'Bulan Ini' => $summary_stats['this_month'],
-                            'All Time'  => $summary_stats['all_time'],
+                            'today'      => array('label' => 'Hari Ini', 'data' => $summary_stats['today']),
+                            'this_week'  => array('label' => 'Minggu Ini', 'data' => $summary_stats['this_week']),
+                            'this_month' => array('label' => 'Bulan Ini', 'data' => $summary_stats['this_month']),
+                            'all_time'   => array('label' => 'All Time', 'data' => $summary_stats['all_time']),
                         );
-                        foreach ($cards as $label => $obj): ?>
-                            <div class="vd-card" style="text-align:center">
+                        foreach ($cards as $card_key => $card):
+                            $label = $card['label'];
+                            $obj   = $card['data'];
+                        ?>
+                            <div class="vd-card" style="text-align:center" data-stat-card="<?php echo esc_attr($card_key); ?>">
                                 <h3 style="margin:0 0 10px;color:#0073aa;"><?php echo esc_html($label); ?></h3>
-                                <div style="font-size:24px;font-weight:700;color:#23282d;"><?php echo number_format_i18n((int)($obj->unique_visitors ?? 0)); ?></div>
+                                <div style="font-size:24px;font-weight:700;color:#23282d;" data-stat-unique><?php echo number_format_i18n((int) ($obj->unique_visitors ?? 0)); ?></div>
                                 <div style="color:#666;font-size:14px;">Pengunjung Unik</div>
-                                <div style="color:#999;font-size:12px;"><?php echo number_format_i18n((int)($obj->total_visits ?? 0)); ?> total visits</div>
+                                <div style="color:#999;font-size:12px;"><span data-stat-total><?php echo number_format_i18n((int) ($obj->total_visits ?? 0)); ?></span> total visits</div>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -1235,7 +1212,7 @@ class Custom_Admin_Option_Page
                                     <th>Total Tampilan</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="velocity-statistics-pages-body">
                                 <?php if (empty($page_stats)) : ?>
                                     <tr>
                                         <td colspan="3" style="text-align:center;color:#666;">No data available</td>
@@ -1248,8 +1225,8 @@ class Custom_Admin_Option_Page
                                                 echo '<a href="' . esc_url($full) . '" target="_blank" rel="noopener noreferrer"><code>' . esc_html($page->page_url) . '</code></a>';
                                                 ?>
                                             </td>
-                                            <td><?php echo number_format_i18n((int)$page->unique_visitors); ?></td>
-                                            <td><?php echo number_format_i18n((int)$page->total_views); ?></td>
+                                            <td><?php echo number_format_i18n((int) $page->unique_visitors); ?></td>
+                                            <td><?php echo number_format_i18n((int) $page->total_views); ?></td>
                                         </tr>
                                 <?php endforeach;
                                 endif; ?>
@@ -1269,7 +1246,7 @@ class Custom_Admin_Option_Page
                                     <th>Visits</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="velocity-statistics-referrers-body">
                                 <?php if (empty($referer_stats)) : ?>
                                     <tr>
                                         <td colspan="2" style="text-align:center;color:#666;">No data available</td>
@@ -1277,7 +1254,7 @@ class Custom_Admin_Option_Page
                                     <?php else: foreach ($referer_stats as $ref): ?>
                                         <tr>
                                             <td><code><?php echo esc_html(parse_url($ref->referer, PHP_URL_HOST) ?: $ref->referer); ?></code></td>
-                                            <td><?php echo number_format_i18n((int)$ref->visits); ?></td>
+                                            <td><?php echo number_format_i18n((int) $ref->visits); ?></td>
                                         </tr>
                                 <?php endforeach;
                                 endif; ?>
@@ -1290,129 +1267,6 @@ class Custom_Admin_Option_Page
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
         </div>
-
-        <!-- Chart.js -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            (function() {
-                const dailyData = <?php echo wp_json_encode($daily_payload); ?>;
-                const pageData = <?php echo wp_json_encode($page_payload); ?>;
-
-                const dailyLabels = dailyData.map(i => i.date);
-                const uniqueVisitsData = dailyData.map(i => i.unique_visits);
-                const totalVisitsData = dailyData.map(i => i.total_visits);
-
-                const dailyCtx = document.getElementById('dailyVisitsChart').getContext('2d');
-                new Chart(dailyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: dailyLabels,
-                        datasets: [{
-                                label: 'Pengunjung Unik',
-                                data: uniqueVisitsData,
-                                borderColor: '#0073aa',
-                                backgroundColor: 'rgba(0,115,170,0.1)',
-                                tension: .4,
-                                fill: true
-                            },
-                            {
-                                label: 'Total Kunjungan',
-                                data: totalVisitsData,
-                                borderColor: '#00a32a',
-                                backgroundColor: 'rgba(0,163,42,0.1)',
-                                tension: .4,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
-                        }
-                    }
-                });
-
-                const pageLabels = pageData.map(i => i.url);
-                const pageViews = pageData.map(i => i.views);
-
-                const pageCtx = document.getElementById('topPagesChart').getContext('2d');
-                new Chart(pageCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: pageLabels,
-                        datasets: [{
-                            label: 'Page Views',
-                            data: pageViews,
-                            backgroundColor: ['#0073aa', '#00a32a', '#d63638', '#ff922b', '#7c3aed', '#db2777', '#059669', '#dc2626']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            },
-                            x: {
-                                ticks: {
-                                    maxRotation: 45,
-                                    callback: (v, i) => {
-                                        const l = pageLabels[i] || '';
-                                        return l.length > 20 ? l.substring(0, 20) + '…' : l;
-                                    }
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        }
-                    }
-                });
-
-                window.copyToClipboard = function(text) {
-                    if (navigator.clipboard && window.isSecureContext) {
-                        navigator.clipboard.writeText(text).then(showCopySuccess);
-                    } else {
-                        const ta = document.createElement('textarea');
-                        ta.value = text;
-                        ta.style.position = 'fixed';
-                        ta.style.left = '-9999px';
-                        document.body.appendChild(ta);
-                        ta.select();
-                        try {
-                            document.execCommand('copy');
-                            showCopySuccess();
-                        } catch (e) {}
-                        document.body.removeChild(ta);
-                    }
-                };
-
-                function showCopySuccess() {
-                    const el = document.createElement('div');
-                    el.style.cssText = 'position:fixed;top:50px;right:20px;background:#00a32a;color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:all .3s';
-                    el.textContent = '✅ Shortcode copied to clipboard!';
-                    document.body.appendChild(el);
-                    setTimeout(() => {
-                        el.style.opacity = '0';
-                        el.style.transform = 'translateY(-20px)';
-                        setTimeout(() => document.body.removeChild(el), 300)
-                    }, 2000);
-                }
-            })();
-        </script>
-
-        <style></style>
 <?php
     }
 

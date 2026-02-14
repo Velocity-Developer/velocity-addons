@@ -4,7 +4,7 @@ Donate link: https://velocitydeveloper.com
 Tags: comments, spam
 Requires at least: 3.0.1
 Tested up to: 6.2
-Stable tag: 4.3
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,18 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.0.0=
+- Migrasi halaman pengaturan admin ke arsitektur Alpine + REST API agar penyimpanan dan interaksi berjalan tanpa reload penuh.
+- Pengaturan keamanan: opsi "Disable REST API / JSON" dihapus untuk menghindari konflik dengan endpoint REST internal plugin.
+- Refactor endpoint admin: endpoint aksi dipisah agar lebih modular dan mudah maintenance (settings, statistik, optimize DB).
+- Halaman Statistik Pengunjung dan Optimize Database kini mendukung aksi tanpa reload (reset/run via REST).
+- Halaman Duitku: tab "Pengaturan / Riwayat Invoice / Riwayat Callback" kini client-side (Alpine) tanpa reload.
+- Halaman Captcha: provider switch kini realtime (google/image) untuk menampilkan field terkait tanpa refresh.
+- Auto Resize Image: tambah opsi kualitas gambar (quality) dan format output (original/jpeg/webp/avif) dengan fallback otomatis jika format tidak didukung server.
+- Breaking changes:
+- Opsi legacy "Disable REST API / JSON" tidak lagi tersedia.
+- Alur settings admin kini mengandalkan stack REST + JS modern untuk pengalaman tanpa reload.
 
 =1.8.3=
 - SEO: og:image untuk halaman home/front dan archive pakai share image; jika kosong fallback ke gambar dari konten/featured image.

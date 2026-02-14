@@ -101,7 +101,66 @@ class Velocity_Addons_Admin {
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/velocity-addons-admin.js', array( 'jquery' ), $this->version, false );
 
-		$page = isset($_GET['page']) ? $_GET['page'] : '';    
+		$page = isset($_GET['page']) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+
+		if ( $this->is_velocity_settings_page( $page ) ) {
+			$settings_handle = 'velocity-addons-settings-bridge';
+			$alpine_handle   = 'velocity-addons-alpinejs';
+			$settings_path   = plugin_dir_path( __FILE__ ) . 'js/velocity-addons-settings.js';
+			$settings_ver    = file_exists( $settings_path ) ? (string) filemtime( $settings_path ) : $this->version;
+
+			wp_enqueue_script(
+				$settings_handle,
+				plugin_dir_url( __FILE__ ) . 'js/velocity-addons-settings.js',
+				array(),
+				$settings_ver,
+				true
+			);
+			wp_localize_script(
+				$settings_handle,
+				'velocitySettingsConfig',
+				array(
+					'restBase' => esc_url_raw( rest_url( 'velocity-addons/v1' ) ),
+					'nonce'    => wp_create_nonce( 'wp_rest' ),
+					'page'     => $page,
+				)
+			);
+			wp_script_add_data( $settings_handle, 'defer', true );
+
+			wp_enqueue_script(
+				$alpine_handle,
+				'https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js',
+				array( $settings_handle ),
+				'3.14.8',
+				true
+			);
+			wp_script_add_data( $alpine_handle, 'defer', true );
+		}
+
+		if ( $this->is_velocity_rest_action_page( $page ) ) {
+			$actions_handle = 'velocity-addons-admin-actions';
+			$actions_path   = plugin_dir_path( __FILE__ ) . 'js/velocity-addons-admin-actions.js';
+			$actions_ver    = file_exists( $actions_path ) ? (string) filemtime( $actions_path ) : $this->version;
+
+			wp_enqueue_script(
+				$actions_handle,
+				plugin_dir_url( __FILE__ ) . 'js/velocity-addons-admin-actions.js',
+				array(),
+				$actions_ver,
+				true
+			);
+			wp_localize_script(
+				$actions_handle,
+				'velocitySettingsConfig',
+				array(
+					'restBase' => esc_url_raw( rest_url( 'velocity-addons/v1' ) ),
+					'nonce'    => wp_create_nonce( 'wp_rest' ),
+					'page'     => $page,
+				)
+			);
+			wp_script_add_data( $actions_handle, 'defer', true );
+		}
+
 		if ($page == 'admin_velocity_addons') {
 			
 			if (file_exists(get_template_directory() . '/js/theme.min.js')) {            
@@ -114,10 +173,32 @@ class Velocity_Addons_Admin {
 
 			wp_enqueue_script( array( 'jquery','jquery-ui-datepicker','jquery-ui-tooltip' ) );
 		}
-		if ($page == 'velocity_optimize_db') {
-			wp_enqueue_script( 'chartjs-scripts', 'https://cdn.jsdelivr.net/npm/chart.js', array( 'jquery' ), $this->version, false );
-			wp_enqueue_script( 'velocity-addons-public', VELOCITY_ADDONS_PLUGIN_DIR_URL . 'public/js/velocity-addons-public.js', array('jquery','chartjs-scripts'), $this->version, true );
-		}
+	}
+
+	private function is_velocity_settings_page( $page ) {
+		$pages = array(
+			'velocity_general_settings',
+			'velocity_captcha_settings',
+			'velocity_maintenance_settings',
+			'velocity_license_settings',
+			'velocity_security_settings',
+			'velocity_auto_resize_settings',
+			'velocity_seo_settings',
+			'velocity_floating_whatsapp',
+			'velocity_snippet_settings',
+			'velocity_duitku_settings',
+		);
+
+		return in_array( $page, $pages, true );
+	}
+
+	private function is_velocity_rest_action_page( $page ) {
+		$pages = array(
+			'velocity_statistics',
+			'velocity_optimize_db',
+		);
+
+		return in_array( $page, $pages, true );
 	}
 
 }

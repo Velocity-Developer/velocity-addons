@@ -26,17 +26,11 @@ class Velocity_Addons_Disable_Rest_Api
 {
     public function __construct()
     {
+        // Deprecated: disable_rest_api is removed from settings UI.
+        // Force reset legacy value to avoid blocking plugin REST endpoints.
         if (get_option('disable_rest_api')) {
-            add_filter('rest_authentication_errors', array($this, 'disable_rest_api'), 99);
-            add_filter('rest_enabled', '__return_false');
-            add_filter('rest_jsonp_enabled', '__return_false');
-            // add_action('init', array($this, 'block_rest_api'), 1);
+            update_option('disable_rest_api', 0);
         }
-    }
-
-    public function disable_rest_api($access)
-    {
-        return new WP_Error('rest_disabled', __('The REST API is disabled on this site.'), array('status' => rest_authorization_required_code()));
     }
 
     public function block_rest_api()
