@@ -31,6 +31,8 @@ This section describes how to install the plugin and get it working.
 - Halaman Captcha: provider switch kini realtime (google/image) untuk menampilkan field terkait tanpa refresh.
 - Auto Resize Image: tambah opsi kualitas gambar (quality) dan format output (original/jpeg/webp/avif) dengan fallback otomatis jika format tidak didukung server.
 - Fix Floating WhatsApp: nomor kontak kini bisa dikosongkan; sinkronisasi `nomor_whatsapp_contacts` dan opsi legacy `nomor_whatsapp` diperbaiki agar nilai lama tidak muncul lagi setelah simpan/refresh.
+- Refactor arsitektur admin settings: registri halaman/submenu/binding REST dipusatkan agar penambahan halaman baru lebih mudah dan konsisten.
+- Optimasi skalabilitas admin: registrasi settings sekarang otomatis dari registry, aset admin di-load hanya pada halaman plugin, dan API clipboard dinamespace untuk mengurangi potensi bentrok global.
 - Breaking changes:
 - Opsi legacy "Disable REST API / JSON" tidak lagi tersedia.
 - Alur settings admin kini mengandalkan stack REST + JS modern untuk pengalaman tanpa reload.

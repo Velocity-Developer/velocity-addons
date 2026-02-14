@@ -5,12 +5,14 @@
   var page = getCurrentPage();
   var globalNoticeTimer = null;
   var globalNoticeHideTimer = null;
+  var adminApi = window.VelocityAddonsAdmin || {};
+  window.VelocityAddonsAdmin = adminApi;
 
   if (!page) {
     return;
   }
 
-  window.copyToClipboard = function (text) {
+  adminApi.copyToClipboard = function (text) {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(showCopySuccess);
       return;
@@ -28,6 +30,12 @@
     } catch (_e) {}
     document.body.removeChild(ta);
   };
+
+  if (typeof window.copyToClipboard !== "function") {
+    window.copyToClipboard = function (text) {
+      return adminApi.copyToClipboard(text);
+    };
+  }
 
   if (page === "velocity_statistics") {
     initStatisticsPage();

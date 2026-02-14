@@ -493,148 +493,20 @@ class Velocity_Addons_Admin_Settings_REST
 
     private function get_general_defaults()
     {
-        return array(
-            'fully_disable_comment'        => 1,
-            'hide_admin_notice'            => 0,
-            'disable_gutenberg'            => 0,
-            'classic_widget_velocity'      => 1,
-            'enable_xml_sitemap'           => 1,
-            'seo_velocity'                 => 1,
-            'statistik_velocity'           => 1,
-            'floating_whatsapp'            => 1,
-            'floating_scrollTop'           => 1,
-            'remove_slug_category_velocity'=> 0,
-            'news_generate'                => 1,
-            'velocity_gallery'             => 0,
-            'velocity_optimasi'            => 0,
-            'velocity_duitku'              => 0,
-        );
+        if (class_exists('Velocity_Addons_Settings_Registry')) {
+            return Velocity_Addons_Settings_Registry::get_general_defaults();
+        }
+
+        return array();
     }
 
     private function get_definitions()
     {
-        return array(
-            'general' => array(
-                'options' => array(
-                    'fully_disable_comment'         => array('type' => 'bool', 'default' => 1),
-                    'hide_admin_notice'             => array('type' => 'bool', 'default' => 0),
-                    'disable_gutenberg'             => array('type' => 'bool', 'default' => 0),
-                    'classic_widget_velocity'       => array('type' => 'bool', 'default' => 1),
-                    'remove_slug_category_velocity' => array('type' => 'bool', 'default' => 0),
-                    'enable_xml_sitemap'            => array('type' => 'bool', 'default' => 1),
-                    'seo_velocity'                  => array('type' => 'bool', 'default' => 1),
-                    'statistik_velocity'            => array('type' => 'bool', 'default' => 1),
-                    'floating_whatsapp'             => array('type' => 'bool', 'default' => 1),
-                    'floating_scrollTop'            => array('type' => 'bool', 'default' => 1),
-                    'news_generate'                 => array('type' => 'bool', 'default' => 1),
-                    'velocity_gallery'              => array('type' => 'bool', 'default' => 0),
-                    'velocity_optimasi'             => array('type' => 'bool', 'default' => 0),
-                    'velocity_duitku'               => array('type' => 'bool', 'default' => 0),
-                ),
-            ),
-            'captcha' => array(
-                'options' => array(
-                    'captcha_velocity' => array(
-                        'type'       => 'object',
-                        'properties' => array(
-                            'provider'  => array('type' => 'select', 'allowed' => array('google', 'image'), 'default' => 'google'),
-                            'aktif'     => array('type' => 'bool', 'default' => 1),
-                            'difficulty'=> array('type' => 'select', 'allowed' => array('easy', 'medium', 'hard'), 'default' => 'medium'),
-                            'sitekey'   => array('type' => 'text', 'default' => ''),
-                            'secretkey' => array('type' => 'text', 'default' => ''),
-                        ),
-                    ),
-                ),
-            ),
-            'maintenance' => array(
-                'options' => array(
-                    'maintenance_mode' => array('type' => 'bool', 'default' => 1),
-                    'maintenance_mode_data' => array(
-                        'type'       => 'object',
-                        'properties' => array(
-                            'header'     => array('type' => 'text', 'default' => 'Maintenance Mode'),
-                            'body'       => array('type' => 'textarea', 'default' => 'We are currently performing maintenance. Please check back later.'),
-                            'background' => array('type' => 'int', 'default' => 0),
-                        ),
-                    ),
-                ),
-            ),
-            'license' => array(
-                'options' => array(
-                    'velocity_license' => array(
-                        'type'       => 'object',
-                        'properties' => array(
-                            'key'         => array('type' => 'text', 'default' => ''),
-                            'expire_date' => array('type' => 'text', 'default' => ''),
-                            'status'      => array('type' => 'text', 'default' => ''),
-                        ),
-                    ),
-                ),
-            ),
-            'security' => array(
-                'options' => array(
-                    'limit_login_attempts'      => array('type' => 'bool', 'default' => 1),
-                    'disable_xmlrpc'            => array('type' => 'bool', 'default' => 1),
-                    'block_wp_login'            => array('type' => 'bool', 'default' => 0),
-                    'whitelist_block_wp_login'  => array('type' => 'text', 'default' => ''),
-                    'whitelist_country'         => array('type' => 'text', 'default' => 'ID'),
-                    'redirect_to'               => array('type' => 'text', 'default' => '127.0.0.1'),
-                ),
-            ),
-            'auto_resize' => array(
-                'options' => array(
-                    'auto_resize_mode' => array('type' => 'bool', 'default' => 0),
-                    'auto_resize_mode_data' => array(
-                        'type'       => 'object',
-                        'properties' => array(
-                            'maxwidth'  => array('type' => 'int', 'min' => 0, 'default' => 1200),
-                            'maxheight' => array('type' => 'int', 'min' => 0, 'default' => 1200),
-                            'quality'   => array('type' => 'int', 'min' => 10, 'max' => 100, 'default' => 90),
-                            'output_format' => array('type' => 'select', 'allowed' => array('original', 'jpeg', 'webp', 'avif'), 'default' => 'original'),
-                        ),
-                    ),
-                    'auto_resize_image_velocity' => array('type' => 'bool', 'default' => 0),
-                ),
-            ),
-            'seo' => array(
-                'options' => array(
-                    'home_title'       => array('type' => 'text', 'default' => get_bloginfo('name')),
-                    'home_description' => array('type' => 'textarea', 'default' => get_bloginfo('description')),
-                    'home_keywords'    => array('type' => 'textarea', 'default' => ''),
-                    'share_image'      => array('type' => 'url', 'default' => ''),
-                    'seo_post_types'   => array('type' => 'post_types_array', 'default' => array('post', 'page')),
-                ),
-            ),
-            'floating_whatsapp' => array(
-                'options' => array(
-                    'nomor_whatsapp_contacts' => array('type' => 'whatsapp_contacts', 'default' => array()),
-                    'whatsapp_text'           => array('type' => 'text', 'default' => 'Butuh Bantuan?'),
-                    'whatsapp_message'        => array('type' => 'whatsapp_message', 'default' => 'Hallo...'),
-                    'whatsapp_position'       => array('type' => 'select', 'allowed' => array('right', 'left'), 'default' => 'right'),
-                ),
-            ),
-            'snippet' => array(
-                'options' => array(
-                    'header_snippet' => array('type' => 'snippet', 'default' => ''),
-                    'body_snippet'   => array('type' => 'snippet', 'default' => ''),
-                    'footer_snippet' => array('type' => 'snippet', 'default' => ''),
-                ),
-            ),
-            'duitku' => array(
-                'options' => array(
-                    'velocity_duitku_options' => array(
-                        'type'       => 'object',
-                        'properties' => array(
-                            'mode'          => array('type' => 'select', 'allowed' => array('sandbox', 'production'), 'default' => 'sandbox'),
-                            'kode_merchant' => array('type' => 'text', 'default' => ''),
-                            'merchant_key'  => array('type' => 'text', 'default' => ''),
-                            'callback_url'  => array('type' => 'url', 'default' => get_site_url() . '/wp-json/velocityaddons/v1/duitku_callback'),
-                            'return_url'    => array('type' => 'url', 'default' => ''),
-                        ),
-                    ),
-                ),
-            ),
-        );
+        if (class_exists('Velocity_Addons_Settings_Registry')) {
+            return Velocity_Addons_Settings_Registry::get_rest_definitions();
+        }
+
+        return array();
     }
 }
 

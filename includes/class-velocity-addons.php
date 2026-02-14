@@ -266,6 +266,28 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-admin.php';
 
         /**
+         * Central registry for settings/admin pages.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-settings-registry.php';
+
+        /**
+         * Registers settings from central registry for compatibility with Settings API.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-addons-settings-registrar.php';
+
+        /**
+         * Admin page renderers (split per submenu for maintainability).
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-general.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-captcha.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-maintenance.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-license.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-security.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-auto-resize.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-statistics.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/pages/class-velocity-addons-admin-page-optimize.php';
+
+        /**
          * Class untuk menambah option page untuk Admin Option
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-velocity-option-page.php';

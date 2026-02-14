@@ -3,50 +3,7 @@
 
   var config = window.velocitySettingsConfig || {};
   var page = getCurrentPage();
-  var bindings = {
-    velocity_general_settings: {
-      route: "general",
-      formSelector: "#velocity-general-form",
-      withReset: true,
-    },
-    velocity_captcha_settings: {
-      route: "captcha",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-    velocity_maintenance_settings: {
-      route: "maintenance",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-    velocity_license_settings: {
-      route: "license",
-      formSelector: "form[data-velocity-settings='1']",
-      withLicenseCheck: true,
-    },
-    velocity_security_settings: {
-      route: "security",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-    velocity_auto_resize_settings: {
-      route: "auto_resize",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-    velocity_seo_settings: {
-      route: "seo",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-    velocity_floating_whatsapp: {
-      route: "floating_whatsapp",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-    velocity_snippet_settings: {
-      route: "snippet",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-    velocity_duitku_settings: {
-      route: "duitku",
-      formSelector: "form[data-velocity-settings='1']",
-    },
-  };
+  var bindings = isPlainObject(config.bindings) ? config.bindings : {};
 
   var activeBinding = bindings[page];
   if (!activeBinding || !activeBinding.route) {
@@ -678,14 +635,9 @@
   }
 
   function syncGeneralDynamicMenu(settings) {
-    var dynamicItems = [
-      { option: "seo_velocity", href: "admin.php?page=velocity_seo_settings", label: "SEO" },
-      { option: "floating_whatsapp", href: "admin.php?page=velocity_floating_whatsapp", label: "Floating Whatsapp" },
-      { option: "news_generate", href: "admin.php?page=velocity_news_settings", label: "Import Artikel" },
-      { option: "velocity_duitku", href: "admin.php?page=velocity_duitku_settings", label: "Duitku" },
-      { option: "statistik_velocity", href: "admin.php?page=velocity_statistics", label: "Statistik Pengunjung" },
-      { option: "velocity_optimasi", href: "admin.php?page=velocity_optimize_db", label: "Optimize Database" },
-    ];
+    var dynamicItems = Array.isArray(config.dynamicMenuItems)
+      ? config.dynamicMenuItems
+      : [];
 
     var submenu = getVelocitySubmenuContainer();
     if (!submenu) {
