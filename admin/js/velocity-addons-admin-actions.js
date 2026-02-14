@@ -3,6 +3,8 @@
 
   var config = window.velocitySettingsConfig || {};
   var page = getCurrentPage();
+  var globalNoticeTimer = null;
+  var globalNoticeHideTimer = null;
 
   if (!page) {
     return;
@@ -514,30 +516,73 @@
   }
 
   function showNotice(noticeEl, message, type) {
-    if (!noticeEl) {
+    if (noticeEl) {
+      noticeEl.style.display = "none";
+    }
+
+    var toast = ensureGlobalToast();
+    if (!toast) {
       return;
     }
-    noticeEl.className = "notice " + (type === "error" ? "notice-error" : "notice-success");
-    noticeEl.innerHTML = "<p>" + escapeHtml(message) + "</p>";
-    noticeEl.style.display = "block";
+
+    if (globalNoticeTimer) {
+      window.clearTimeout(globalNoticeTimer);
+      globalNoticeTimer = null;
+    }
+    if (globalNoticeHideTimer) {
+      window.clearTimeout(globalNoticeHideTimer);
+      globalNoticeHideTimer = null;
+    }
+
+    toast.className =
+      "notice velocity-settings-notice velocity-settings-toast " +
+      (type === "error" ? "notice-error" : "notice-success");
+    toast.innerHTML = "<p>" + escapeHtml(message) + "</p>";
+    toast.style.display = "block";
+    toast.classList.remove("is-hidden");
+    toast.classList.add("is-visible");
+
+    globalNoticeTimer = window.setTimeout(function () {
+      hideGlobalToast();
+    }, 3200);
   }
 
   function showCopySuccess() {
-    var el = document.createElement("div");
-    el.style.cssText =
-      "position:fixed;top:50px;right:20px;background:#00a32a;color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:all .3s";
-    el.textContent = "Shortcode copied to clipboard!";
-    document.body.appendChild(el);
+    showNotice(null, "Shortcode copied to clipboard!", "success");
+  }
 
-    setTimeout(function () {
-      el.style.opacity = "0";
-      el.style.transform = "translateY(-20px)";
-      setTimeout(function () {
-        if (el.parentNode) {
-          el.parentNode.removeChild(el);
-        }
-      }, 300);
-    }, 2000);
+  function ensureGlobalToast() {
+    var toast = document.getElementById("velocity-settings-toast");
+    if (toast) {
+      return toast;
+    }
+
+    toast = document.createElement("div");
+    toast.id = "velocity-settings-toast";
+    toast.className = "notice velocity-settings-notice velocity-settings-toast is-hidden";
+    toast.style.display = "none";
+    (document.body || document.documentElement).appendChild(toast);
+
+    return toast;
+  }
+
+  function hideGlobalToast() {
+    var toast = document.getElementById("velocity-settings-toast");
+    if (!toast) {
+      return;
+    }
+
+    if (globalNoticeHideTimer) {
+      window.clearTimeout(globalNoticeHideTimer);
+      globalNoticeHideTimer = null;
+    }
+
+    toast.classList.remove("is-visible");
+    toast.classList.add("is-hidden");
+
+    globalNoticeHideTimer = window.setTimeout(function () {
+      toast.style.display = "none";
+    }, 220);
   }
 
   function apiRequest(path, method, body) {

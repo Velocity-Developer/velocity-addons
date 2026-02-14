@@ -60,6 +60,8 @@
       model: deepClone(initialModel || {}),
       form: null,
       noticeEl: null,
+      noticeTimer: null,
+      noticeHideTimer: null,
       saveButtons: [],
       resetForm: null,
       licenseButton: null,
@@ -217,14 +219,47 @@
           }
         }
       },
+      hideNotice: function () {
+        if (!this.noticeEl) {
+          return;
+        }
+        if (this.noticeHideTimer) {
+          window.clearTimeout(this.noticeHideTimer);
+          this.noticeHideTimer = null;
+        }
+        this.noticeEl.classList.remove("is-visible");
+        this.noticeEl.classList.add("is-hidden");
+        var self = this;
+        this.noticeHideTimer = window.setTimeout(function () {
+          if (!self.noticeEl) {
+            return;
+          }
+          self.noticeEl.style.display = "none";
+        }, 220);
+      },
       showNotice: function (message, type) {
         if (!this.noticeEl) {
           return;
         }
+        if (this.noticeTimer) {
+          window.clearTimeout(this.noticeTimer);
+          this.noticeTimer = null;
+        }
+        if (this.noticeHideTimer) {
+          window.clearTimeout(this.noticeHideTimer);
+          this.noticeHideTimer = null;
+        }
         this.noticeEl.className =
-          "notice " + (type === "error" ? "notice-error" : "notice-success");
+          "notice velocity-settings-notice velocity-settings-toast " +
+          (type === "error" ? "notice-error" : "notice-success");
         this.noticeEl.innerHTML = "<p>" + escapeHtml(message) + "</p>";
         this.noticeEl.style.display = "block";
+        this.noticeEl.classList.remove("is-hidden");
+        this.noticeEl.classList.add("is-visible");
+        var self = this;
+        this.noticeTimer = window.setTimeout(function () {
+          self.hideNotice();
+        }, 3200);
       },
     };
   };
@@ -446,15 +481,16 @@
   }
 
   function ensureNoticeElement(form) {
-    var notice = form.previousElementSibling;
-    if (notice && notice.classList.contains("velocity-settings-notice")) {
+    var notice = document.getElementById("velocity-settings-toast");
+    if (notice) {
       return notice;
     }
 
     notice = document.createElement("div");
-    notice.className = "notice velocity-settings-notice";
+    notice.id = "velocity-settings-toast";
+    notice.className = "notice velocity-settings-notice velocity-settings-toast is-hidden";
     notice.style.display = "none";
-    form.parentNode.insertBefore(notice, form);
+    (document.body || form.parentNode).appendChild(notice);
     return notice;
   }
 
