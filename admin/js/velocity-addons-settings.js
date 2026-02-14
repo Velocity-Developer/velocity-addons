@@ -45,15 +45,11 @@
     velocity_duitku_settings: {
       route: "duitku",
       formSelector: "form[data-velocity-settings='1']",
-      onlyTab: "pengaturan",
     },
   };
 
   var activeBinding = bindings[page];
   if (!activeBinding || !activeBinding.route) {
-    return;
-  }
-  if (activeBinding.onlyTab && getQuery("tab", "pengaturan") !== activeBinding.onlyTab) {
     return;
   }
 

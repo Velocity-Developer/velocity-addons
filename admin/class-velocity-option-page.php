@@ -505,6 +505,27 @@ class Custom_Admin_Option_Page
                         'title' => 'Max height',
                         'std'   => 1200,
                         'step'  => 1,
+                    ],
+                    [
+                        'id'    => 'auto_resize_mode_data',
+                        'sub'   => 'quality',
+                        'type'  => 'number',
+                        'title' => 'Quality',
+                        'std'   => 90,
+                        'step'  => 1,
+                    ],
+                    [
+                        'id'      => 'auto_resize_mode_data',
+                        'sub'     => 'output_format',
+                        'type'    => 'select',
+                        'title'   => 'Output format',
+                        'std'     => 'original',
+                        'options' => [
+                            'original' => 'Original',
+                            'jpeg'     => 'JPEG',
+                            'webp'     => 'WebP',
+                            'avif'     => 'AVIF',
+                        ],
                     ]
                 ],
             ],
@@ -664,13 +685,30 @@ class Custom_Admin_Option_Page
                         ];
                         foreach ($fields as $data) {
                             $labelFor = isset($data['sub']) ? ($data['id'] . '__' . $data['sub']) : $data['id'];
-                            if (isset($data['sub']) && in_array($data['sub'], ['sitekey', 'secretkey'], true) && $providerVal !== 'google') {
-                                continue;
+                            $visibilityExpr = '';
+                            $visibilityStyle = '';
+                            if (isset($data['sub']) && in_array($data['sub'], ['sitekey', 'secretkey'], true)) {
+                                $visibilityExpr = "(model['captcha_velocity'] && model['captcha_velocity']['provider'] === 'google')";
+                                if ($providerVal !== 'google') {
+                                    $visibilityStyle = 'display:none;';
+                                }
                             }
-                            if (isset($data['sub']) && $data['sub'] === 'difficulty' && $providerVal !== 'image') {
-                                continue;
+                            if (isset($data['sub']) && $data['sub'] === 'difficulty') {
+                                $visibilityExpr = "(model['captcha_velocity'] && model['captcha_velocity']['provider'] === 'image')";
+                                if ($providerVal !== 'image') {
+                                    $visibilityStyle = 'display:none;';
+                                }
                             }
-                            echo '<div class="vd-form-group">';
+
+                            $groupAttrs = ' class="vd-form-group"';
+                            if ($visibilityExpr !== '') {
+                                $groupAttrs .= ' x-show="' . esc_attr($visibilityExpr) . '"';
+                            }
+                            if ($visibilityStyle !== '') {
+                                $groupAttrs .= ' style="' . esc_attr($visibilityStyle) . '"';
+                            }
+
+                            echo '<div' . $groupAttrs . '>';
                             echo '<div class="vd-form-left">';
                             echo '<label class="vd-form-label" for="' . esc_attr($labelFor) . '">' . esc_html($data['title']) . '</label>';
                             if (isset($data['desc'])) echo '<small class="vd-form-hint">' . esc_html($data['desc']) . '</small>';
@@ -953,6 +991,8 @@ class Custom_Admin_Option_Page
                             ['id' => 'auto_resize_mode', 'type' => 'checkbox', 'title' => 'Enable re-sizing', 'label' => 'Aktifkan re-sizing pada situs.'],
                             ['id' => 'auto_resize_mode_data', 'sub' => 'maxwidth', 'type' => 'number', 'title' => 'Max width', 'std' => 1200, 'step' => 1],
                             ['id' => 'auto_resize_mode_data', 'sub' => 'maxheight', 'type' => 'number', 'title' => 'Max height', 'std' => 1200, 'step' => 1],
+                            ['id' => 'auto_resize_mode_data', 'sub' => 'quality', 'type' => 'number', 'title' => 'Quality', 'std' => 90, 'step' => 1, 'label' => 'Range 10-100. Direkomendasikan 80-90.'],
+                            ['id' => 'auto_resize_mode_data', 'sub' => 'output_format', 'type' => 'select', 'title' => 'Output format', 'std' => 'original', 'options' => ['original' => 'Original', 'jpeg' => 'JPEG', 'webp' => 'WebP', 'avif' => 'AVIF'], 'label' => 'Jika format tidak didukung editor server, otomatis fallback ke format asli.'],
                         ];
                         foreach ($fields as $data) {
                             $labelFor = isset($data['sub']) ? ($data['id'] . '__' . $data['sub']) : $data['id'];

@@ -266,26 +266,60 @@ class Velocity_Addons_Duitku {
         $return_url = self::options()['return_url'];
 
         $url = get_admin_url().'admin.php?page=velocity_duitku_settings';
-        $tab_active = isset($_GET['tab'])?$_GET['tab']:'pengaturan';
+        $tab_active = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'pengaturan';
+        if (!in_array($tab_active, array('pengaturan', 'invoice', 'callback'), true)) {
+            $tab_active = 'pengaturan';
+        }
 
         ?>
-        <div class="wrap">
+        <div
+            class="wrap"
+            x-data="{
+                activeTab: '<?php echo esc_attr($tab_active); ?>',
+                setTab(tab) {
+                    this.activeTab = tab;
+                    if (window.history && window.history.replaceState) {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('tab', tab);
+                        window.history.replaceState({}, '', url.toString());
+                    }
+                }
+            }"
+        >
             
             <h2>Payment Gateway DUITKU</h2>
 
             <div class="nav-tab-wrapper">
-                <a href="<?php echo $url; ?>&tab=pengaturan" class="<?php echo $tab_active=='pengaturan'?'nav-tab nav-tab-active':'nav-tab'; ?>">
+                <a
+                    href="<?php echo esc_url($url . '&tab=pengaturan'); ?>"
+                    class="nav-tab"
+                    :class="{ 'nav-tab-active': activeTab === 'pengaturan' }"
+                    @click.prevent="setTab('pengaturan')"
+                >
                     Pengaturan
                 </a>
-                <a href="<?php echo $url; ?>&tab=invoice" class="<?php echo $tab_active=='invoice'?'nav-tab nav-tab-active':'nav-tab'; ?>">
+                <a
+                    href="<?php echo esc_url($url . '&tab=invoice'); ?>"
+                    class="nav-tab"
+                    :class="{ 'nav-tab-active': activeTab === 'invoice' }"
+                    @click.prevent="setTab('invoice')"
+                >
                     Riwayat Invoice
                 </a>
-                <a href="<?php echo $url; ?>&tab=callback" class="<?php echo $tab_active=='callback'?'nav-tab nav-tab-active':'nav-tab'; ?>">
+                <a
+                    href="<?php echo esc_url($url . '&tab=callback'); ?>"
+                    class="nav-tab"
+                    :class="{ 'nav-tab-active': activeTab === 'callback' }"
+                    @click.prevent="setTab('callback')"
+                >
                     Riwayat Callback
                 </a>
             </div>
             
-            <?php if($tab_active == 'pengaturan'): ?>
+            <div
+                x-show="activeTab === 'pengaturan'"
+                style="<?php echo $tab_active === 'pengaturan' ? '' : 'display:none;'; ?>"
+            >
                 <h4>Pengaturan akun payment gateway Duitku</h4>
                 <form method="post" data-velocity-settings="1">
                     <table class="form-table">
@@ -330,11 +364,21 @@ class Velocity_Addons_Duitku {
                     </table>
                     <?php submit_button(); ?>
                 </form>
-            <?php elseif($tab_active == 'invoice'): ?>
+            </div>
+
+            <div
+                x-show="activeTab === 'invoice'"
+                style="<?php echo $tab_active === 'invoice' ? '' : 'display:none;'; ?>"
+            >
                 <?php echo self::table_riwayat_invoice(); ?>
-            <?php elseif($tab_active == 'callback'): ?>
+            </div>
+
+            <div
+                x-show="activeTab === 'callback'"
+                style="<?php echo $tab_active === 'callback' ? '' : 'display:none;'; ?>"
+            >
                 <?php echo self::table_riwayat_callback(); ?>
-            <?php endif; ?>
+            </div>
 
             <div class="alert">
                 Default callback url: <code><?php echo get_site_url().'/wp-json/velocityaddons/v1/duitku_callback'; ?></code> 

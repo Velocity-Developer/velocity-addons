@@ -291,6 +291,9 @@ class Velocity_Addons_Admin_Settings_REST
                 if (isset($schema['min']) && $number < (int) $schema['min']) {
                     $number = (int) $schema['min'];
                 }
+                if (isset($schema['max']) && $number > (int) $schema['max']) {
+                    $number = (int) $schema['max'];
+                }
                 return $number;
 
             case 'text':
@@ -588,6 +591,8 @@ class Velocity_Addons_Admin_Settings_REST
                         'properties' => array(
                             'maxwidth'  => array('type' => 'int', 'min' => 0, 'default' => 1200),
                             'maxheight' => array('type' => 'int', 'min' => 0, 'default' => 1200),
+                            'quality'   => array('type' => 'int', 'min' => 10, 'max' => 100, 'default' => 90),
+                            'output_format' => array('type' => 'select', 'allowed' => array('original', 'jpeg', 'webp', 'avif'), 'default' => 'original'),
                         ),
                     ),
                     'auto_resize_image_velocity' => array('type' => 'bool', 'default' => 0),
