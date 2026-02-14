@@ -251,6 +251,44 @@ body.admin_page_admin_velocity_addons .notice.notice-warning.notice-alt {
   display: none !important;
 }
 
+/* Global toast for settings save/check responses */
+.velocity-settings-toast {
+  position: fixed;
+  top: 48px;
+  right: 20px;
+  z-index: 100000;
+  min-width: 320px;
+  max-width: min(520px, calc(100vw - 40px));
+  margin: 0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.velocity-settings-toast p {
+  margin: 10px 12px;
+}
+
+.velocity-settings-toast.is-hidden {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.velocity-settings-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 782px) {
+  .velocity-settings-toast {
+    top: 46px;
+    right: 10px;
+    left: 10px;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
 /* Split Grid for chart + info card */
 .vd-grid-2 {
   display: grid;
