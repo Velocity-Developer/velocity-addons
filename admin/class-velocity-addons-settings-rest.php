@@ -127,9 +127,7 @@ class Velocity_Addons_Admin_Settings_REST
                 if (is_array($sanitized) && isset($sanitized[0]) && is_array($sanitized[0])) {
                     $first_number = isset($sanitized[0]['number']) ? (string) $sanitized[0]['number'] : '';
                 }
-                if ($first_number !== '') {
-                    update_option('nomor_whatsapp', $first_number);
-                }
+                update_option('nomor_whatsapp', $first_number);
             }
         }
 

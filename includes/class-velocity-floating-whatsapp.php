@@ -253,9 +253,7 @@ class Velocity_Addons_Floating_Whatsapp
 
         // Sync legacy single number with first contact for backward compatibility.
         $first_number = $normalized[0]['number'] ?? '';
-        if ($first_number !== '') {
-            update_option('nomor_whatsapp', $first_number);
-        }
+        update_option('nomor_whatsapp', $first_number);
 
         return $normalized;
     }
@@ -329,9 +327,7 @@ class Velocity_Addons_Floating_Whatsapp
             $normalized = self::normalize_whatsapp_contacts($legacy_raw);
             update_option('nomor_whatsapp_contacts', $normalized);
             $first = $normalized[0]['number'] ?? '';
-            if ($first !== '') {
-                update_option('nomor_whatsapp', $first);
-            }
+            update_option('nomor_whatsapp', $first);
             return;
         }
 
@@ -342,7 +338,7 @@ class Velocity_Addons_Floating_Whatsapp
                 update_option('nomor_whatsapp_contacts', $normalized);
             }
             $first = $normalized[0]['number'] ?? '';
-            if ($first !== '' && $legacy_raw !== $first) {
+            if ((string) $legacy_raw !== (string) $first) {
                 update_option('nomor_whatsapp', $first);
             }
         }
