@@ -105,7 +105,7 @@ class Velocity_Addons_Admin {
 
 		if ( $this->is_velocity_settings_page( $page ) ) {
 			$settings_handle = 'velocity-addons-settings-bridge';
-			$alpine_handle   = 'velocity-addons-alpinejs';
+			$alpine_handle   = 'alpinejs';
 			$settings_path   = plugin_dir_path( __FILE__ ) . 'js/velocity-addons-settings.js';
 			$settings_ver    = file_exists( $settings_path ) ? (string) filemtime( $settings_path ) : $this->version;
 
