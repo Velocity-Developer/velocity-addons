@@ -105,6 +105,7 @@ class Velocity_Addons_Captcha
             }
 
             add_shortcode('velocity_recaptcha', array($this, 'display_login_form'));
+            add_shortcode('velocity_captcha', array($this, 'shortcode_captcha'));
 
             // Integrasi dengan Ultimate Member (UM) kecuali jika addon resmi UM reCAPTCHA aktif
             if (function_exists('UM') && ! class_exists('UM_ReCAPTCHA') && ! defined('UM_RECAPTCHA_VERSION')) {
@@ -189,11 +190,12 @@ class Velocity_Addons_Captcha
         return $this->active;
     }
 
-    public function display()
+    public function display($form_selector = '')
     {
         if (!$this->active) return;
         $node = 'rr' . uniqid();
-        echo '<div class="' . $node . '">';
+        $attr = $form_selector ? ' data-form="' . esc_attr($form_selector) . '"' : '';
+        echo '<div class="' . $node . '"' . $attr . '>';
         if ($this->provider === 'google') {
             echo '<div id="g' . $node . '" data-size="' . $this->size . '" style="transform: scale(0.9);transform-origin: 0 0;"></div>';
 ?>
@@ -209,7 +211,9 @@ class Velocity_Addons_Captcha
                 function callback<?php echo $node; ?>() {
                     if (typeof jQuery !== 'undefined') {
                         (function($) {
-                            var form = $('.<?php echo $node; ?>').parent().closest('form');
+                            var container = $('.<?php echo $node; ?>');
+                            var selector = container.data('form');
+                            var form = selector ? $(selector).first() : container.parent().closest('form');
                             form.find('input[type="submit"]').attr('disabled', false).addClass('um-has-recaptcha');
                             form.find('button[type="submit"]').attr('disabled', false).addClass('um-has-recaptcha');
                         })(jQuery);
@@ -218,7 +222,9 @@ class Velocity_Addons_Captcha
                 if (typeof jQuery !== 'undefined') {
                     (function($) {
                         $(document).ready(function() {
-                            var form = $('.<?php echo $node; ?>').parent().closest('form');
+                            var container = $('.<?php echo $node; ?>');
+                            var selector = container.data('form');
+                            var form = selector ? $(selector).first() : container.parent().closest('form');
                             form.find('input[type="submit"]').attr('disabled', 'disabled').addClass('um-has-recaptcha');
                             form.find('button[type="submit"]').attr('disabled', 'disabled').addClass('um-has-recaptcha');
                         });
@@ -359,6 +365,20 @@ class Velocity_Addons_Captcha
         }
         ob_start();
         echo $this->display();
+        return ob_get_clean();
+    }
+
+    public function shortcode_captcha($atts = array(), $content = '')
+    {
+        if (! $this->active) {
+            return '';
+        }
+        $atts = shortcode_atts(array(
+            'form' => '',
+        ), $atts, 'velocity_captcha');
+        $form_selector = isset($atts['form']) ? $atts['form'] : '';
+        ob_start();
+        echo $this->display($form_selector);
         return ob_get_clean();
     }
 
