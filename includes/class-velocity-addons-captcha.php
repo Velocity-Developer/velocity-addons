@@ -255,6 +255,9 @@ class Velocity_Addons_Captcha
         if (!$this->active) {
             return ['success' => true, 'message' => 'Validasi captcha tidak aktif'];
         }
+        if (is_user_logged_in()) {
+            return ['success' => true, 'message' => 'Lewati verifikasi captcha (pengguna login)'];
+        }
         if ($this->provider === 'google') {
             $gresponse = $gresponse ? $gresponse : '0';
             if (empty($gresponse) && isset($_POST['g-recaptcha-response'])) {
