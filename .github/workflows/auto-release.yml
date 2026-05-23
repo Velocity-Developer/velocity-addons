@@ -23,8 +23,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: package-lock.json
 
       - name: Read version
         id: ver
@@ -64,7 +62,7 @@ jobs:
 
       - name: Install deps
         if: steps.cmp.outputs.should_release == 'true'
-        run: npm ci
+        run: npm install
 
       - name: Build package
         if: steps.cmp.outputs.should_release == 'true'
