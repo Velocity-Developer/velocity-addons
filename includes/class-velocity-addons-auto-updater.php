@@ -34,14 +34,11 @@ class Velocity_Addons_Auto_Updater
     add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
     add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
     add_filter('upgrader_post_install', [$this, 'upgrader_post_install'], 10, 3);
-
-    // Menambahkan tombol Enable Auto Update di halaman plugin
     add_action('plugin_action_links', [$this, 'add_link_to_settings'], 10, 2);
   }
 
   public function check_for_update($transient)
   {
-    // Pastikan bahwa data 'checked' sudah ada dalam transient
     if (empty($transient->checked)) {
       return $transient;
     }
@@ -156,11 +153,13 @@ class Velocity_Addons_Auto_Updater
     return get_plugin_data(WP_PLUGIN_DIR . '/' . $this->plugin_file);
   }
 
-  private function get_latest_release()
+  private function get_latest_release($force = false)
   {
-    $cached = get_transient($this->cache_key);
-    if (is_array($cached) && !empty($cached['version'])) {
-      return $cached;
+    if (!$force) {
+      $cached = get_transient($this->cache_key);
+      if (is_array($cached) && !empty($cached['version'])) {
+        return $cached;
+      }
     }
 
     $url = 'https://api.github.com/repos/' . $this->repo . '/releases/latest';
@@ -177,6 +176,10 @@ class Velocity_Addons_Auto_Updater
     }
 
     $code = (int) wp_remote_retrieve_response_code($response);
+    if ($code === 404) {
+      return false;
+    }
+
     if ($code < 200 || $code >= 300) {
       return false;
     }
@@ -211,7 +214,7 @@ class Velocity_Addons_Auto_Updater
       foreach ($release_data['assets'] as $asset) {
         $name = isset($asset['name']) ? (string) $asset['name'] : '';
         $download = isset($asset['browser_download_url']) ? (string) $asset['browser_download_url'] : '';
-        if ($download !== '' && $name !== '' && preg_match('/\\.zip$/i', $name)) {
+        if ($download !== '' && $name !== '' && preg_match('/\.zip$/i', $name)) {
           return $download;
         }
       }
@@ -227,7 +230,6 @@ class Velocity_Addons_Auto_Updater
   public function add_link_to_settings($actions, $plugin_file)
   {
     if ($plugin_file === $this->plugin_file) {
-      // Point to the main Velocity Addons settings page.
       $url = admin_url('admin.php?page=admin_velocity_addons');
       $actions['link_to_settings'] = '<a href="' . $url . '">Pengaturan Admin</a>';
     }
@@ -235,5 +237,4 @@ class Velocity_Addons_Auto_Updater
   }
 }
 
-// Inisialisasi updater
 new Velocity_Addons_Auto_Updater();
