@@ -36,6 +36,7 @@
 .vdgallery-kolom .vdgallery-item img {
     margin: 0;    
     width: 100%;
+    display: block;
 }
 .vdgallery-kolom .vdgallery-item a {
     display: inline-block;
@@ -88,9 +89,41 @@
 }
 .vdgallery-slideshow .vdgallery-item-image {
     width: 100%;
+    display: block;
+}
+.vdgallery-slideshow .vdgallery-item-link {
+    display: block;
+    overflow: hidden;
+}
+.vdgallery-slideshow .vdgallery-item-inside {
+    position: relative;
+    overflow: hidden;
+}
+.vdgallery-slideshow .vdgallery-item-caption-hover,
+.vdgallery-slideshow .vdgallery-item-caption-inside {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgb(0 0 0 / 51%);
+    color: #ffffff;
+    padding: .4rem;
+    font-size: .7rem;
+    line-height: 1rem;
+    max-height: 2.2rem;
+    overflow: hidden;
+}
+.vdgallery-slideshow .vdgallery-item-caption-hover {
+    bottom: -100%;
+    transition: all 400ms;
+}
+.vdgallery-slideshow .vdgallery-item-inside:hover .vdgallery-item-caption-hover {
+    bottom: 0;
 }
 .vdgallery-slideshow .flickity-page-dots {
-    bottom: .5rem;
+    bottom: auto;
+    position: relative;
+    margin-top: .5rem;
 }
 .vdgallery-slideshow .flickity-prev-next-button {
     width: 25px;

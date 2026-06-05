@@ -4,7 +4,7 @@ Donate link: https://velocitydeveloper.com
 Tags: comments, spam
 Requires at least: 3.0.1
 Tested up to: 6.2
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,11 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.0.3=
+- VD Gallery: tambah Global Option untuk Galeri Option dan Slideshow Option pada submenu CPT.
+- VD Gallery: refactor field option gallery/slideshow agar dikelola dari definisi array bersama untuk metabox, global option, dan shortcode.
+- VD Gallery: tambah pengaturan aspect ratio, caption slideshow fleksibel, perbaikan pagination, dan perapian tampilan admin.
 
 =2.0.0=
 - Migrasi halaman pengaturan admin ke arsitektur Alpine + REST API agar penyimpanan dan interaksi berjalan tanpa reload penuh.

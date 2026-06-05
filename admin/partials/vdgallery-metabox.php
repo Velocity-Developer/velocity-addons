@@ -1,4 +1,6 @@
 <?php 
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/includes/vdgallery-option-fields.php';
+
 /**
 * Save meta boxes.
 */
@@ -23,7 +25,19 @@ function vdgallery_save_post_class_meta( $post_id, $post ) {
     return $post_id;
 
   /* Get the posted data and sanitize it for use as an HTML class. */
-  $new_meta_value = ( isset( $_POST['vdgaleri-post'] ) ? $_POST['vdgaleri-post'] : ’ );
+  $new_meta_value = ( isset( $_POST['vdgaleri-post'] ) && is_array( $_POST['vdgaleri-post'] ) ? $_POST['vdgaleri-post'] : array() );
+
+  if ( isset( $new_meta_value['media'] ) && is_array( $new_meta_value['media'] ) ) {
+    $new_meta_value['media'] = array_map( 'absint', $new_meta_value['media'] );
+  }
+
+  $posted_options = ( isset( $new_meta_value['option'] ) && is_array( $new_meta_value['option'] ) ) ? $new_meta_value['option'] : array();
+  $new_meta_value['option'] = array_merge(
+    vdgallery_sanitize_options( $posted_options, vdgallery_get_gallery_option_fields() ),
+    vdgallery_sanitize_options( $posted_options, vdgallery_get_slideshow_option_fields() )
+  );
+  $new_meta_value['gallery_use_global_options'] = isset( $new_meta_value['gallery_use_global_options'] ) ? absint( $new_meta_value['gallery_use_global_options'] ) : 0;
+  $new_meta_value['slideshow_use_global_options'] = isset( $new_meta_value['slideshow_use_global_options'] ) ? absint( $new_meta_value['slideshow_use_global_options'] ) : 0;
 
   /* Get the meta key. */
   $meta_key = 'vdgaleri';
@@ -60,23 +74,9 @@ add_action( 'add_meta_boxes', 'vdgallery_register_meta_boxes' );
 function vdgallery_display_callback( $post ) {
   $getId        = isset($_GET['post'])?$_GET['post']:'';
   $datagaleri   = get_post_meta( $post->ID, 'vdgaleri', true );
-
-  //gallery
-  $datasize     = $datagaleri?$datagaleri['option']['size']:'';
-  $datakolom    = $datagaleri?$datagaleri['option']['kolom']:'4';
-  $datakolomres = $datagaleri?$datagaleri['option']['kolomresponsif']:'2';
-
-  ///slideshow
-  $datasizes          = $datagaleri?$datagaleri['option']['slidesize']:'full';
-  $dataperslide       = $datagaleri?$datagaleri['option']['perslide']:'1';
-  $dataperslideres    = $datagaleri?$datagaleri['option']['persliderespon']:'1';
-  $navbtn             = $datagaleri?$datagaleri['option']['navbtn']:'';
-  $navdots            = $datagaleri?$datagaleri['option']['navdots']:'';
-  $autoplay           = $datagaleri?$datagaleri['option']['autoplay']:1;
-  $infinite           = $datagaleri?$datagaleri['option']['infinite']:1;
-  $galericaption      = $datagaleri?$datagaleri['option']['galericaption']:'tidak';
-  $pagination         = $datagaleri?$datagaleri['option']['pagination']:0;
-  $paginationitem     = $datagaleri?$datagaleri['option']['paginationitem']:9;
+  $option_values = ( $datagaleri && isset( $datagaleri['option'] ) && is_array( $datagaleri['option'] ) ) ? $datagaleri['option'] : array();
+  $gallery_use_global_options = ( $datagaleri && isset( $datagaleri['gallery_use_global_options'] ) ) ? $datagaleri['gallery_use_global_options'] : 1;
+  $slideshow_use_global_options = ( $datagaleri && isset( $datagaleri['slideshow_use_global_options'] ) ) ? $datagaleri['slideshow_use_global_options'] : 1;
 
   // print_r($datagaleri);
   wp_nonce_field( basename( __FILE__ ), 'vdgallery_post_nonce' );
@@ -97,7 +97,7 @@ function vdgallery_display_callback( $post ) {
     <div class="vdgallery-tabs-opt">
       <div class="tabs-item" data-target="tab-1">
         <div class="vdgallery-main">
-          <?php if($datagaleri && $datagaleri['media']): ?>
+          <?php if($datagaleri && isset( $datagaleri['media'] ) && is_array( $datagaleri['media'] )): ?>
             <?php foreach($datagaleri['media'] as $galeri): ?>
               <?php $idunik = uniqid(); ?>
               <div class="vdgallery-image vdgallery-image-<?php echo $idunik; ?>" data-node="<?php echo $idunik; ?>" data-id="<?php echo $galeri; ?>">
@@ -117,120 +117,38 @@ function vdgallery_display_callback( $post ) {
 
       <div class="tabs-item" data-target="tab-2">
 
-        <table>
+        <table class="form-table vdgallery-option-table" role="presentation">
           <tr>
-            <td>Ukuran gambar</td>
-            <td>: 
-              <select name="vdgaleri-post[option][size]" class="vdgallery-input">
-                <option value="thumbnail" <?php selected( $datasize,'thumbnail'); ?>>Thumbnail</option>
-                <option value="medium" <?php selected( $datasize,'medium'); ?>>Medium</option>
-                <option value="large" <?php selected( $datasize,'large'); ?>>large</option>
-                <option value="full" <?php selected( $datasize,'full'); ?>>Full</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Baris tampil</td>
+            <th scope="row">
+              <label for="vdgallery_gallery_use_global_options">Gunakan Global Option</label>
+            </th>
             <td>
-              : <input name="vdgaleri-post[option][kolom]" value="<?php echo $datakolom; ?>" type="number" min="1" class="vdgallery-input">
+              <select id="vdgallery_gallery_use_global_options" name="vdgaleri-post[gallery_use_global_options]" class="regular-text">
+                <option value="0" <?php selected( $gallery_use_global_options, 0 ); ?>>Tidak</option>
+                <option value="1" <?php selected( $gallery_use_global_options, 1 ); ?>>Ya</option>
+              </select><br/>
+              <small class="description">Jika ya, maka opsi galeri akan menggunakan pengaturan global.</small>
             </td>
           </tr>
-          <tr>
-            <td>Baris tampil responsif</td>
-            <td>
-              : <input name="vdgaleri-post[option][kolomresponsif]" value="<?php echo $datakolomres; ?>" type="number" min="1" max="2" class="vdgallery-input">
-            </td>
-          </tr>
-          <tr>
-            <td>Tampilkan Caption</td>
-            <td>: 
-              <select name="vdgaleri-post[option][galericaption]" class="vdgallery-input">
-                <option value="tidak" <?php selected( $galericaption,'tidak'); ?>>Tidak</option>
-                <option value="hover" <?php selected( $galericaption,'hover'); ?>>Saat Hover</option>
-                <option value="below" <?php selected( $galericaption,'below'); ?>>di Bawah</option>
-                <option value="inside" <?php selected( $galericaption,'inside'); ?>>di Dalam</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Pagination</td>
-            <td>: 
-              <select name="vdgaleri-post[option][pagination]" class="vdgallery-input">
-                <option value=1 <?php selected( $pagination,1); ?>>Ya</option>
-                <option value=0 <?php selected( $pagination,0); ?>>Tidak</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Jumlah gambar per Pagination</td>
-            <td>
-              : <input name="vdgaleri-post[option][paginationitem]" value="<?php echo $paginationitem; ?>" type="number" min="1" class="vdgallery-input">
-            </td>
-          </tr>
+          <?php vdgallery_render_option_fields( vdgallery_get_gallery_option_fields(), $option_values ); ?>
         </table>
 
       </div>
       <div class="tabs-item" data-target="tab-3">
-        <table>
+        <table class="form-table vdgallery-option-table" role="presentation">
           <tr>
-            <td>Ukuran gambar</td>
-            <td>: 
-              <select name="vdgaleri-post[option][slidesize]" class="vdgallery-input">
-                <option value="full" <?php selected( $datasizes,'full'); ?>>Full</option>
-                <option value="medium" <?php selected( $datasizes,'medium'); ?>>Medium</option>
-                <option value="large" <?php selected( $datasizes,'large'); ?>>large</option>
-                <option value="thumbnail" <?php selected( $datasizes,'thumbnail'); ?>>Thumbnail</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Tampil per Slide</td>
+            <th scope="row">
+              <label for="vdgallery_slideshow_use_global_options">Gunakan Global Option</label>
+            </th>
             <td>
-              : <input name="vdgaleri-post[option][perslide]" value="<?php echo $dataperslide; ?>" type="number" min="1" max="50" class="vdgallery-input">
+              <select id="vdgallery_slideshow_use_global_options" name="vdgaleri-post[slideshow_use_global_options]" class="regular-text">
+                <option value="0" <?php selected( $slideshow_use_global_options, 0 ); ?>>Tidak</option>
+                <option value="1" <?php selected( $slideshow_use_global_options, 1 ); ?>>Ya</option>
+              </select><br/>
+              <small class="description">Jika ya, maka opsi slideshow akan menggunakan pengaturan global.</small>
             </td>
           </tr>
-          <tr>
-            <td>Tampil per Slide responsif</td>
-            <td>
-              : <input name="vdgaleri-post[option][persliderespon]" value="<?php echo $dataperslideres; ?>" type="number" min="1" max="3" class="vdgallery-input">
-            </td>
-          </tr>
-          <tr>
-            <td>Navigasi</td>
-            <td>: 
-              <select name="vdgaleri-post[option][navbtn]" class="vdgallery-input">
-                <option value=1 <?php selected( $navbtn,1); ?>>Ya</option>
-                <option value=0 <?php selected( $navbtn,0); ?>>Tidak</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Dots</td>
-            <td>: 
-              <select name="vdgaleri-post[option][navdots]" class="vdgallery-input">
-                <option value="1" <?php selected( $navdots,1); ?>>Ya</option>
-                <option value="0" <?php selected( $navdots,0); ?>>Tidak</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Autoplay</td>
-            <td>: 
-              <select name="vdgaleri-post[option][autoplay]" class="vdgallery-input">
-                <option value="1" <?php selected( $autoplay,1); ?>>Ya</option>
-                <option value="0" <?php selected( $autoplay,0); ?>>Tidak</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Infinite</td>
-            <td>: 
-              <select name="vdgaleri-post[option][infinite]" class="vdgallery-input">
-                <option value="1" <?php selected( $infinite,1); ?>>Ya</option>
-                <option value="0" <?php selected( $infinite,0); ?>>Tidak</option>
-              </select>
-            </td>
-          </tr>
+          <?php vdgallery_render_option_fields( vdgallery_get_slideshow_option_fields(), $option_values ); ?>
         </table>
       </div>
     </div>

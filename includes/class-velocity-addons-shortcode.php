@@ -8,6 +8,8 @@
  * @package    Velocity_Addons
  * @subpackage Velocity_Addons/includes
  */
+require_once dirname( __FILE__ ) . '/vdgallery-option-fields.php';
+
 class Velocity_Addons_Shortcode {
     
     /**
@@ -96,35 +98,41 @@ class Velocity_Addons_Shortcode {
 
         //set value by meta vdgaleri
         $vdgaleri           = get_post_meta( $id, 'vdgaleri', true );
-        $size               = $vdgaleri['option']['size']?$vdgaleri['option']['size']:'thumbnail';
-        $kolom              = $vdgaleri['option']['kolom']?$vdgaleri['option']['kolom']:1;
+        $media              = ( isset( $vdgaleri['media'] ) && is_array( $vdgaleri['media'] ) ) ? $vdgaleri['media'] : array();
+        $option_values      = ( isset( $vdgaleri['option'] ) && is_array( $vdgaleri['option'] ) ) ? $vdgaleri['option'] : array();
+        $global_options     = vdgallery_get_global_options();
+        $gallery_use_global = ( isset( $vdgaleri['gallery_use_global_options'] ) && $vdgaleri['gallery_use_global_options'] );
+        $gallery_values     = $gallery_use_global ? $global_options['gallery'] : wp_parse_args( $option_values, $global_options['gallery'] );
+        $gallery_options    = vdgallery_sanitize_options( $gallery_values, vdgallery_get_gallery_option_fields() );
+        $size               = $gallery_options['size'];
+        $kolom              = $gallery_options['kolom'];
         $koloms             = 100/$kolom;
-        $kolomres           = $vdgaleri['option']['kolomresponsif']?$vdgaleri['option']['kolomresponsif']:1;
+        $kolomres           = $gallery_options['kolomresponsif'];
         $kolomress          = 100/$kolomres;    
-        $galericaption      = $vdgaleri['option']['galericaption']?$vdgaleri['option']['galericaption']:'tidak';
-        $pagination         = (bool)$vdgaleri['option']['pagination']?$vdgaleri['option']['pagination']:0;
-        $paginationitem     = $vdgaleri['option']['paginationitem']?$vdgaleri['option']['paginationitem']:9;
-
-        //pagination     
-        if($pagination==true) {
-            $pagi = [];
-        }
+        $galericaption      = $gallery_options['galericaption'];
+        $pagination         = $gallery_options['pagination'];
+        $paginationitem     = $gallery_options['paginationitem'];
+        $aspectratio        = $gallery_options['aspectratio'];
+        $aspectratiocss     = str_replace( '/', ' / ', $aspectratio );
+        $paginationitem     = max( 1, (int) $paginationitem );
+        $pagination         = ( $pagination == true && count( $media ) > $paginationitem );
+        $pagi               = array();
 
         ///show if have ID & meta vdgaleri
         if($id && $vdgaleri):
         ?>
             <div class="vdgallery-galleryshow vdgallery-galleryshow-<?php echo $idnode;?>" data-node="<?php echo $idnode;?>" data-id="<?php echo $id;?>">
                 
-                <?php if(isset($vdgaleri['media'])&&!empty($vdgaleri['media'])): ?> 
+                <?php if(!empty($media)): ?> 
 
                     <div class="vdgallery-kolom">
                     <?php $pagit = 1;?>
                     <?php $urut = 1;?>
-                    <?php foreach($vdgaleri['media'] as $idmedia): ?>
+                    <?php foreach($media as $idmedia): ?>
 
                         <?php 
                             $mediainfo = get_post($idmedia);
-                            $caption   = $mediainfo->post_excerpt;
+                            $caption   = $mediainfo ? $mediainfo->post_excerpt : '';
                         ?>
 
                         <div class="vdgallery-item vdgallery-item-<?php echo $idmedia;?>" data-id="<?php echo $idmedia;?>" data-urut="<?php echo $urut;?>" data-pagi="<?php echo $pagit;?>">
@@ -179,6 +187,17 @@ class Velocity_Addons_Shortcode {
                         flex: 0 0 <?php echo $kolomress;?>%;
                         max-width: <?php echo $kolomress;?>%;
                     }
+                    <?php if($aspectratio !== 'none'): ?>
+                    .vdgallery-galleryshow-<?php echo $idnode;?> .vdgallery-item-link {
+                        aspect-ratio: <?php echo $aspectratiocss;?>;
+                        display: block;
+                        overflow: hidden;
+                    }
+                    .vdgallery-galleryshow-<?php echo $idnode;?> .vdgallery-item-image {
+                        height: 100%;
+                        object-fit: cover;
+                    }
+                    <?php endif; ?>
                     @media (min-width: 768px) {
                         .vdgallery-galleryshow-<?php echo $idnode;?> .vdgallery-item {
                             -webkit-flex: 0 0 <?php echo $koloms;?>%;
@@ -210,19 +229,28 @@ class Velocity_Addons_Shortcode {
 
         //set value by meta vdgaleri
         $vdgaleri       = get_post_meta( $id, 'vdgaleri', true );
-        $size           = $vdgaleri['option']['slidesize']?$vdgaleri['option']['slidesize']:'full';
-        $perslide       = $vdgaleri['option']['perslide']?$vdgaleri['option']['perslide']:100;
-        $perslideres    = $vdgaleri['option']['persliderespon']?$vdgaleri['option']['persliderespon']:100;
+        $media          = ( isset( $vdgaleri['media'] ) && is_array( $vdgaleri['media'] ) ) ? $vdgaleri['media'] : array();
+        $option_values  = ( isset( $vdgaleri['option'] ) && is_array( $vdgaleri['option'] ) ) ? $vdgaleri['option'] : array();
+        $global_options = vdgallery_get_global_options();
+        $slide_use_global = ( isset( $vdgaleri['slideshow_use_global_options'] ) && $vdgaleri['slideshow_use_global_options'] );
+        $slide_values   = $slide_use_global ? $global_options['slideshow'] : wp_parse_args( $option_values, $global_options['slideshow'] );
+        $slide_options  = vdgallery_sanitize_options( $slide_values, vdgallery_get_slideshow_option_fields() );
+        $size           = $slide_options['slidesize'];
+        $perslide       = $slide_options['perslide'];
+        $perslideres    = $slide_options['persliderespon'];
+        $aspectratio    = $slide_options['slideaspectratio'];
+        $aspectratiocss = str_replace( '/', ' / ', $aspectratio );
+        $slidecaption   = $slide_options['slidecaption'];
 
         //flickity opt
         $flickity   = [
             'contain'           => true,
             'cellAlign'         => 'left',
             'adaptiveHeight'    => false,
-            'prevNextButtons'   => (bool)$vdgaleri['option']['navbtn'],
-            'pageDots'          => (bool)$vdgaleri['option']['navdots'],
-            'autoPlay'          => (bool)$vdgaleri['option']['autoplay'],
-            'wrapAround'        => (bool)$vdgaleri['option']['infinite'],
+            'prevNextButtons'   => (bool)$slide_options['navbtn'],
+            'pageDots'          => (bool)$slide_options['navdots'],
+            'autoPlay'          => (bool)$slide_options['autoplay'],
+            'wrapAround'        => (bool)$slide_options['infinite'],
         ];
         $flickity   = json_encode($flickity);
 
@@ -231,15 +259,26 @@ class Velocity_Addons_Shortcode {
         ?>
         <div class="vdgallery-slideshow vdgallery-slideshow-<?php echo $idnode;?>" data-node="<?php echo $idnode;?>" data-id="<?php echo $id;?>">
             
-            <?php if(isset($vdgaleri['media'])&&!empty($vdgaleri['media'])): ?>
+            <?php if(!empty($media)): ?>
 
                 <div class="vdgallery-slide-box" data-node="<?php echo $idnode;?>">
                     <div class="vdgallery-slide" data-flickity='<?php echo $flickity;?>'>
-                        <?php foreach($vdgaleri['media'] as $idmedia): ?>
+                        <?php foreach($media as $idmedia): ?>
+                            <?php
+                                $mediainfo = get_post($idmedia);
+                                $caption   = $mediainfo ? $mediainfo->post_excerpt : '';
+                            ?>
                             <div class="vdgallery-item vdgallery-item-<?php echo $idmedia;?>" data-id="<?php echo $idmedia;?>">
-                            <a class="vdgallery-item-link" target="_blank" href="<?php echo wp_get_attachment_image_src($idmedia,'full')[0]; ?>">  
-                                <img class="vdgallery-item-image" src="<?php echo wp_get_attachment_image_src($idmedia,$size)[0]; ?>">
-                            </a>
+                                <div class="vdgallery-item-inside">
+                                    <a class="vdgallery-item-link" target="_blank" href="<?php echo wp_get_attachment_image_src($idmedia,'full')[0]; ?>" title="<?php echo $caption;?>">  
+                                        <img class="vdgallery-item-image" src="<?php echo wp_get_attachment_image_src($idmedia,$size)[0]; ?>">
+                                    </a>
+                                    <?php if(($slidecaption!='tidak') && !empty($caption)): ?>
+                                        <span class="vdgallery-item-caption vdgallery-item-caption-<?php echo $slidecaption;?>">
+                                            <?php echo $caption;?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         <?php endforeach;?>
                     </div>
@@ -251,6 +290,23 @@ class Velocity_Addons_Shortcode {
                 .vdgallery-slideshow-<?php echo $idnode;?> .vdgallery-item {
                     width: <?php echo 100/$perslideres;?>%;
                 }
+                .vdgallery-slideshow-<?php echo $idnode;?> .vdgallery-item-inside {
+                    position: relative;
+                    overflow: hidden;
+                }
+                .vdgallery-slideshow-<?php echo $idnode;?> .vdgallery-item-link {
+                    display: block;
+                }
+                <?php if($aspectratio !== 'none'): ?>
+                .vdgallery-slideshow-<?php echo $idnode;?> .vdgallery-item-link {
+                    aspect-ratio: <?php echo $aspectratiocss;?>;
+                    overflow: hidden;
+                }
+                .vdgallery-slideshow-<?php echo $idnode;?> .vdgallery-item-image {
+                    height: 100%;
+                    object-fit: cover;
+                }
+                <?php endif; ?>
                 @media (min-width: 768px) {
                     .vdgallery-slideshow-<?php echo $idnode;?> .vdgallery-item {
                         width: <?php echo 100/$perslide;?>%;
