@@ -129,6 +129,7 @@ class Velocity_Addons_Captcha
             if ($this->provider === 'image') {
                 add_action('wp_ajax_vd_captcha_image', array($this, 'ajax_image'));
                 add_action('wp_ajax_nopriv_vd_captcha_image', array($this, 'ajax_image'));
+                add_action('init', array($this, 'init_captcha_image'));
             }
         }
     }
@@ -240,7 +241,7 @@ class Velocity_Addons_Captcha
         } else {
             $token = wp_generate_password(20, false);
             echo '<input type="hidden" name="vd_captcha_token" value="' . esc_attr($token) . '">';
-            $img = esc_url(admin_url('admin-ajax.php?action=vd_captcha_image&token=' . urlencode($token)));
+            $img = esc_url(get_site_url(null, '?vd_captcha_image&token=' . urlencode($token)));
             echo '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
             echo '<img src="' . $img . '" alt="captcha" style="border:1px solid #e5e7eb;border-radius:4px;height:40px">';
             echo '<a href="#" onclick="(function(el){var i=el.previousElementSibling;i.src=i.src.split(\'&r=\')[0]+\'&r=\'+Date.now();})(this);return false;">Refresh</a>';
@@ -449,16 +450,13 @@ class Velocity_Addons_Captcha
         return $out;
     }
 
-    public function ajax_image()
+    public function render_image($token = null)
     {
+
         while (ob_get_level()) {
             ob_end_clean();
         }
 
-        $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
-        if (!$token) {
-            wp_die();
-        }
         $len = 6;
         $noiseLines = 50;
         $jitter = 3;
@@ -502,7 +500,29 @@ class Velocity_Addons_Captcha
         header('Pragma: no-cache');
         imagepng($im);
         imagedestroy($im);
+
         exit;
+    }
+
+    public function ajax_image()
+    {
+
+        $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
+        if (!$token) {
+            wp_die();
+        }
+        $this->render_image($token);
+    }
+
+    public function init_captcha_image()
+    {
+        if (!isset($_GET['vd_captcha_image']) || !isset($_GET['token'])) {
+            return;
+        }
+
+        $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
+
+        $this->render_image($token);
     }
 }
 
