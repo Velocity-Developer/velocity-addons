@@ -451,6 +451,10 @@ class Velocity_Addons_Captcha
 
     public function ajax_image()
     {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
         $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
         if (!$token) {
             wp_die();
