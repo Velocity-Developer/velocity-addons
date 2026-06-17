@@ -18,7 +18,7 @@ class Velocity_Addons_Statistic_Legacy {
     /** @var array */
     protected $log = array();
 
-    public function __construct( $old_plugin_path = null, $dry_run = false ) {
+    public function __construct( $old_plugin_path = null, bool $dry_run = false ) {
         // Do not auto-guess any local path; only use provided path.
         $this->old_plugin_path = $old_plugin_path;
         $this->dry_run = (bool) $dry_run;

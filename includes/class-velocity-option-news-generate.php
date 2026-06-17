@@ -32,7 +32,7 @@ class Velocity_Addons_News
     }
 
     // Mengambil data dari API
-    public static function fetch_post($item=null, $cat_id=null, $count=5) {
+    public static function fetch_post($item=null, $cat_id=null, int $count=5) {
         $license = new Velocity_Addons_License;
         $args = array(
             'headers' => $license->headers_api(),

@@ -251,8 +251,7 @@ class Velocity_Addons_Captcha
         echo '</div>';
     }
 
-    public function verify($gresponse = null)
-    {
+    public function verify(?string $gresponse = null) {
         if (!$this->active) {
             return ['success' => true, 'message' => 'Validasi captcha tidak aktif'];
         }
@@ -450,8 +449,7 @@ class Velocity_Addons_Captcha
         return $out;
     }
 
-    public function render_image($token = null)
-    {
+    public function render_image(?string $token = null) {
 
         while (ob_get_level()) {
             ob_end_clean();

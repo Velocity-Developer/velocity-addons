@@ -211,7 +211,7 @@ class Velocity_Addons_Statistic {
         ) );
     }
 
-    private function get_online_users_count($ttl = null) {
+    private function get_online_users_count(?int $ttl = null) {
         global $wpdb;
         $table = $this->online_sessions_table;
         if ( ! $this->table_exists($table) ) {
@@ -227,7 +227,7 @@ class Velocity_Addons_Statistic {
         return (int) $count;
     }
     
-    public function online_users_count($ttl = null) {
+    public function online_users_count(?int $ttl = null) {
         return $this->get_online_users_count($ttl);
     }
 
