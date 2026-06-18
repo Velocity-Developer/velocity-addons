@@ -304,7 +304,11 @@ class Velocity_Addons_News
                                     <select name="target" id="target" required>
                                         <option value="">Pilih Target</option>
                                         <?php foreach ($categories as $category) {
-                                            echo '<option value="' . $category['id'] . '">' . $category['name'] . '</option>';
+                                            //jika count = 0 skip
+                                            if ($category['count'] == 0) {
+                                                continue;
+                                            }
+                                            echo '<option value="' . $category['id'] . '">' . $category['name'] . ' (' . $category['count'] . ')</option>';
                                         } ?>
                                     </select>
                                 </div>
@@ -325,6 +329,7 @@ class Velocity_Addons_News
                                         'class' => 'postform',
                                         'hide_empty' => 0,
                                         'required' => 'required',
+                                        'show_count' => 1,
                                     ));
                                     ?>
                                 </div>
