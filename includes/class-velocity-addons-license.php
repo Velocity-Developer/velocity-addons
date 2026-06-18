@@ -42,6 +42,11 @@ class Velocity_Addons_License
                 'license' => $license_key,
                 'source' => parse_url(get_site_url(), PHP_URL_HOST),
             ),
+            'body' => array(
+                'wp_version'  => get_bloginfo('version'),
+                'php_version' => PHP_VERSION,
+                'velocity_addons_version' => (defined('VELOCITY_ADDONS_VERSION') ? VELOCITY_ADDONS_VERSION : 'unknown'),
+            ),
             'timeout'     => $timeout,
             'redirection' => 3,
             'sslverify'   => true,
