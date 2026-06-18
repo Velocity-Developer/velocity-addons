@@ -6,7 +6,7 @@ class Velocity_Addons_License
 
     public function __construct()
     {
-        $this->api_url = 'https://api.velocitydeveloper.id/wp-json/api/v1/license';
+        $this->api_url = 'https://api.velocitydeveloper.co/api/v1/license';
         $this->option_name = 'velocity_license';
 
         // Schedule a weekly check for license status
@@ -19,16 +19,17 @@ class Velocity_Addons_License
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
 
-    public function headers_api(){
+    public function headers_api()
+    {
         $opt = get_option($this->option_name);
         $license_key = is_array($opt) && isset($opt['key']) ? $opt['key'] : '';
         return [
             'Content-Type' => 'application/json',
-            'license_key' => $license_key,
+            'license' => $license_key,
             'source' => parse_url(get_site_url(), PHP_URL_HOST),
         ];
     }
-   
+
     private function send_request($license_key)
     {
         $timeout  = max(5, (int) apply_filters('velocity_addons_license_timeout', 20));
@@ -38,7 +39,7 @@ class Velocity_Addons_License
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
-                'license_key' => $license_key,
+                'license' => $license_key,
                 'source' => parse_url(get_site_url(), PHP_URL_HOST),
             ),
             'timeout'     => $timeout,
@@ -91,10 +92,10 @@ class Velocity_Addons_License
                 'message' => $message,
             );
         }
-    
+
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-    
+
         if (json_last_error() !== JSON_ERROR_NONE) {
             error_log('JSON Decode Error: ' . json_last_error_msg());
             return array(
@@ -102,11 +103,11 @@ class Velocity_Addons_License
                 'message' => 'Invalid response from license server.',
             );
         }
-    
+
         return $data;
     }
 
-    private function store_license_data($license_key,$status,$expire_date)
+    private function store_license_data($license_key, $status, $expire_date)
     {
         // Save license data in WordPress options
         $data = [
