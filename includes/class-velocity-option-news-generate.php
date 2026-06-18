@@ -14,8 +14,8 @@ class Velocity_Addons_News
 {
 
     // Properti statis
-    protected static $api_url = 'https://api.velocitydeveloper.id/wp-json/news/v1';
-    
+    protected static $api_url = 'https://api.velocitydeveloper.co/api/v1/news';
+
     public function __construct()
     {
         $news_generate = get_option('news_generate', '1');
@@ -27,22 +27,24 @@ class Velocity_Addons_News
     }
 
     // Fungsi statis untuk mengakses $api_url
-    public static function get_api_url() {
+    public static function get_api_url()
+    {
         return self::$api_url;  // Menggunakan self:: untuk mengakses properti statis
     }
 
     // Mengambil data dari API
-    public static function fetch_post($item=null, $cat_id=null, int $count=5) {
+    public static function fetch_post($item = null, $cat_id = null, int $count = 5)
+    {
         $license = new Velocity_Addons_License;
         $args = array(
             'headers' => $license->headers_api(),
         );
         $data = [
-            'cat='.$cat_id,
-            'number='.$count,
+            'category_id=' . $cat_id,
+            'post_per_page=' . $count,
         ];
-        $url = self::$api_url.'/'.$item.'?'.implode("&",$data);
-        
+        $url = self::$api_url . '/' . $item . '?' . implode("&", $data);
+
         $response = wp_remote_get($url, $args);
         if (is_wp_error($response)) {
             return array(
@@ -62,7 +64,8 @@ class Velocity_Addons_News
         return $decoded; // Mengembalikan data dalam bentuk array
     }
 
-    public static function fetch_category() {
+    public static function fetch_category()
+    {
         // Mengambil data dari transient cache
         $name_cache = 'vd_api_news_category';
         $cached_data = get_transient($name_cache);
@@ -72,8 +75,8 @@ class Velocity_Addons_News
             $args = array(
                 'headers' => $license->headers_api(),
             );
-            $url        = self::$api_url.'/cat';
-            
+            $url        = self::$api_url . '/categories';
+
             $response = wp_remote_get($url, $args);
             if (is_wp_error($response)) {
                 return array(
@@ -89,9 +92,9 @@ class Velocity_Addons_News
                     'message' => 'Invalid response from API.',
                 );
             }
-            
+
             // jika sukses Simpan data dalam transient selama 5 menit (300 detik)
-            if(isset($response['status']) && $response['status'] == true){
+            if (isset($response['status']) && $response['status'] == true) {
                 set_transient($name_cache, $response, 300); // 300 detik = 5 menit
             }
 
@@ -102,30 +105,32 @@ class Velocity_Addons_News
         return $cached_data;
     }
 
-    public static function fetch_news_scraper($target, $category, $count, $status) {
+    public static function fetch_news_scraper($target, $category, $count, $status)
+    {
         ob_start();
         // Mengambil kategori dan post
-        $get_datas = self::fetch_post('posts',$target, $count);
+        $get_datas = self::fetch_post('posts', $target, $count);
 
-        if(isset($get_datas['status']) && $get_datas['status'] == true ){
+        if (isset($get_datas['status']) && $get_datas['status'] == true) {
 
             $posts_datas = $get_datas['data'];
 
             // Mengatur jumlah menit yang ingin dikurangi
             $num_time = 1;
 
-            foreach($posts_datas as $posts_data):
+            foreach ($posts_datas as $posts_data):
                 $title = (string) $posts_data['title'];
                 $content = (string) $posts_data['content'];
                 $thumbnail = (string) $posts_data['thumb_url'] ?? '';
                 $thumbcaption = (string) $posts_data['thumb_caption'] ?? '';
                 $tags = (string) $posts_data['post_tag'] ?? '';
+                $excerpt = (string) $posts_data['excerpt'] ?? '';
 
-            // Mendapatkan waktu sekarang (local time) dikurangi 1 menit
-            $current_time = current_time('mysql');
-            $date = date('Y-m-d H:i:s', strtotime($current_time . " -{$num_time} minute"));
+                // Mendapatkan waktu sekarang (local time) dikurangi 1 menit
+                $current_time = current_time('mysql');
+                $date = date('Y-m-d H:i:s', strtotime($current_time . " -{$num_time} minute"));
 
-                echo self::save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date);
+                echo self::save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date, $excerpt);
 
                 $num_time++;
             endforeach;
@@ -137,17 +142,18 @@ class Velocity_Addons_News
                 $error_message = $get_datas;
             }
 
-            $btn = '<a href="'.esc_url(admin_url('admin.php?page=velocity_license_settings')).'" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
+            $btn = '<a href="' . esc_url(admin_url('admin.php?page=velocity_license_settings')) . '" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
             echo '<p><svg xmlns="XXXXXXXXXXXXXXXXXXXXXXXXXX" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
-                </svg> Gagal import! '.esc_html($error_message).($error_message === 'License Key is required' ? $btn : '').'</p>';
+                </svg> Gagal import! ' . esc_html($error_message) . ($error_message === 'License Key is required' ? $btn : '') . '</p>';
         }
 
         return ob_get_clean();
     }
 
     //fungsi cek posts by title
-    public static function cek_posts_by_title($title) {
+    public static function cek_posts_by_title($title)
+    {
         global $wpdb;
 
         // Prepare the SQL query
@@ -170,7 +176,8 @@ class Velocity_Addons_News
     }
 
     // Fungsi untuk menyimpan artikel sebagai post di WordPress
-    public static function save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date) {
+    public static function save_news_post($title, $content, $thumbnail, $thumbcaption, $category, $status, $tags, $date, $excerpt)
+    {
         ob_start();
         $existing_post_id = self::cek_posts_by_title($title);
         if ($existing_post_id) {
@@ -198,12 +205,13 @@ class Velocity_Addons_News
                 'post_date'     => $date,
                 'post_date_gmt' => get_gmt_from_date($date),
                 'tags_input'    => $tags,
+                'post_excerpt'  => $excerpt,
             );
 
             // Insert post ke dalam WordPress
             $post_id = wp_insert_post($post_data);
             // set category
-            if($category){
+            if ($category) {
                 wp_set_post_terms($post_id, $category, 'category');
             }
             // Jika ada thumbnail, set sebagai featured image
@@ -217,12 +225,12 @@ class Velocity_Addons_News
                 echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#51b20c" class="bi bi-check-circle" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                     <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
-                    </svg> Success import posts dengan judul: ' . esc_html(get_the_title($post_id)).'</p>';
+                    </svg> Success import posts dengan judul: ' . esc_html(get_the_title($post_id)) . '</p>';
             } else {
                 // Jika gagal, tampilkan pesan error
                 echo '<p><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#dd0000" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                     <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
-                    </svg> Gagal import post: ' . $post_id->get_error_message().'</p>';
+                    </svg> Gagal import post: ' . $post_id->get_error_message() . '</p>';
             }
         }
 
@@ -230,7 +238,8 @@ class Velocity_Addons_News
     }
 
     // Fungsi untuk menetapkan featured image dari URL
-    public static function set_featured_image_from_url($post_id, $image_url, $caption) {
+    public static function set_featured_image_from_url($post_id, $image_url, $caption)
+    {
         $upload_dir = wp_upload_dir();
         $image_data = file_get_contents($image_url);
         $filename = basename($image_url);
@@ -255,7 +264,7 @@ class Velocity_Addons_News
 
     public static function render_news_settings_page()
     {
-        ?>
+?>
         <div class="velocity-dashboard-wrapper">
             <div class="vd-header">
                 <h1 class="vd-title">News Scraper</h1>
@@ -271,8 +280,8 @@ class Velocity_Addons_News
                         <div class="vd-section-body">
                             <?php
                             $get_categories = self::fetch_category();
-                            if(isset($get_categories['status']) && $get_categories['status'] == true){
-                                $categories = $get_categories['data']??[];
+                            if (isset($get_categories['status']) && $get_categories['status'] == true) {
+                                $categories = $get_categories['data'] ?? [];
                             } else {
                                 if (is_array($get_categories) && isset($get_categories['message']) && is_scalar($get_categories['message'])) {
                                     $msg = (string) $get_categories['message'];
@@ -281,8 +290,8 @@ class Velocity_Addons_News
                                 } else {
                                     $msg = 'Gagal mengambil kategori.';
                                 }
-                                $btn = '<a href="'.esc_url(admin_url('admin.php?page=velocity_license_settings')).'" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
-                                echo '<p>'.esc_html($msg).($msg === 'License Key is required' ? $btn : '').'</p>';
+                                $btn = '<a href="' . esc_url(admin_url('admin.php?page=velocity_license_settings')) . '" class="button button-primary" style="margin-left:8px">Atur Lisensi</a>';
+                                echo '<p>' . esc_html($msg) . ($msg === 'License Key is required' ? $btn : '') . '</p>';
                                 $categories = [];
                             }
                             ?>
@@ -294,7 +303,9 @@ class Velocity_Addons_News
                                 <div class="vd-form-right">
                                     <select name="target" id="target" required>
                                         <option value="">Pilih Target</option>
-                                        <?php foreach($categories as $category){ echo '<option value="'.$category['id'].'">'.$category['name'].'</option>'; } ?>
+                                        <?php foreach ($categories as $category) {
+                                            echo '<option value="' . $category['id'] . '">' . $category['name'] . '</option>';
+                                        } ?>
                                     </select>
                                 </div>
                             </div>
@@ -324,7 +335,7 @@ class Velocity_Addons_News
                                     <small class="vd-form-hint">Jumlah artikel yang akan diimport.</small>
                                 </div>
                                 <div class="vd-form-right">
-                                    <input type="number" name="jml_target" id="jml_target" min="1" value="5" required/>
+                                    <input type="number" name="jml_target" id="jml_target" min="1" value="5" required />
                                 </div>
                             </div>
                             <div class="vd-form-group">
@@ -419,7 +430,7 @@ class Velocity_Addons_News
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
         </div>
-        <?php
+<?php
     }
 
     public function ajax_import_news()
