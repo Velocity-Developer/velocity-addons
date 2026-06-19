@@ -16,7 +16,7 @@
  * Plugin Name:       Velocity Addons
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Additional functionality for Velocitydeveloper clients
- * Version:           2.0.10
+ * Version:           2.1.0
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+
@@ -132,4 +132,3 @@ add_action('admin_init', function () {
         error_log('[velocity-addons] Legacy migrator output suppressed: ' . wp_strip_all_tags($buffer));
     }
 });
-
