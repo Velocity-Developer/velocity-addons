@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('VELOCITY_ADDONS_VERSION', '2.0.10');
+define('VELOCITY_ADDONS_VERSION', '2.1.0');
 define('VELOCITY_ADDONS_DB_VERSION', VELOCITY_ADDONS_VERSION);
 define('PLUGIN_DIR', plugin_dir_path(__DIR__));
 define('PLUGIN_FILE', plugin_basename(__FILE__));
