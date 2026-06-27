@@ -53,18 +53,6 @@ class Custom_Admin_Option_Page
             70
         );
 
-        $seo_velocity = get_option('seo_velocity', '1');
-        if ($seo_velocity == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'SEO',
-                'SEO',
-                'manage_options',
-                'velocity_seo_settings',
-                array($this, 'velocity_seo_page'),
-            );
-        }
-
         $floating_whatsapp = get_option('floating_whatsapp', '1');
         if ($floating_whatsapp == '1') {
             add_submenu_page(
@@ -74,26 +62,6 @@ class Custom_Admin_Option_Page
                 'manage_options',
                 'velocity_floating_whatsapp',
                 [$this, 'velocity_floating_whatsapp_page'],
-            );
-            add_submenu_page(
-                'admin_velocity_addons',
-                'WhatsApp Style',
-                'Style',
-                'manage_options',
-                'velocity_floating_whatsapp_style',
-                [$this, 'velocity_floating_whatsapp_page'],
-            );
-        }
-
-        $news_generate = get_option('news_generate', '1');
-        if ($news_generate == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Import Artikel',
-                'Import Artikel',
-                'manage_options',
-                'velocity_news_settings',
-                array($this, 'velocity_news_page'),
             );
         }
 
@@ -172,14 +140,6 @@ class Custom_Admin_Option_Page
                 'velocity_floating_whatsapp',
                 [$this, 'velocity_floating_whatsapp_page'],
             );
-            add_submenu_page(
-                'admin_velocity_addons',
-                'WhatsApp Style',
-                'Style',
-                'manage_options',
-                'velocity_floating_whatsapp_style',
-                [$this, 'velocity_floating_whatsapp_page'],
-            );
         }
 
         $velocity_duitku = get_option('velocity_duitku', '0');
@@ -216,6 +176,15 @@ class Custom_Admin_Option_Page
 
         add_submenu_page(
             'admin_velocity_addons',
+            'Optimize Database',
+            'Optimize',
+            'manage_options',
+            'velocity_optimize_db',
+            array($this, 'optimize_db_page_callback')
+        );
+
+        add_submenu_page(
+            'admin_velocity_addons',
             'License',
             'PRO',
             'manage_options',
@@ -231,42 +200,6 @@ class Custom_Admin_Option_Page
             'velocity_auto_resize_settings',
             array($this, 'velocity_auto_resize_page'),
         );
-
-        $seo_velocity = get_option('seo_velocity', '1');
-        if ($seo_velocity == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'SEO',
-                'SEO',
-                'manage_options',
-                'velocity_seo_settings',
-                array($this, 'velocity_seo_page'),
-            );
-        }
-
-        $news_generate = get_option('news_generate', '1');
-        if ($news_generate == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Import Artikel',
-                'Import Artikel',
-                'manage_options',
-                'velocity_news_settings',
-                array($this, 'velocity_news_page'),
-            );
-        }
-
-        $optimasi_velocity = get_option('velocity_optimasi', '0');
-        if ($optimasi_velocity == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Optimize Database',
-                'Optimasi',
-                'manage_options',
-                'velocity_optimize_db',
-                array($this, 'optimize_db_page_callback')
-            );
-        }
 
         $hidden_submenus = array(
             'velocity_seo_settings',

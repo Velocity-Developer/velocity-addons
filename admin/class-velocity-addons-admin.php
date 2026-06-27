@@ -252,8 +252,8 @@ class Velocity_Addons_Admin_Navigation
 				'label'    => 'Dashboard',
 				'children' => array(
 					array(
-						'page'  => 'velocity_auto_resize_settings',
-						'label' => 'Auto Resize',
+						'page'  => 'admin_velocity_addons',
+						'label' => 'Dashboard',
 					),
 					array(
 						'page'    => 'velocity_seo_settings',
@@ -273,6 +273,10 @@ class Velocity_Addons_Admin_Navigation
 					array(
 						'page'  => 'velocity_feature_settings',
 						'label' => 'Fitur',
+					),
+					array(
+						'page'  => 'velocity_auto_resize_settings',
+						'label' => 'Auto Resize',
 					),
 				),
 			),
