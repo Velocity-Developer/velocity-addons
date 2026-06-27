@@ -139,7 +139,11 @@ class Velocity_Addons_Admin
 			wp_script_add_data($actions_handle, 'defer', true);
 		}
 
-		if (in_array($page, array('velocity_snippet_settings', 'velocity_snippet_body_settings', 'velocity_snippet_footer_settings'), true)) {
+		$snippet_subs = array('script', 'body', 'footer');
+		$is_snippet_page = in_array($page, array('velocity_snippet_settings', 'velocity_snippet_body_settings', 'velocity_snippet_footer_settings'), true)
+			|| ($page === 'admin_velocity_addons' && isset($_GET['sub']) && in_array(sanitize_key(wp_unslash($_GET['sub'])), $snippet_subs, true));
+
+		if ($is_snippet_page) {
 			if (function_exists('wp_enqueue_code_editor')) {
 				$settings = function_exists('wp_code_editor_settings')
 					? wp_code_editor_settings(array(
@@ -263,7 +267,7 @@ class Velocity_Addons_Admin_Navigation
 				'children' => array(
 					array(
 						'page'  => 'velocity_snippet_settings',
-						'label' => 'Header',
+						'label' => 'Script',
 					),
 					array(
 						'page'  => 'velocity_snippet_body_settings',
@@ -373,10 +377,58 @@ class Velocity_Addons_Admin_Navigation
 		return '';
 	}
 
+	private static function get_admin_velocity_addons_sub_map()
+	{
+		return array(
+			'admin_velocity_addons' => 'dashboard',
+			'velocity_auto_resize_settings' => 'auto-resize',
+			'velocity_seo_settings' => 'seo',
+			'velocity_general_settings' => 'general',
+			'velocity_feature_settings' => 'fitur',
+			'velocity_security_settings' => 'security',
+			'velocity_captcha_settings' => 'captcha',
+			'velocity_maintenance_settings' => 'maintenance',
+			'velocity_snippet_settings' => 'script',
+			'velocity_snippet_body_settings' => 'body',
+			'velocity_snippet_footer_settings' => 'footer',
+			'velocity_floating_whatsapp' => 'whatsapp',
+			'velocity_floating_whatsapp_style' => 'whatsapp-style',
+			'velocity_duitku_settings' => 'duitku',
+			'velocity_statistics' => 'statistics',
+			'velocity_statistics_shortcode' => 'shortcode',
+			'velocity_optimize_db' => 'optimasi',
+			'velocity_license_settings' => 'license',
+			'velocity_news_settings' => 'import-artikel',
+		);
+	}
+
+	private static function get_admin_velocity_addons_page_map()
+	{
+		return array_flip(self::get_admin_velocity_addons_sub_map());
+	}
+
+	private static function get_menu_url($page)
+	{
+		$sub_map = self::get_admin_velocity_addons_sub_map();
+		if (isset($sub_map[$page])) {
+			return admin_url('admin.php?page=admin_velocity_addons&sub=' . $sub_map[$page]);
+		}
+
+		return admin_url('admin.php?page=' . $page);
+	}
+
 	public static function render($current_page = '')
 	{
 		if ($current_page === '') {
 			$current_page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+		}
+
+		if ($current_page === 'admin_velocity_addons' && isset($_GET['sub'])) {
+			$sub = sanitize_key(wp_unslash($_GET['sub']));
+			$page_map = self::get_admin_velocity_addons_page_map();
+			if (isset($page_map[$sub])) {
+				$current_page = $page_map[$sub];
+			}
 		}
 
 		$items = self::get_items();
@@ -438,7 +490,7 @@ class Velocity_Addons_Admin_Navigation
 				if (isset($child['enabled']) && !$child['enabled']) {
 					continue;
 				}
-				echo '<a class="velocity-subnav__link' . ($child['page'] === $current_page ? ' is-active' : '') . '" href="' . esc_url(admin_url('admin.php?page=' . $child['page'])) . '">' . esc_html($child['label']) . '</a>';
+				echo '<a class="velocity-subnav__link' . ($child['page'] === $current_page ? ' is-active' : '') . '" href="' . esc_url(self::get_menu_url($child['page'])) . '">' . esc_html($child['label']) . '</a>';
 			}
 			echo '</nav>';
 			echo '</div>';

@@ -169,7 +169,7 @@ class Custom_Admin_Option_Page
         add_submenu_page(
             'admin_velocity_addons',
             'Script Header',
-            'Header',
+            'Script',
             'manage_options',
             'velocity_snippet_settings',
             array($this, 'velocity_snippet_settings'),
@@ -249,9 +249,47 @@ class Custom_Admin_Option_Page
         Velocity_Addons_Duitku::render_settings_page();
     }
 
-    public function page_velocity_addons()
+    private function get_admin_velocity_addons_sub_pages()
+    {
+        return array(
+            'dashboard' => array($this, 'render_dashboard_page'),
+            'auto-resize' => array($this, 'velocity_auto_resize_page'),
+            'seo' => array($this, 'velocity_seo_page'),
+            'general' => array($this, 'velocity_general_page'),
+            'fitur' => array($this, 'velocity_feature_page'),
+            'security' => array($this, 'velocity_security_page'),
+            'captcha' => array($this, 'velocity_captcha_page'),
+            'maintenance' => array($this, 'velocity_maintenance_page'),
+            'script' => array($this, 'velocity_snippet_settings'),
+            'body' => array($this, 'velocity_snippet_settings'),
+            'footer' => array($this, 'velocity_snippet_settings'),
+            'whatsapp' => array($this, 'velocity_floating_whatsapp_page'),
+            'whatsapp-style' => array($this, 'velocity_floating_whatsapp_page'),
+            'duitku' => array($this, 'velocity_duitku_page'),
+            'statistics' => array($this, 'visitor_stats_page_callback'),
+            'shortcode' => array($this, 'visitor_stats_page_callback'),
+            'optimasi' => array($this, 'optimize_db_page_callback'),
+            'license' => array($this, 'velocity_license_page'),
+            'import-artikel' => array($this, 'velocity_news_page'),
+        );
+    }
+
+    public function render_dashboard_page()
     {
         Velocity_Addons_Dashboard::render_dashboard_page();
+    }
+
+    public function page_velocity_addons()
+    {
+        $sub = isset($_GET['sub']) ? sanitize_key(wp_unslash($_GET['sub'])) : 'dashboard';
+        $pages = $this->get_admin_velocity_addons_sub_pages();
+
+        if (isset($pages[$sub]) && is_callable($pages[$sub])) {
+            call_user_func($pages[$sub]);
+            return;
+        }
+
+        $this->render_dashboard_page();
     }
 
     public function register_settings()
@@ -1164,23 +1202,6 @@ class Custom_Admin_Option_Page
     </div>
     <div class="vd-section">
         <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Reset & Tools</h3>
-        </div>
-        <div class="vd-section-body">
-            <form method="post" style="display:inline;" id="velocity-statistics-reset-form">
-                <?php wp_nonce_field('reset_stats'); ?>
-                <input type="hidden" name="reset_stats" value="1">
-                <button type="submit" class="button button-secondary"
-                    id="velocity-statistics-reset-button"
-                    data-confirm-message="Apakah Anda yakin ingin me-reset statistik? Tindakan ini akan menghapus semua data statistik dan meta hit secara permanen.">
-                    Reset Statistik
-                </button>
-                <span style="vertical-align:middle;margin-left:10px;color:#666;font-size:13px;">Gunakan ini untuk mengosongkan seluruh data statistik</span>
-            </form>
-        </div>
-    </div>
-    <div class="vd-section">
-        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
             <h3 style="margin:0; font-size:1.1rem; color:#374151;">Ringkasan</h3>
         </div>
         <div class="vd-section-body">
@@ -1287,6 +1308,23 @@ class Custom_Admin_Option_Page
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+    <div class="vd-section">
+        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Reset & Tools</h3>
+        </div>
+        <div class="vd-section-body">
+            <form method="post" style="display:inline;" id="velocity-statistics-reset-form">
+                <?php wp_nonce_field('reset_stats'); ?>
+                <input type="hidden" name="reset_stats" value="1">
+                <button type="submit" class="button button-secondary"
+                    id="velocity-statistics-reset-button"
+                    data-confirm-message="Apakah Anda yakin ingin me-reset statistik? Tindakan ini akan menghapus semua data statistik dan meta hit secara permanen.">
+                    Reset Statistik
+                </button>
+                <span style="vertical-align:middle;margin-left:10px;color:#666;font-size:13px;">Gunakan ini untuk mengosongkan seluruh data statistik</span>
+            </form>
         </div>
     </div>
     <div class="vd-footer">
