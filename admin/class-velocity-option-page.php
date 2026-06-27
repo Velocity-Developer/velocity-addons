@@ -103,11 +103,19 @@ class Custom_Admin_Option_Page
 
         add_submenu_page(
             'admin_velocity_addons',
-            'Pengaturan Umum',
-            'Pengaturan Umum',
+            'General',
+            'General',
             'manage_options',
             'velocity_general_settings',
             array($this, 'velocity_general_page'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Pengaturan Fitur',
+            'Fitur',
+            'manage_options',
+            'velocity_feature_settings',
+            array($this, 'velocity_feature_page'),
         );
         add_submenu_page(
             'admin_velocity_addons',
@@ -544,7 +552,7 @@ class Custom_Admin_Option_Page
                 </div>
                 <div class="vd-section-body">
                     <ul class="vd-list">
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">Pengaturan Umum</a></li>
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">General</a></li>
                         <li><a href="<?php echo admin_url('admin.php?page=velocity_captcha_settings'); ?>">Captcha</a></li>
                         <li><a href="<?php echo admin_url('admin.php?page=velocity_maintenance_settings'); ?>">Maintenance Mode</a></li>
                         <li><a href="<?php echo admin_url('admin.php?page=velocity_license_settings'); ?>">License</a></li>
@@ -563,36 +571,49 @@ class Custom_Admin_Option_Page
     public function velocity_general_page()
     {
         if (!current_user_can('manage_options')) return;
+        $fields = [
+            ['id' => 'fully_disable_comment', 'type' => 'checkbox', 'title' => 'Disable Comment', 'std' => 1, 'label' => 'Nonaktifkan fitur komentar pada situs.'],
+            ['id' => 'hide_admin_notice', 'type' => 'checkbox', 'title' => 'Hide Admin Notice', 'std' => 0, 'label' => 'Sembunyikan pemberitahuan admin di halaman admin. Pemberitahuan admin seringkali muncul untuk memberikan informasi atau peringatan kepada admin situs.'],
+            ['id' => 'disable_gutenberg', 'type' => 'checkbox', 'title' => 'Disable Gutenberg', 'std' => 0, 'label' => 'Aktifkan editor klasik WordPress menggantikan Gutenberg.'],
+            ['id' => 'classic_widget_velocity', 'type' => 'checkbox', 'title' => 'Classic Widget', 'std' => 1, 'label' => 'Aktifkan widget klasik.'],
+            ['id' => 'enable_xml_sitemap', 'type' => 'checkbox', 'title' => 'XML Sitemap', 'std' => 1, 'label' => 'Aktifkan XML Sitemap Generator (sitemap.xml).'],
+            ['id' => 'floating_scrollTop', 'type' => 'checkbox', 'title' => 'Floating Scrolltop', 'std' => 1, 'label' => 'Aktifkan scrollTop ke halaman atas.'],
+            ['id' => 'remove_slug_category_velocity', 'type' => 'checkbox', 'title' => 'Remove Slug Category', 'std' => 0, 'label' => 'Aktifkan untuk hapus slug /category/ dari URL.'],
+        ];
+        $this->render_general_settings_section('velocity_general_settings', 'General', 'Pengaturan dasar situs dan perilaku WordPress.', $fields);
+    }
+
+    public function velocity_feature_page()
+    {
+        if (!current_user_can('manage_options')) return;
+        $fields = [
+            ['id' => 'seo_velocity', 'type' => 'checkbox', 'title' => 'SEO', 'std' => 1, 'label' => 'Aktifkan SEO dari Velocity Developer.'],
+            ['id' => 'statistik_velocity', 'type' => 'checkbox', 'title' => 'Statistik Pengunjung', 'std' => 1, 'label' => 'Aktifkan statistik pengunjung dari Velocity Developer.'],
+            ['id' => 'floating_whatsapp', 'type' => 'checkbox', 'title' => 'Floating Whatsapp', 'std' => 1, 'label' => 'Aktifkan Whatsapp Floating.'],
+            ['id' => 'news_generate', 'type' => 'checkbox', 'title' => 'Import Artikel dari API', 'std' => 1, 'label' => 'Aktifkan fungsi untuk import artikel postingan.'],
+            ['id' => 'velocity_gallery', 'type' => 'checkbox', 'title' => 'Gallery Post Type', 'std' => 0, 'label' => 'Aktifkan fungsi untuk menggunakan Gallery Post Type.'],
+            ['id' => 'velocity_optimasi', 'type' => 'checkbox', 'title' => 'Optimize Database', 'std' => 0, 'label' => 'Aktifkan fungsi untuk mengoptimalkan situs dari database.'],
+            ['id' => 'velocity_duitku', 'type' => 'checkbox', 'title' => 'Payment Gateway Duitku', 'std' => 0, 'label' => 'Aktifkan payment gateway Duitku.'],
+        ];
+        $this->render_general_settings_section('velocity_feature_settings', 'Pengaturan Fitur', 'Aktif/nonaktif fitur addon Velocity.', $fields);
+    }
+
+    private function render_general_settings_section($page_slug, $title, $subtitle, $fields)
+    {
     ?>
         <div class="velocity-dashboard-wrapper">
-            <?php Velocity_Addons_Admin_Navigation::render(); ?>
+            <?php Velocity_Addons_Admin_Navigation::render($page_slug); ?>
             <div class="vd-header">
-                <h1 class="vd-title">Pengaturan Umum</h1>
-                <p class="vd-subtitle">Pengaturan dasar fitur Velocity Addons.</p>
+                <h1 class="vd-title"><?php echo esc_html($title); ?></h1>
+                <p class="vd-subtitle"><?php echo esc_html($subtitle); ?></p>
             </div>
             <form id="velocity-general-form" method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Umum</h3>
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;"><?php echo esc_html($title); ?></h3>
                     </div>
                     <div class="vd-section-body">
                         <?php
-                        $fields = [
-                            ['id' => 'fully_disable_comment', 'type' => 'checkbox', 'title' => 'Disable Comment', 'std' => 1, 'label' => 'Nonaktifkan fitur komentar pada situs.'],
-                            ['id' => 'hide_admin_notice', 'type' => 'checkbox', 'title' => 'Hide Admin Notice', 'std' => 0, 'label' => 'Sembunyikan pemberitahuan admin di halaman admin. Pemberitahuan admin seringkali muncul untuk memberikan informasi atau peringatan kepada admin situs.'],
-                            ['id' => 'disable_gutenberg', 'type' => 'checkbox', 'title' => 'Disable Gutenberg', 'std' => 0, 'label' => 'Aktifkan editor klasik WordPress menggantikan Gutenberg.'],
-                            ['id' => 'classic_widget_velocity', 'type' => 'checkbox', 'title' => 'Classic Widget', 'std' => 1, 'label' => 'Aktifkan widget klasik.'],
-                            ['id' => 'enable_xml_sitemap', 'type' => 'checkbox', 'title' => 'XML Sitemap', 'std' => 1, 'label' => 'Aktifkan XML Sitemap Generator (sitemap.xml).'],
-                            ['id' => 'seo_velocity', 'type' => 'checkbox', 'title' => 'SEO', 'std' => 1, 'label' => 'Aktifkan SEO dari Velocity Developer.'],
-                            ['id' => 'statistik_velocity', 'type' => 'checkbox', 'title' => 'Statistik Pengunjung', 'std' => 1, 'label' => 'Aktifkan statistik pengunjung dari Velocity Developer.'],
-                            ['id' => 'floating_whatsapp', 'type' => 'checkbox', 'title' => 'Floating Whatsapp', 'std' => 1, 'label' => 'Aktifkan Whatsapp Floating.'],
-                            ['id' => 'floating_scrollTop', 'type' => 'checkbox', 'title' => 'Floating Scrolltop', 'std' => 1, 'label' => 'Aktifkan scrollTop ke halaman atas.'],
-                            ['id' => 'remove_slug_category_velocity', 'type' => 'checkbox', 'title' => 'Remove Slug Category', 'std' => 0, 'label' => 'Aktifkan untuk hapus slug /category/ dari URL.'],
-                            ['id' => 'news_generate', 'type' => 'checkbox', 'title' => 'Import Artikel dari API', 'std' => 1, 'label' => 'Aktifkan fungsi untuk import artikel postingan.'],
-                            ['id' => 'velocity_gallery', 'type' => 'checkbox', 'title' => 'Gallery Post Type', 'std' => 0, 'label' => 'Aktifkan fungsi untuk menggunakan Gallery Post Type.'],
-                            ['id' => 'velocity_optimasi', 'type' => 'checkbox', 'title' => 'Optimize Database', 'std' => 0, 'label' => 'Aktifkan fungsi untuk mengoptimalkan situs dari database.'],
-                            ['id' => 'velocity_duitku', 'type' => 'checkbox', 'title' => 'Payment Gateway Duitku', 'std' => 0, 'label' => 'Aktifkan payment gateway Duitku.'],
-                        ];
                         foreach ($fields as $data) {
                             $id   = $data['id'];
                             $std  = isset($data['std']) ? $data['std'] : '';
@@ -1059,6 +1080,7 @@ class Custom_Admin_Option_Page
 
     ?>
         <div class="velocity-dashboard-wrapper vd-ons" id="velocity-statistics-page">
+            <?php Velocity_Addons_Admin_Navigation::render('velocity_statistics'); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Statistik Pengunjung</h1>
                 <p class="vd-subtitle">Ringkasan trafik dan halaman populer situs.</p>

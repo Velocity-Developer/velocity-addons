@@ -156,6 +156,7 @@ class Velocity_Addons_Admin
 	{
 		return in_array($page, array(
 			'velocity_general_settings',
+			'velocity_feature_settings',
 			'velocity_captcha_settings',
 			'velocity_maintenance_settings',
 			'velocity_license_settings',
@@ -184,16 +185,48 @@ class Velocity_Addons_Admin_Navigation
 	{
 		$items = array(
 			array(
-				'page'  => 'admin_velocity_addons',
-				'label' => 'Dashboard',
+				'page'     => 'admin_velocity_addons',
+				'label'    => 'Dashboard',
+				'children' => array(
+					array(
+						'page'  => 'velocity_auto_resize_settings',
+						'label' => 'Auto Resize',
+					),
+					array(
+						'page'    => 'velocity_seo_settings',
+						'label'   => 'SEO',
+						'enabled' => get_option('seo_velocity', '1') === '1',
+					),
+				),
 			),
 			array(
-				'page'  => 'velocity_general_settings',
-				'label' => 'Umum',
+				'page'     => 'velocity_general_settings',
+				'label'    => 'General',
+				'children' => array(
+					array(
+						'page'  => 'velocity_general_settings',
+						'label' => 'General',
+					),
+					array(
+						'page'  => 'velocity_feature_settings',
+						'label' => 'Fitur',
+					),
+				),
 			),
 			array(
-				'page'  => 'velocity_license_settings',
-				'label' => 'License',
+				'page'     => 'velocity_license_settings',
+				'label'    => 'PRO',
+				'children' => array(
+					array(
+						'page'  => 'velocity_license_settings',
+						'label' => 'License',
+					),
+					array(
+						'page'    => 'velocity_news_settings',
+						'label'   => 'Import Artikel',
+						'enabled' => get_option('news_generate', '1') === '1',
+					),
+				),
 			),
 			array(
 				'page'     => 'velocity_security_settings',
@@ -210,27 +243,13 @@ class Velocity_Addons_Admin_Navigation
 				),
 			),
 			array(
-				'page'  => 'velocity_auto_resize_settings',
-				'label' => 'Auto Resize',
-			),
-			array(
 				'page'  => 'velocity_snippet_settings',
 				'label' => 'Snippet',
-			),
-			array(
-				'page'    => 'velocity_seo_settings',
-				'label'   => 'SEO',
-				'enabled' => get_option('seo_velocity', '1') === '1',
 			),
 			array(
 				'page'    => 'velocity_floating_whatsapp',
 				'label'   => 'WhatsApp',
 				'enabled' => get_option('floating_whatsapp', '1') === '1',
-			),
-			array(
-				'page'    => 'velocity_news_settings',
-				'label'   => 'Import Artikel',
-				'enabled' => get_option('news_generate', '1') === '1',
 			),
 			array(
 				'page'    => 'velocity_duitku_settings',
@@ -257,6 +276,23 @@ class Velocity_Addons_Admin_Navigation
 				}
 			)
 		);
+	}
+
+	private static function get_parent_page_slug($label)
+	{
+		if ($label === 'Security') {
+			return 'velocity_security_settings';
+		}
+
+		if ($label === 'Dashboard') {
+			return 'admin_velocity_addons';
+		}
+
+		if ($label === 'General') {
+			return 'velocity_general_settings';
+		}
+
+		return '';
 	}
 
 	public static function render($current_page = '')
@@ -304,11 +340,18 @@ class Velocity_Addons_Admin_Navigation
 		echo '</div>';
 
 		if (!empty($subnav_children)) {
+			$parent_page_slug = self::get_parent_page_slug($subnav_parent);
 			echo '<div class="velocity-subnav">';
 			echo '<div class="velocity-subnav__title">' . esc_html($subnav_parent) . '</div>';
 			echo '<nav class="velocity-subnav__links" aria-label="' . esc_attr($subnav_parent . ' Navigation') . '">';
+			if ($parent_page_slug !== '' && (empty($subnav_children[0]['page']) || $subnav_children[0]['page'] !== $parent_page_slug)) {
+				echo '<a class="velocity-subnav__link' . ($current_page === $parent_page_slug ? ' is-active' : '') . '" href="' . esc_url(admin_url('admin.php?page=' . $parent_page_slug)) . '">' . esc_html($subnav_parent) . '</a>';
+			}
 			foreach ($subnav_children as $child) {
 				if (empty($child['page']) || empty($child['label'])) {
+					continue;
+				}
+				if (isset($child['enabled']) && !$child['enabled']) {
 					continue;
 				}
 				echo '<a class="velocity-subnav__link' . ($child['page'] === $current_page ? ' is-active' : '') . '" href="' . esc_url(admin_url('admin.php?page=' . $child['page'])) . '">' . esc_html($child['label']) . '</a>';

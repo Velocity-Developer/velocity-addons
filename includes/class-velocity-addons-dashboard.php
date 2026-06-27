@@ -237,7 +237,7 @@ class Velocity_Addons_Dashboard
                 </div>
                 <div class="vd-section-body">
                     <ul class="vd-list">
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">Pengaturan Umum</a></li>
+                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">General</a></li>
                         <li><a href="<?php echo admin_url('admin.php?page=velocity_captcha_settings'); ?>">Captcha</a></li>
                         <li><a href="<?php echo admin_url('admin.php?page=velocity_maintenance_settings'); ?>">Maintenance Mode</a></li>
                         <li><a href="<?php echo admin_url('admin.php?page=velocity_license_settings'); ?>">License</a></li>
