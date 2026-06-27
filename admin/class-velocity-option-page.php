@@ -710,11 +710,13 @@ class Custom_Admin_Option_Page
             </form>
             <div class="vd-actions">
                 <button type="submit" class="button button-primary" form="velocity-general-form">Simpan Perubahan</button>
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                    <?php wp_nonce_field('velocity_reset_general_defaults'); ?>
-                    <input type="hidden" name="action" value="velocity_reset_general_defaults">
-                    <button type="submit" class="button">Set ke Default</button>
-                </form>
+                <?php if ($page_slug === 'velocity_general_settings') : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <?php wp_nonce_field('velocity_reset_general_defaults'); ?>
+                        <input type="hidden" name="action" value="velocity_reset_general_defaults">
+                        <button type="submit" class="button">Set ke Default</button>
+                    </form>
+                <?php endif; ?>
             </div>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>

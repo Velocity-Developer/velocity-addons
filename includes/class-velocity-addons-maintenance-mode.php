@@ -55,6 +55,9 @@ class Velocity_Addons_Maintenance_Mode
 
         $heading        = esc_html($hd);
         $body_content   = wpautop(wp_kses_post($bd));
+        $shell_background = $bg_url
+            ? "background-image: linear-gradient(rgba(255,255,255,.78), rgba(255,255,255,.88)), url('" . esc_url($bg_url) . "'); background-position: center; background-repeat: no-repeat; background-size: cover;"
+            : "background: #ffffff;";
 
         // Set Headers for 503 Service Unavailable
         if (!headers_sent()) {
@@ -102,7 +105,7 @@ class Velocity_Addons_Maintenance_Mode
                     align-items: center;
                     justify-content: center;
                     padding: 32px 20px;
-                    background: #ffffff;
+                    <?php echo $shell_background; ?>
                 }
 
                 .maintenance-card {
@@ -117,29 +120,69 @@ class Velocity_Addons_Maintenance_Mode
                 }
 
                 .maintenance-media {
-                    margin: 0 auto 28px;
-                    width: 88px;
-                    height: 88px;
-                    border-radius: 999px;
-                    border: 1px solid var(--maintenance-border);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: #ffffff;
-                    overflow: hidden;
+                    width: min(32vw, 150px);
+                    margin: 0 auto 24px;
+                    aspect-ratio: 1;
+                    display: grid;
+                    place-items: center;
                 }
 
-                .maintenance-media img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    display: block;
+                .maintenance-media .logo {
+                    width: 78%;
+                    overflow: visible;
+                    filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.32));
                 }
 
-                .maintenance-media svg {
-                    width: 36px;
-                    height: 36px;
-                    stroke: var(--maintenance-text);
+                .maintenance-media .ring-outer,
+                .maintenance-media .ring-inner,
+                .maintenance-media .bolt-shadow,
+                .maintenance-media .bolt-main {
+                    transform-box: fill-box;
+                    transform-origin: center;
+                }
+
+                .maintenance-media .ring-inner {
+                    opacity: 0;
+                    animation: inner-cycle 1.2s ease-out forwards;
+                }
+
+                .maintenance-media .ring-outer {
+                    opacity: 0;
+                    animation: outer-cycle 1.45s ease-out .12s forwards;
+                }
+
+                .maintenance-media .bolt-shadow,
+                .maintenance-media .bolt-main {
+                    transform-origin: center bottom;
+                }
+
+                .maintenance-media .bolt-shadow {
+                    opacity: 0;
+                    animation: shadow-cycle .56s cubic-bezier(.12, .84, .24, 1) .08s forwards;
+                }
+
+                .maintenance-media .bolt-main {
+                    opacity: 0;
+                    animation: main-cycle .56s cubic-bezier(.12, .84, .24, 1) .12s forwards;
+                }
+
+                .maintenance-media .speed-line {
+                    fill: none;
+                    stroke: #aefe22;
+                    stroke-width: 1.15;
+                    stroke-linecap: round;
+                    stroke-dasharray: 18;
+                    stroke-dashoffset: 18;
+                    opacity: 0;
+                    animation: speed-trail .42s linear .1s forwards;
+                }
+
+                .maintenance-media .speed-line.second {
+                    animation-delay: 0.1s;
+                }
+
+                .maintenance-media .speed-line.third {
+                    animation-delay: 0.16s;
                 }
 
                 .maintenance-card h1 {
@@ -191,6 +234,112 @@ class Velocity_Addons_Maintenance_Mode
                     transform: translateY(-1px);
                 }
 
+                @keyframes inner-cycle {
+                    0% {
+                        opacity: 0;
+                        transform: scale(0.3) rotate(-35deg);
+                    }
+
+                    72% {
+                        opacity: 1;
+                        transform: scale(1.08) rotate(2deg);
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes outer-cycle {
+
+                    0%,
+                    18% {
+                        opacity: 0;
+                        transform: scale(0.3) rotate(-35deg);
+                    }
+
+                    74% {
+                        opacity: 1;
+                        transform: scale(1.08) rotate(2deg);
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes shadow-cycle {
+
+                    0%,
+                    8% {
+                        opacity: 0;
+                        transform: translate(72px, -88px) scale(0.38, 0.72);
+                    }
+
+                    62% {
+                        opacity: 1;
+                        transform: translate(-2px, 3px) scale(1.03);
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: translate(0) scale(1);
+                    }
+                }
+
+                @keyframes main-cycle {
+
+                    0%,
+                    10% {
+                        opacity: 0;
+                        transform: translate(72px, -88px) scale(0.38, 0.72);
+                    }
+
+                    66% {
+                        opacity: 1;
+                        transform: translate(-2px, 3px) scale(1.03);
+                        filter: drop-shadow(0 0 9px rgba(190, 255, 32, 0.95));
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: translate(0) scale(1);
+                        filter: none;
+                    }
+                }
+
+                @keyframes speed-trail {
+
+                    0%,
+                    18% {
+                        opacity: 0;
+                        stroke-dashoffset: 18;
+                    }
+
+                    56% {
+                        opacity: 0.9;
+                    }
+
+                    100% {
+                        opacity: 0;
+                        stroke-dashoffset: -18;
+                    }
+                }
+
+                @keyframes float {
+
+                    0%,
+                    100% {
+                        transform: translateY(0);
+                    }
+
+                    50% {
+                        transform: translateY(-9px);
+                    }
+                }
+
                 @media (max-width: 640px) {
                     .maintenance-shell {
                         padding: 20px 14px;
@@ -201,9 +350,20 @@ class Velocity_Addons_Maintenance_Mode
                     }
 
                     .maintenance-media {
-                        width: 76px;
-                        height: 76px;
-                        margin-bottom: 22px;
+                        width: min(42vw, 120px);
+                        margin-bottom: 20px;
+                    }
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+
+                    .maintenance-media .logo,
+                    .maintenance-media .ring-outer,
+                    .maintenance-media .ring-inner,
+                    .maintenance-media .bolt-shadow,
+                    .maintenance-media .bolt-main,
+                    .maintenance-media .speed-line {
+                        animation: none !important;
                     }
                 }
             </style>
@@ -212,15 +372,34 @@ class Velocity_Addons_Maintenance_Mode
         <body>
             <div class="maintenance-shell">
                 <div class="maintenance-card">
-                    <div class="maintenance-media">
-                        <?php if ($bg_url) : ?>
-                            <img src="<?php echo esc_url($bg_url); ?>" alt="<?php echo esc_attr($heading); ?>">
-                        <?php else : ?>
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M12 6V12L15.5 15.5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke-width="1.75" />
-                            </svg>
-                        <?php endif; ?>
+                    <div class="maintenance-media" aria-hidden="true">
+                        <svg class="logo" viewBox="0 0 93.300247 107.21929" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="vd-blue" x1="82" y1="75" x2="113" y2="146" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#0b85ad" />
+                                    <stop offset=".45" stop-color="#04759f" />
+                                    <stop offset="1" stop-color="#061c42" />
+                                </linearGradient>
+                                <linearGradient id="vd-green" x1="120" y1="70" x2="76" y2="140" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#008c08" />
+                                    <stop offset="1" stop-color="#0b8f00" />
+                                </linearGradient>
+                                <linearGradient id="vd-lime" x1="126" y1="52" x2="78" y2="140" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#c9ff19" />
+                                    <stop offset=".48" stop-color="#adff1d" />
+                                    <stop offset="1" stop-color="#59cf2e" />
+                                </linearGradient>
+                            </defs>
+                            <g transform="translate(-49.06732 -47.742905)">
+                                <path class="ring-outer" fill="url(#vd-blue)" d="M95.7177 61.661952a46.65 46.65 0 1 0 0 93.300248 46.65 46.65 0 0 0 0-93.300248Zm0 10.20041a37.05 36.45 0 1 1 0 72.899938 37.05 36.45 0 0 1 0-72.899938Z" />
+                                <path class="ring-inner" fill="url(#vd-blue)" d="M84.317601 93.352764a27.55924 27.55924 0 1 0 0 55.118626 27.55924 27.55924 0 0 0 0-55.118626Zm0 6.026046a21.887887 21.533426 0 1 1 0 43.06683 21.887887 21.533426 0 0 1 0-43.06683Z" />
+                                <path class="speed-line" d="m151 39-21 24" />
+                                <path class="speed-line second" d="m157 53-18 20" />
+                                <path class="speed-line third" d="m143 34-15 17" />
+                                <path class="bolt-shadow" fill="url(#vd-green)" d="m102.0894 70.232492 39.6875-.52917-66.93958 70.643748Z" />
+                                <path class="bolt-main" fill="url(#vd-lime)" d="m98.64982 56.209572 34.39583-8.466667-58.20833 92.604165Z" />
+                            </g>
+                        </svg>
                     </div>
                     <h1><?php echo $heading; ?></h1>
                     <div class="content">
