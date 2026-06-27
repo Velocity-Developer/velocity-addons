@@ -54,14 +54,6 @@ class Velocity_Addons_Admin_Optimize_REST
 
     public function get_optimize_db_stats()
     {
-        if (get_option('velocity_optimasi', '0') !== '1') {
-            return new WP_Error(
-                'velocity_optimize_disabled',
-                __('Optimize Database feature is disabled.', 'velocity-addons'),
-                array('status' => 400)
-            );
-        }
-
         return rest_ensure_response(
             array(
                 'success' => true,
@@ -72,14 +64,6 @@ class Velocity_Addons_Admin_Optimize_REST
 
     public function run_optimize_db(WP_REST_Request $request)
     {
-        if (get_option('velocity_optimasi', '0') !== '1') {
-            return new WP_Error(
-                'velocity_optimize_disabled',
-                __('Optimize Database feature is disabled.', 'velocity-addons'),
-                array('status' => 400)
-            );
-        }
-
         $payload = $request->get_json_params();
         if (!is_array($payload)) {
             $payload = $request->get_params();

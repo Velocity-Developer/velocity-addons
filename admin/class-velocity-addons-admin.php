@@ -348,6 +348,16 @@ class Velocity_Addons_Admin_Navigation
 				),
 			),
 			array(
+				'page'     => 'velocity_optimize_db',
+				'label'    => 'Optimize',
+				'children' => array(
+					array(
+						'page'  => 'velocity_optimize_db',
+						'label' => 'Optimize Database',
+					),
+				),
+			),
+			array(
 				'page'     => 'velocity_license_settings',
 				'label'    => 'PRO',
 				'badge'    => self::get_license_badge(),
