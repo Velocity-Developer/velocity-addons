@@ -418,7 +418,13 @@ class Velocity_Addons_Admin_Navigation
 				$subnav_children = $children;
 			}
 
-			echo '<a class="velocity-topnav__link' . ($is_active ? ' is-active' : '') . '" href="' . esc_url(admin_url('admin.php?page=' . $item['page'])) . '">' . esc_html($item['label']) . '</a>';
+			echo '<a class="velocity-topnav__link' . ($is_active ? ' is-active' : '') . '" href="' . esc_url(admin_url('admin.php?page=' . $item['page'])) . '">' . esc_html($item['label']);
+			if (!empty($item['badge'])) {
+				$badge = $item['badge'];
+				$bstyle = 'display:inline-flex;align-items:center;background:' . (isset($badge['bg']) ? esc_attr($badge['bg']) : '#555') . ';color:#fff;border-radius:9999px;font-size:10px;font-weight:700;line-height:1;padding:3px 7px;margin-left:8px;text-transform:uppercase;letter-spacing:.5px;';
+				echo '<span class="velocity-topnav__badge" style="' . esc_attr($bstyle) . '">' . esc_html(isset($badge['label']) ? $badge['label'] : '') . '</span>';
+			}
+			echo '</a>';
 		}
 
 		echo '</nav>';

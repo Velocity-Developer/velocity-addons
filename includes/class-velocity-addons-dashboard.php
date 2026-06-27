@@ -217,28 +217,6 @@ class Velocity_Addons_Dashboard
                 </div>
             </div>
 
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Quick Links</h3>
-                </div>
-                <div class="vd-section-body">
-                    <ul class="vd-list">
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">General</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_captcha_settings'); ?>">Captcha</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_maintenance_settings'); ?>">Maintenance Mode</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_license_settings'); ?>">License</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_security_settings'); ?>">Security</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_auto_resize_settings'); ?>">Auto Resize</a></li>
-                        <?php if (get_option('statistik_velocity', '1') === '1'): ?>
-                            <li><a href="<?php echo admin_url('admin.php?page=velocity_statistics'); ?>">Statistik Pengunjung</a></li>
-                        <?php endif; ?>
-                        <?php if (get_option('velocity_optimasi', '0') === '1'): ?>
-                            <li><a href="<?php echo admin_url('admin.php?page=velocity_optimize_db'); ?>">Optimize Database</a></li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-            </div>
-
             <script>
                 window.velocityDashboardData = {
                     labels: <?php echo json_encode($labels); ?>,

@@ -574,21 +574,6 @@ class Custom_Admin_Option_Page
         unset($pages_tabs['umum']);
 ?>
         <div class="velocity-dashboard-wrapper vd-ons">
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Quick Links</h3>
-                </div>
-                <div class="vd-section-body">
-                    <ul class="vd-list">
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">General</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_captcha_settings'); ?>">Captcha</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_maintenance_settings'); ?>">Maintenance Mode</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_license_settings'); ?>">License</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_security_settings'); ?>">Security</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_auto_resize_settings'); ?>">Auto Resize</a></li>
-                    </ul>
-                </div>
-            </div>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
