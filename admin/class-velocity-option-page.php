@@ -168,7 +168,7 @@ class Custom_Admin_Option_Page
 
         add_submenu_page(
             'admin_velocity_addons',
-            'Snippet Header',
+            'Script Header',
             'Header',
             'manage_options',
             'velocity_snippet_settings',
@@ -184,7 +184,7 @@ class Custom_Admin_Option_Page
         );
         add_submenu_page(
             'admin_velocity_addons',
-            'Snippet Footer',
+            'Script Footer',
             'Footer',
             'manage_options',
             'velocity_snippet_footer_settings',

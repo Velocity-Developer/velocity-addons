@@ -81,16 +81,7 @@ class Velocity_Addons_Dashboard
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
 
-            <div class="vd-section" style="margin-top:-10px">
-                <div class="vd-section-body" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                    <?php if ($license_active): ?>
-                        <span style="display:inline-flex;align-items:center;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;border-radius:9999px;padding:6px 10px;font-size:12px;font-weight:600">License Verified<?php echo $license_exp ? ' • Exp: ' . esc_html($license_exp) : ''; ?></span>
-                    <?php else: ?>
-                        <span style="display:inline-flex;align-items:center;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:9999px;padding:6px 10px;font-size:12px;font-weight:600">License belum diaktifkan</span>
-                        <a class="button button-primary" href="<?php echo esc_url(admin_url('admin.php?page=velocity_license_settings')); ?>">Atur Lisensi</a>
-                    <?php endif; ?>
-                </div>
-            </div>
+            
 
             <div class="vd-grid">
                 <!-- Post Card -->

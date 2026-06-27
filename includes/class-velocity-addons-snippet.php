@@ -58,17 +58,17 @@ class Velocity_Addons_Snippet
         $field_map = [
             'velocity_snippet_settings' => [
                 'id'    => 'header_snippet',
-                'title' => 'Header Snippet',
+                'title' => 'Header Script',
                 'label' => 'Kode ditempatkan di dalam <head>.',
             ],
             'velocity_snippet_body_settings' => [
                 'id'    => 'body_snippet',
-                'title' => 'Body Snippet',
+                'title' => 'Body Script',
                 'label' => 'Kode ditempatkan tepat setelah tag pembuka <body>.',
             ],
             'velocity_snippet_footer_settings' => [
                 'id'    => 'footer_snippet',
-                'title' => 'Footer Snippet',
+                'title' => 'Footer Script',
                 'label' => 'Kode ditempatkan sebelum tag penutup </body>.',
             ],
         ];
@@ -84,15 +84,11 @@ class Velocity_Addons_Snippet
                         <h3 style="margin:0; font-size:1.1rem; color:#374151;"><?php echo esc_html($field['title']); ?></h3>
                     </div>
                     <div class="vd-section-body">
-                        <div class="vd-form-group">
-                            <div class="vd-form-left">
-                                <label class="vd-form-label" for="<?php echo esc_attr($field['id']); ?>"><?php echo esc_html($field['title']); ?></label>
-                                <small class="vd-form-hint"><?php echo esc_html($field['label']); ?></small>
-                            </div>
-                            <div class="vd-form-right">
-                                <textarea class="large-text code" id="<?php echo esc_attr($field['id']); ?>" name="<?php echo esc_attr($field['id']); ?>" rows="10" cols="40"><?php echo esc_textarea($val); ?></textarea>
-                            </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <label class="vd-form-label" for="<?php echo esc_attr($field['id']); ?>"><?php echo esc_html($field['title']); ?></label>
+                            <small class="vd-form-hint" style="display:block;margin-top:0.25rem;"><?php echo esc_html($field['label']); ?></small>
                         </div>
+                        <textarea class="large-text code" id="<?php echo esc_attr($field['id']); ?>" name="<?php echo esc_attr($field['id']); ?>" rows="12" cols="40"><?php echo esc_textarea($val); ?></textarea>
                     </div>
                 </div>
                 <?php submit_button(); ?>

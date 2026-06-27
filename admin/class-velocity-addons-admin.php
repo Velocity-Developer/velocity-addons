@@ -251,21 +251,6 @@ class Velocity_Addons_Admin_Navigation
 				),
 			),
 			array(
-				'page'     => 'velocity_license_settings',
-				'label'    => 'PRO',
-				'children' => array(
-					array(
-						'page'  => 'velocity_license_settings',
-						'label' => 'License',
-					),
-					array(
-						'page'    => 'velocity_news_settings',
-						'label'   => 'Import Artikel',
-						'enabled' => get_option('news_generate', '1') === '1',
-					),
-				),
-			),
-			array(
 				'page'     => 'velocity_security_settings',
 				'label'    => 'Security',
 				'children' => array(
@@ -281,7 +266,7 @@ class Velocity_Addons_Admin_Navigation
 			),
 			array(
 				'page'     => 'velocity_snippet_settings',
-				'label'    => 'Snippet',
+				'label'    => 'Script',
 				'children' => array(
 					array(
 						'page'  => 'velocity_snippet_settings',
@@ -337,6 +322,22 @@ class Velocity_Addons_Admin_Navigation
 				'label'   => 'Optimasi',
 				'enabled' => get_option('velocity_optimasi', '0') === '1',
 			),
+			array(
+				'page'     => 'velocity_license_settings',
+				'label'    => 'PRO',
+				'badge'    => self::get_license_badge(),
+				'children' => array(
+					array(
+						'page'  => 'velocity_license_settings',
+						'label' => 'License',
+					),
+					array(
+						'page'    => 'velocity_news_settings',
+						'label'   => 'Import Artikel',
+						'enabled' => get_option('news_generate', '1') === '1',
+					),
+				),
+			),
 		);
 
 		return array_values(
@@ -346,6 +347,19 @@ class Velocity_Addons_Admin_Navigation
 					return !isset($item['enabled']) || $item['enabled'];
 				}
 			)
+		);
+	}
+
+	private static function get_license_badge()
+	{
+		$opt          = get_option('velocity_license');
+		$is_active    = is_array($opt) && isset($opt['status']) && $opt['status'] === 'active';
+		$label        = $is_active ? 'Active' : 'Inactive';
+		$bg           = $is_active ? '#16a34a' : '#dc2626';
+
+		return array(
+			'label' => $label,
+			'bg'    => $bg,
 		);
 	}
 
