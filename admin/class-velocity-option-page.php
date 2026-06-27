@@ -70,7 +70,7 @@ class Custom_Admin_Option_Page
             add_submenu_page(
                 'admin_velocity_addons',
                 'WhatsApp General',
-                'General',
+                'WhatsApp',
                 'manage_options',
                 'velocity_floating_whatsapp',
                 [$this, 'velocity_floating_whatsapp_page'],
@@ -97,18 +97,6 @@ class Custom_Admin_Option_Page
             );
         }
 
-        $velocity_duitku = get_option('velocity_duitku', '0');
-        if ($velocity_duitku == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Duitku',
-                'Duitku',
-                'manage_options',
-                'velocity_duitku_settings',
-                array($this, 'velocity_duitku_page'),
-            );
-        }
-
         add_submenu_page(
             'admin_velocity_addons',
             'General',
@@ -127,6 +115,14 @@ class Custom_Admin_Option_Page
         );
         add_submenu_page(
             'admin_velocity_addons',
+            'Security',
+            'Security',
+            'manage_options',
+            'velocity_security_settings',
+            array($this, 'velocity_security_page'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
             'Captcha',
             'Captcha',
             'manage_options',
@@ -136,36 +132,11 @@ class Custom_Admin_Option_Page
         add_submenu_page(
             'admin_velocity_addons',
             'Maintenance Mode',
-            'Maintenance Mode',
+            'Maintenance',
             'manage_options',
             'velocity_maintenance_settings',
             array($this, 'velocity_maintenance_page'),
         );
-        add_submenu_page(
-            'admin_velocity_addons',
-            'License',
-            'License',
-            'manage_options',
-            'velocity_license_settings',
-            array($this, 'velocity_license_page'),
-        );
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Security',
-            'Security',
-            'manage_options',
-            'velocity_security_settings',
-            array($this, 'velocity_security_page'),
-        );
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Auto Resize',
-            'Auto Resize',
-            'manage_options',
-            'velocity_auto_resize_settings',
-            array($this, 'velocity_auto_resize_page'),
-        );
-
         add_submenu_page(
             'admin_velocity_addons',
             'Script Header',
@@ -191,12 +162,44 @@ class Custom_Admin_Option_Page
             array($this, 'velocity_snippet_settings'),
         );
 
+        $floating_whatsapp = get_option('floating_whatsapp', '1');
+        if ($floating_whatsapp == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'WhatsApp General',
+                'WhatsApp',
+                'manage_options',
+                'velocity_floating_whatsapp',
+                [$this, 'velocity_floating_whatsapp_page'],
+            );
+            add_submenu_page(
+                'admin_velocity_addons',
+                'WhatsApp Style',
+                'Style',
+                'manage_options',
+                'velocity_floating_whatsapp_style',
+                [$this, 'velocity_floating_whatsapp_page'],
+            );
+        }
+
+        $velocity_duitku = get_option('velocity_duitku', '0');
+        if ($velocity_duitku == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Duitku',
+                'Duitku',
+                'manage_options',
+                'velocity_duitku_settings',
+                array($this, 'velocity_duitku_page'),
+            );
+        }
+
         $statistik_velocity = get_option('statistik_velocity', '1');
         if ($statistik_velocity == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
                 'Statistic',
-                'Statistic',
+                'Statistics',
                 'manage_options',
                 'velocity_statistics',
                 array($this, 'visitor_stats_page_callback')
@@ -211,16 +214,75 @@ class Custom_Admin_Option_Page
             );
         }
 
+        add_submenu_page(
+            'admin_velocity_addons',
+            'License',
+            'PRO',
+            'manage_options',
+            'velocity_license_settings',
+            array($this, 'velocity_license_page'),
+        );
+
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Auto Resize',
+            'Auto Resize',
+            'manage_options',
+            'velocity_auto_resize_settings',
+            array($this, 'velocity_auto_resize_page'),
+        );
+
+        $seo_velocity = get_option('seo_velocity', '1');
+        if ($seo_velocity == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'SEO',
+                'SEO',
+                'manage_options',
+                'velocity_seo_settings',
+                array($this, 'velocity_seo_page'),
+            );
+        }
+
+        $news_generate = get_option('news_generate', '1');
+        if ($news_generate == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Import Artikel',
+                'Import Artikel',
+                'manage_options',
+                'velocity_news_settings',
+                array($this, 'velocity_news_page'),
+            );
+        }
+
         $optimasi_velocity = get_option('velocity_optimasi', '0');
         if ($optimasi_velocity == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
                 'Optimize Database',
-                'Optimize Database',
+                'Optimasi',
                 'manage_options',
                 'velocity_optimize_db',
                 array($this, 'optimize_db_page_callback')
             );
+        }
+
+        $hidden_submenus = array(
+            'velocity_seo_settings',
+            'velocity_news_settings',
+            'velocity_feature_settings',
+            'velocity_captcha_settings',
+            'velocity_maintenance_settings',
+            'velocity_auto_resize_settings',
+            'velocity_snippet_body_settings',
+            'velocity_snippet_footer_settings',
+            'velocity_floating_whatsapp_style',
+            'velocity_statistics_shortcode',
+        );
+
+        foreach ($hidden_submenus as $submenu_slug) {
+            remove_submenu_page('admin_velocity_addons', $submenu_slug);
         }
     }
 

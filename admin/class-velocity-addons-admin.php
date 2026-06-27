@@ -344,11 +344,6 @@ class Velocity_Addons_Admin_Navigation
 				),
 			),
 			array(
-				'page'    => 'velocity_optimize_db',
-				'label'   => 'Optimasi',
-				'enabled' => get_option('velocity_optimasi', '0') === '1',
-			),
-			array(
 				'page'     => 'velocity_license_settings',
 				'label'    => 'PRO',
 				'badge'    => self::get_license_badge(),
