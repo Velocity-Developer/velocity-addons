@@ -20,7 +20,8 @@
  * @subpackage Velocity_Addons/admin
  * @author     Velocity <bantuanvelocity@gmail.com>
  */
-class Velocity_Addons_Admin {
+class Velocity_Addons_Admin
+{
 
 	/**
 	 * The ID of this plugin.
@@ -47,11 +48,11 @@ class Velocity_Addons_Admin {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct($plugin_name, $version)
+	{
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-
 	}
 
 	/**
@@ -59,25 +60,13 @@ class Velocity_Addons_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles()
+	{
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Velocity_Addons_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Velocity_Addons_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/velocity-addons-admin.css', array(), $this->version, 'all');
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/velocity-addons-admin.css', array(), $this->version, 'all' );
-
-        // Enqueue Chart.js
-        wp_enqueue_script( 'chart-js', 'https://cdn.jsdelivr.net/npm/chart.js', array(), '4.4.1', true );
-
+		// Enqueue Chart.js
+		wp_enqueue_script('chart-js', 'https://cdn.jsdelivr.net/npm/chart.js', array(), '4.4.1', true);
 	}
 
 	/**
@@ -85,33 +74,22 @@ class Velocity_Addons_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts()
+	{
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Velocity_Addons_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Velocity_Addons_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/velocity-addons-admin.js', array('jquery'), $this->version, false);
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/velocity-addons-admin.js', array( 'jquery' ), $this->version, false );
+		$page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
 
-		$page = isset($_GET['page']) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-
-		if ( $this->is_velocity_settings_page( $page ) ) {
+		if ($this->is_velocity_settings_page($page)) {
 			$settings_handle = 'velocity-addons-settings-bridge';
 			$alpine_handle   = 'alpinejs';
-			$settings_path   = plugin_dir_path( __FILE__ ) . 'js/velocity-addons-settings.js';
-			$settings_ver    = file_exists( $settings_path ) ? (string) filemtime( $settings_path ) : $this->version;
+			$settings_path   = plugin_dir_path(__FILE__) . 'js/velocity-addons-settings.js';
+			$settings_ver    = file_exists($settings_path) ? (string) filemtime($settings_path) : $this->version;
 
 			wp_enqueue_script(
 				$settings_handle,
-				plugin_dir_url( __FILE__ ) . 'js/velocity-addons-settings.js',
+				plugin_dir_url(__FILE__) . 'js/velocity-addons-settings.js',
 				array(),
 				$settings_ver,
 				true
@@ -120,31 +98,31 @@ class Velocity_Addons_Admin {
 				$settings_handle,
 				'velocitySettingsConfig',
 				array(
-					'restBase' => esc_url_raw( rest_url( 'velocity-addons/v1' ) ),
-					'nonce'    => wp_create_nonce( 'wp_rest' ),
+					'restBase' => esc_url_raw(rest_url('velocity-addons/v1')),
+					'nonce'    => wp_create_nonce('wp_rest'),
 					'page'     => $page,
 				)
 			);
-			wp_script_add_data( $settings_handle, 'defer', true );
+			wp_script_add_data($settings_handle, 'defer', true);
 
 			wp_enqueue_script(
 				$alpine_handle,
 				'https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js',
-				array( $settings_handle ),
+				array($settings_handle),
 				'3.14.8',
 				true
 			);
-			wp_script_add_data( $alpine_handle, 'defer', true );
+			wp_script_add_data($alpine_handle, 'defer', true);
 		}
 
-		if ( $this->is_velocity_rest_action_page( $page ) ) {
+		if ($this->is_velocity_rest_action_page($page)) {
 			$actions_handle = 'velocity-addons-admin-actions';
-			$actions_path   = plugin_dir_path( __FILE__ ) . 'js/velocity-addons-admin-actions.js';
-			$actions_ver    = file_exists( $actions_path ) ? (string) filemtime( $actions_path ) : $this->version;
+			$actions_path   = plugin_dir_path(__FILE__) . 'js/velocity-addons-admin-actions.js';
+			$actions_ver    = file_exists($actions_path) ? (string) filemtime($actions_path) : $this->version;
 
 			wp_enqueue_script(
 				$actions_handle,
-				plugin_dir_url( __FILE__ ) . 'js/velocity-addons-admin-actions.js',
+				plugin_dir_url(__FILE__) . 'js/velocity-addons-admin-actions.js',
 				array(),
 				$actions_ver,
 				true
@@ -153,30 +131,46 @@ class Velocity_Addons_Admin {
 				$actions_handle,
 				'velocitySettingsConfig',
 				array(
-					'restBase' => esc_url_raw( rest_url( 'velocity-addons/v1' ) ),
-					'nonce'    => wp_create_nonce( 'wp_rest' ),
+					'restBase' => esc_url_raw(rest_url('velocity-addons/v1')),
+					'nonce'    => wp_create_nonce('wp_rest'),
 					'page'     => $page,
 				)
 			);
-			wp_script_add_data( $actions_handle, 'defer', true );
+			wp_script_add_data($actions_handle, 'defer', true);
+		}
+
+		if ($this->is_velocity_admin_page($page)) {
+			wp_localize_script(
+				$this->plugin_name,
+				'velocityAdminNavConfig',
+				array(
+					'page'  => $page,
+					'items' => $this->get_velocity_admin_nav_items(),
+				)
+			);
 		}
 
 		if ($page == 'admin_velocity_addons') {
-			
-			if (file_exists(get_template_directory() . '/js/theme.min.js')) {            
-				$the_theme     	= wp_get_theme();
-				$theme_version 	= $the_theme->get( 'Version' );
-				wp_enqueue_style( 'justg-styles', get_template_directory_uri() . '/css/theme.min.css', array(), $theme_version );
-				wp_enqueue_script( 'justg-scripts', get_template_directory_uri() . '/js/theme.min.js', array(), $theme_version, true );
-				wp_enqueue_script( 'chartjs-scripts', 'https://cdn.jsdelivr.net/npm/chart.js', array( 'jquery' ), $this->version, false );
+			if (file_exists(get_template_directory() . '/js/theme.min.js')) {
+				$the_theme     = wp_get_theme();
+				$theme_version = $the_theme->get('Version');
+				wp_enqueue_style('justg-styles', get_template_directory_uri() . '/css/theme.min.css', array(), $theme_version);
+				wp_enqueue_script('justg-scripts', get_template_directory_uri() . '/js/theme.min.js', array(), $theme_version, true);
+				wp_enqueue_script('chartjs-scripts', 'https://cdn.jsdelivr.net/npm/chart.js', array('jquery'), $this->version, false);
 			}
 
-			wp_enqueue_script( array( 'jquery','jquery-ui-datepicker','jquery-ui-tooltip' ) );
+			wp_enqueue_script(array('jquery', 'jquery-ui-datepicker', 'jquery-ui-tooltip'));
 		}
 	}
 
-	private function is_velocity_settings_page( $page ) {
-		$pages = array(
+	private function is_velocity_admin_page($page)
+	{
+		return in_array($page, array_merge(array('admin_velocity_addons'), $this->get_velocity_settings_pages(), $this->get_velocity_rest_action_pages()), true);
+	}
+
+	private function get_velocity_settings_pages()
+	{
+		return array(
 			'velocity_general_settings',
 			'velocity_captcha_settings',
 			'velocity_maintenance_settings',
@@ -187,18 +181,104 @@ class Velocity_Addons_Admin {
 			'velocity_floating_whatsapp',
 			'velocity_snippet_settings',
 			'velocity_duitku_settings',
+			'velocity_news_settings',
 		);
-
-		return in_array( $page, $pages, true );
 	}
 
-	private function is_velocity_rest_action_page( $page ) {
-		$pages = array(
+	private function get_velocity_rest_action_pages()
+	{
+		return array(
 			'velocity_statistics',
 			'velocity_optimize_db',
 		);
-
-		return in_array( $page, $pages, true );
 	}
 
+	private function get_velocity_admin_nav_items()
+	{
+		$items = array(
+			array(
+				'page'  => 'admin_velocity_addons',
+				'label' => 'Dashboard',
+			),
+			array(
+				'page'  => 'velocity_general_settings',
+				'label' => 'Umum',
+			),
+			array(
+				'page'  => 'velocity_license_settings',
+				'label' => 'License',
+			),
+			array(
+				'page'     => 'velocity_security_settings',
+				'label'    => 'Security',
+				'children' => array(
+					array(
+						'page'  => 'velocity_captcha_settings',
+						'label' => 'Captcha',
+					),
+					array(
+						'page'  => 'velocity_maintenance_settings',
+						'label' => 'Maintenance',
+					),
+				),
+			),
+			array(
+				'page'  => 'velocity_auto_resize_settings',
+				'label' => 'Auto Resize',
+			),
+			array(
+				'page'  => 'velocity_snippet_settings',
+				'label' => 'Snippet',
+			),
+			array(
+				'page'    => 'velocity_seo_settings',
+				'label'   => 'SEO',
+				'enabled' => get_option('seo_velocity', '1') === '1',
+			),
+			array(
+				'page'    => 'velocity_floating_whatsapp',
+				'label'   => 'WhatsApp',
+				'enabled' => get_option('floating_whatsapp', '1') === '1',
+			),
+			array(
+				'page'    => 'velocity_news_settings',
+				'label'   => 'Import Artikel',
+				'enabled' => get_option('news_generate', '1') === '1',
+			),
+			array(
+				'page'    => 'velocity_duitku_settings',
+				'label'   => 'Duitku',
+				'enabled' => get_option('velocity_duitku', '0') === '1',
+			),
+			array(
+				'page'    => 'velocity_statistics',
+				'label'   => 'Statistik',
+				'enabled' => get_option('statistik_velocity', '1') === '1',
+			),
+			array(
+				'page'    => 'velocity_optimize_db',
+				'label'   => 'Optimasi',
+				'enabled' => get_option('velocity_optimasi', '0') === '1',
+			),
+		);
+
+		return array_values(
+			array_filter(
+				$items,
+				static function ($item) {
+					return ! isset($item['enabled']) || $item['enabled'];
+				}
+			)
+		);
+	}
+
+	private function is_velocity_settings_page($page)
+	{
+		return in_array($page, $this->get_velocity_settings_pages(), true);
+	}
+
+	private function is_velocity_rest_action_page($page)
+	{
+		return in_array($page, $this->get_velocity_rest_action_pages(), true);
+	}
 }
