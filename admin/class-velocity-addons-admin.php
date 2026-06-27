@@ -74,14 +74,43 @@ class Velocity_Addons_Admin
 	 *
 	 * @since    1.0.0
 	 */
+	private function resolve_velocity_settings_page($page)
+	{
+		if ($page !== 'admin_velocity_addons' || !isset($_GET['sub'])) {
+			return $page;
+		}
+
+		$sub_map = array(
+			'general' => 'velocity_general_settings',
+			'fitur' => 'velocity_feature_settings',
+			'captcha' => 'velocity_captcha_settings',
+			'maintenance' => 'velocity_maintenance_settings',
+			'license' => 'velocity_license_settings',
+			'security' => 'velocity_security_settings',
+			'auto-resize' => 'velocity_auto_resize_settings',
+			'seo' => 'velocity_seo_settings',
+			'whatsapp' => 'velocity_floating_whatsapp',
+			'whatsapp-style' => 'velocity_floating_whatsapp_style',
+			'script' => 'velocity_snippet_settings',
+			'body' => 'velocity_snippet_body_settings',
+			'footer' => 'velocity_snippet_footer_settings',
+			'duitku' => 'velocity_duitku_settings',
+			'import-artikel' => 'velocity_news_settings',
+		);
+
+		$sub = sanitize_key(wp_unslash($_GET['sub']));
+		return isset($sub_map[$sub]) ? $sub_map[$sub] : $page;
+	}
+
 	public function enqueue_scripts()
 	{
 
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/velocity-addons-admin.js', array('jquery'), $this->version, false);
 
 		$page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+		$resolved_page = $this->resolve_velocity_settings_page($page);
 
-		if ($this->is_velocity_settings_page($page)) {
+		if ($this->is_velocity_settings_page($resolved_page)) {
 			$settings_handle = 'velocity-addons-settings-bridge';
 			$alpine_handle   = 'alpinejs';
 			$settings_path   = plugin_dir_path(__FILE__) . 'js/velocity-addons-settings.js';
@@ -100,7 +129,7 @@ class Velocity_Addons_Admin
 				array(
 					'restBase' => esc_url_raw(rest_url('velocity-addons/v1')),
 					'nonce'    => wp_create_nonce('wp_rest'),
-					'page'     => $page,
+					'page'     => $resolved_page,
 				)
 			);
 			wp_script_add_data($settings_handle, 'defer', true);

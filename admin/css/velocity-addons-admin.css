@@ -356,11 +356,6 @@
 .vd-section-body p {
   margin-bottom: 0.75rem;
 }
-body.toplevel_page_admin_velocity_addons .notice.notice-warning.notice-alt,
-body.admin_page_admin_velocity_addons .notice.notice-warning.notice-alt {
-  display: none !important;
-}
-
 /* Global toast for settings save/check responses */
 .velocity-settings-toast {
   position: fixed;

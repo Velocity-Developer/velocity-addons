@@ -283,6 +283,31 @@ class Custom_Admin_Option_Page
     {
         $sub = isset($_GET['sub']) ? sanitize_key(wp_unslash($_GET['sub'])) : 'dashboard';
         $pages = $this->get_admin_velocity_addons_sub_pages();
+        $page_slugs = [
+            'dashboard' => 'admin_velocity_addons',
+            'auto-resize' => 'velocity_auto_resize_settings',
+            'seo' => 'velocity_seo_settings',
+            'general' => 'velocity_general_settings',
+            'fitur' => 'velocity_feature_settings',
+            'security' => 'velocity_security_settings',
+            'captcha' => 'velocity_captcha_settings',
+            'maintenance' => 'velocity_maintenance_settings',
+            'script' => 'velocity_snippet_settings',
+            'body' => 'velocity_snippet_body_settings',
+            'footer' => 'velocity_snippet_footer_settings',
+            'whatsapp' => 'velocity_floating_whatsapp',
+            'whatsapp-style' => 'velocity_floating_whatsapp_style',
+            'duitku' => 'velocity_duitku_settings',
+            'statistics' => 'velocity_statistics',
+            'shortcode' => 'velocity_statistics_shortcode',
+            'optimasi' => 'velocity_optimize_db',
+            'license' => 'velocity_license_settings',
+            'import-artikel' => 'velocity_news_settings',
+        ];
+
+        if (isset($page_slugs[$sub])) {
+            $_GET['page'] = $page_slugs[$sub];
+        }
 
         if (isset($pages[$sub]) && is_callable($pages[$sub])) {
             call_user_func($pages[$sub]);
@@ -741,7 +766,7 @@ class Custom_Admin_Option_Page
                     <div class="vd-section-body">
                         <?php
                         $opt = get_option('captcha_velocity', []);
-                        $providerVal = isset($opt['provider']) ? $opt['provider'] : 'google';
+                        $providerVal = isset($opt['provider']) ? $opt['provider'] : 'image';
                         $fields = [
                             ['id' => 'captcha_velocity', 'sub' => 'provider', 'type' => 'select', 'title' => 'Provider', 'label' => 'Pilih jenis captcha yang digunakan.', 'options' => ['google' => 'Google reCaptcha v2', 'image' => 'Captcha Gambar']],
                             ['id' => 'captcha_velocity', 'sub' => 'aktif', 'type' => 'checkbox', 'title' => 'Captcha', 'std' => 1, 'label' => 'Aktifkan Captcha', 'desc' => 'Gunakan Captcha di Form Login, Komentar dan Velocity Toko. Untuk Contact Form 7 gunakan [velocity_captcha]'],

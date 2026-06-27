@@ -42,7 +42,7 @@ class Velocity_Addons_Captcha
     private $size;
 
     private $active = false;
-    private $provider = 'google';
+    private $provider = 'image';
     private $difficulty = 'medium';
 
     public function __construct()
@@ -52,7 +52,7 @@ class Velocity_Addons_Captcha
         $this->sitekey      = isset($captcha_velocity['sitekey']) ? $captcha_velocity['sitekey'] : '';
         $this->secretkey    = isset($captcha_velocity['secretkey']) ? $captcha_velocity['secretkey'] : '';
         $this->size         = wp_is_mobile() ? 'compact' : 'normal';
-        $this->provider     = isset($captcha_velocity['provider']) ? $captcha_velocity['provider'] : 'google';
+        $this->provider     = isset($captcha_velocity['provider']) ? $captcha_velocity['provider'] : 'image';
         $this->difficulty   = isset($captcha_velocity['difficulty']) ? $captcha_velocity['difficulty'] : 'medium';
 
         if ($captcha_aktif) {

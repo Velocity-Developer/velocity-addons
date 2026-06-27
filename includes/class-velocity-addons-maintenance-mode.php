@@ -56,11 +56,6 @@ class Velocity_Addons_Maintenance_Mode
         $heading        = esc_html($hd);
         $body_content   = wpautop(wp_kses_post($bd));
 
-        // Setup background style
-        $style_bg = $bg_url
-            ? "background: url('" . esc_url($bg_url) . "') no-repeat center center fixed; background-size: cover;"
-            : "background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);";
-
         // Set Headers for 503 Service Unavailable
         if (!headers_sent()) {
             header('HTTP/1.1 503 Service Unavailable');
@@ -80,58 +75,92 @@ class Velocity_Addons_Maintenance_Mode
                     box-sizing: border-box;
                 }
 
+                :root {
+                    --maintenance-text: #111111;
+                    --maintenance-muted: #666666;
+                    --maintenance-border: #e7e7e7;
+                    --maintenance-button: #111111;
+                    --maintenance-button-hover: #000000;
+                }
+
+                html,
                 body {
-                    <?php echo $style_bg; ?>min-height: 100vh;
+                    min-height: 100%;
+                }
+
+                body {
+                    margin: 0;
+                    min-height: 100vh;
+                    background: #ffffff;
+                    color: var(--maintenance-text);
+                    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                }
+
+                .maintenance-shell {
+                    min-height: 100vh;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                    color: #fff;
-                    margin: 0;
-                    padding: 20px;
+                    padding: 32px 20px;
+                    background: #ffffff;
                 }
 
                 .maintenance-card {
-                    background: rgba(255, 255, 255, 0.98);
-                    color: #1e293b;
-                    border-radius: 16px;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-                    padding: 3rem;
-                    max-width: 600px;
                     width: 100%;
-                    position: relative;
-                    overflow: hidden;
+                    max-width: 720px;
                     text-align: center;
+                    background: transparent;
+                    border: 0;
+                    border-radius: 0;
+                    padding: 56px 40px;
+                    box-shadow: none;
                 }
 
-                .maintenance-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
+                .maintenance-media {
+                    margin: 0 auto 28px;
+                    width: 88px;
+                    height: 88px;
+                    border-radius: 999px;
+                    border: 1px solid var(--maintenance-border);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #ffffff;
+                    overflow: hidden;
+                }
+
+                .maintenance-media img {
                     width: 100%;
-                    height: 6px;
-                    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                }
+
+                .maintenance-media svg {
+                    width: 36px;
+                    height: 36px;
+                    stroke: var(--maintenance-text);
                 }
 
                 .maintenance-card h1 {
+                    margin: 0 0 14px;
+                    color: var(--maintenance-text);
+                    font-size: clamp(2rem, 4vw, 3.25rem);
+                    line-height: 1.08;
+                    letter-spacing: -0.04em;
                     font-weight: 800;
-                    color: #0f172a;
-                    margin: 0 0 1.5rem 0;
-                    font-size: 2rem;
-                    line-height: 1.2;
                 }
 
                 .maintenance-card .content {
-                    font-size: 1.1rem;
-                    color: #475569;
-                    line-height: 1.7;
-                    margin-bottom: 2rem;
+                    max-width: 560px;
+                    margin: 0 auto 28px;
+                    color: var(--maintenance-muted);
+                    font-size: 1.05rem;
+                    line-height: 1.75;
                 }
 
                 .maintenance-card .content p {
-                    margin-top: 0;
-                    margin-bottom: 1rem;
+                    margin: 0 0 1rem;
                 }
 
                 .maintenance-card .content p:last-child {
@@ -139,47 +168,66 @@ class Velocity_Addons_Maintenance_Mode
                 }
 
                 .btn-reload {
-                    background-color: #0f172a;
-                    color: #fff;
-                    padding: 0.75rem 2rem;
-                    border-radius: 50px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 180px;
+                    padding: 14px 24px;
+                    border-radius: 999px;
+                    border: 1px solid var(--maintenance-button);
+                    background: var(--maintenance-button);
+                    color: #ffffff;
                     text-decoration: none;
-                    font-weight: 600;
-                    transition: all 0.3s ease;
-                    display: inline-block;
-                    cursor: pointer;
-                    border: none;
-                    font-size: 1rem;
+                    font-size: 0.95rem;
+                    font-weight: 700;
+                    letter-spacing: 0.01em;
+                    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
                 }
 
                 .btn-reload:hover {
-                    background-color: #334155;
-                    color: #fff;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    background: var(--maintenance-button-hover);
+                    border-color: var(--maintenance-button-hover);
+                    color: #ffffff;
+                    transform: translateY(-1px);
                 }
 
                 @media (max-width: 640px) {
-                    .maintenance-card {
-                        padding: 2rem;
+                    .maintenance-shell {
+                        padding: 20px 14px;
                     }
 
-                    .maintenance-card h1 {
-                        font-size: 1.75rem;
+                    .maintenance-card {
+                        padding: 36px 22px;
+                    }
+
+                    .maintenance-media {
+                        width: 76px;
+                        height: 76px;
+                        margin-bottom: 22px;
                     }
                 }
             </style>
         </head>
 
         <body>
-            <div class="maintenance-card">
-                <h1><?php echo $heading; ?></h1>
-                <div class="content">
-                    <?php echo $body_content; ?>
+            <div class="maintenance-shell">
+                <div class="maintenance-card">
+                    <div class="maintenance-media">
+                        <?php if ($bg_url) : ?>
+                            <img src="<?php echo esc_url($bg_url); ?>" alt="<?php echo esc_attr($heading); ?>">
+                        <?php else : ?>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M12 6V12L15.5 15.5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke-width="1.75" />
+                            </svg>
+                        <?php endif; ?>
+                    </div>
+                    <h1><?php echo $heading; ?></h1>
+                    <div class="content">
+                        <?php echo $body_content; ?>
+                    </div>
+                    <a href="<?php echo esc_url(home_url()); ?>" class="btn-reload">Muat Ulang</a>
                 </div>
-                <a href="<?php echo esc_url(home_url()); ?>" class="btn-reload">
-                    Muat Ulang
-                </a>
             </div>
         </body>
 
@@ -188,48 +236,9 @@ class Velocity_Addons_Maintenance_Mode
         exit();
     }
 
-    public static function qc_maintenance()
-    {
-        echo '<div class="notice notice-warning notice-alt">';
-        echo self::check_permalink_settings();
-        echo self::check_site_icon();
-        echo self::check_recaptcha();
-        echo self::check_seo();
-        echo self::check_domain_extension();
-        echo self::check_installed_plugins();
-        echo '</div>';
-    }
+    public static function qc_maintenance() {}
 
-    public static function qc_maintenance_list()
-    {
-        $parts = array(
-            self::check_permalink_settings(),
-            self::check_site_icon(),
-            self::check_recaptcha(),
-            self::check_seo(),
-            self::check_domain_extension(),
-            self::check_installed_plugins(),
-        );
-        $items = array();
-        foreach ($parts as $html) {
-            $html = trim((string) $html);
-            if ($html === '') {
-                continue;
-            }
-            if (preg_match_all('~<p>(.*?)</p>~is', $html, $m)) {
-                foreach ($m[1] as $segment) {
-                    $items[] = '<li>' . $segment . '</li>';
-                }
-            } else {
-                $items[] = '<li>' . $html . '</li>';
-            }
-        }
-        if (empty($items)) {
-            echo '<p>Tidak ada item QC yang perlu ditampilkan.</p>';
-            return;
-        }
-        echo '<ul class="vd-list">' . implode('', $items) . '</ul>';
-    }
+    public static function qc_maintenance_list() {}
 
     public static function check_domain_extension()
     {
