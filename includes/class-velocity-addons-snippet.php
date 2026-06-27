@@ -55,6 +55,7 @@ class Velocity_Addons_Snippet
     {
         ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Code Snippet</h1>
                 <p class="vd-subtitle">Masukkan snippet untuk Head, Body, dan Footer.</p>

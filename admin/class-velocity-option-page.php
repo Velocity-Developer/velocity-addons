@@ -565,6 +565,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Pengaturan Umum</h1>
                 <p class="vd-subtitle">Pengaturan dasar fitur Velocity Addons.</p>
@@ -663,6 +664,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Captcha</h1>
                 <p class="vd-subtitle">Pengaturan Captcha (Google reCaptcha v2 atau Gambar).</p>
@@ -752,6 +754,7 @@ class Custom_Admin_Option_Page
         if (function_exists('wp_enqueue_media')) wp_enqueue_media();
     ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Maintenance Mode</h1>
                 <p class="vd-subtitle">Pengaturan tampilan dan status maintenance situs.</p>
@@ -873,6 +876,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">License</h1>
                 <p class="vd-subtitle">Verifikasi lisensi Velocity Addons.</p>
@@ -915,6 +919,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Security</h1>
                 <p class="vd-subtitle">Pengaturan keamanan akses dan login.</p>
@@ -976,6 +981,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Auto Resize Image</h1>
                 <p class="vd-subtitle">Pengaturan re-sizing otomatis untuk gambar.</p>

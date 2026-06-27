@@ -266,6 +266,7 @@ class Velocity_Addons_News
     {
 ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">News Scraper</h1>
                 <p class="vd-subtitle">Ambil artikel dari API Velocity.</p>

@@ -139,17 +139,6 @@ class Velocity_Addons_Admin
 			wp_script_add_data($actions_handle, 'defer', true);
 		}
 
-		if ($this->is_velocity_admin_page($page)) {
-			wp_localize_script(
-				$this->plugin_name,
-				'velocityAdminNavConfig',
-				array(
-					'page'  => $page,
-					'items' => $this->get_velocity_admin_nav_items(),
-				)
-			);
-		}
-
 		if ($page == 'admin_velocity_addons') {
 			if (file_exists(get_template_directory() . '/js/theme.min.js')) {
 				$the_theme     = wp_get_theme();
@@ -163,14 +152,9 @@ class Velocity_Addons_Admin
 		}
 	}
 
-	private function is_velocity_admin_page($page)
+	private function is_velocity_settings_page($page)
 	{
-		return in_array($page, array_merge(array('admin_velocity_addons'), $this->get_velocity_settings_pages(), $this->get_velocity_rest_action_pages()), true);
-	}
-
-	private function get_velocity_settings_pages()
-	{
-		return array(
+		return in_array($page, array(
 			'velocity_general_settings',
 			'velocity_captcha_settings',
 			'velocity_maintenance_settings',
@@ -182,18 +166,21 @@ class Velocity_Addons_Admin
 			'velocity_snippet_settings',
 			'velocity_duitku_settings',
 			'velocity_news_settings',
-		);
+		), true);
 	}
 
-	private function get_velocity_rest_action_pages()
+	private function is_velocity_rest_action_page($page)
 	{
-		return array(
+		return in_array($page, array(
 			'velocity_statistics',
 			'velocity_optimize_db',
-		);
+		), true);
 	}
+}
 
-	private function get_velocity_admin_nav_items()
+class Velocity_Addons_Admin_Navigation
+{
+	public static function get_items()
 	{
 		$items = array(
 			array(
@@ -266,19 +253,68 @@ class Velocity_Addons_Admin
 			array_filter(
 				$items,
 				static function ($item) {
-					return ! isset($item['enabled']) || $item['enabled'];
+					return !isset($item['enabled']) || $item['enabled'];
 				}
 			)
 		);
 	}
 
-	private function is_velocity_settings_page($page)
+	public static function render($current_page = '')
 	{
-		return in_array($page, $this->get_velocity_settings_pages(), true);
-	}
+		if ($current_page === '') {
+			$current_page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+		}
 
-	private function is_velocity_rest_action_page($page)
-	{
-		return in_array($page, $this->get_velocity_rest_action_pages(), true);
+		$items = self::get_items();
+		if (empty($items) || $current_page === '') {
+			return;
+		}
+
+		$subnav_parent = null;
+		$subnav_children = array();
+
+		echo '<div class="velocity-topnav">';
+		echo '<div class="velocity-topnav__brand">Velocity Addons</div>';
+		echo '<nav class="velocity-topnav__links" aria-label="Velocity Addons Navigation">';
+
+		foreach ($items as $item) {
+			if (empty($item['page']) || empty($item['label'])) {
+				continue;
+			}
+
+			$children = !empty($item['children']) && is_array($item['children']) ? $item['children'] : array();
+			$active_child = false;
+			foreach ($children as $child) {
+				if (!empty($child['page']) && $child['page'] === $current_page) {
+					$active_child = true;
+					break;
+				}
+			}
+
+			$is_active = $item['page'] === $current_page || $active_child;
+			if ($active_child || ($item['page'] === $current_page && !empty($children))) {
+				$subnav_parent = $item['label'];
+				$subnav_children = $children;
+			}
+
+			echo '<a class="velocity-topnav__link' . ($is_active ? ' is-active' : '') . '" href="' . esc_url(admin_url('admin.php?page=' . $item['page'])) . '">' . esc_html($item['label']) . '</a>';
+		}
+
+		echo '</nav>';
+		echo '</div>';
+
+		if (!empty($subnav_children)) {
+			echo '<div class="velocity-subnav">';
+			echo '<div class="velocity-subnav__title">' . esc_html($subnav_parent) . '</div>';
+			echo '<nav class="velocity-subnav__links" aria-label="' . esc_attr($subnav_parent . ' Navigation') . '">';
+			foreach ($subnav_children as $child) {
+				if (empty($child['page']) || empty($child['label'])) {
+					continue;
+				}
+				echo '<a class="velocity-subnav__link' . ($child['page'] === $current_page ? ' is-active' : '') . '" href="' . esc_url(admin_url('admin.php?page=' . $child['page'])) . '">' . esc_html($child['label']) . '</a>';
+			}
+			echo '</nav>';
+			echo '</div>';
+		}
 	}
 }

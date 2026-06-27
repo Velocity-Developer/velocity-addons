@@ -52,6 +52,7 @@ class Velocity_Addons_Floating_Whatsapp
         $whatsapp_message = get_option('whatsapp_message', 'Hallo...');
 ?>
         <div class="velocity-dashboard-wrapper">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-header">
                 <h1 class="vd-title">Floating Whatsapp</h1>
                 <p class="vd-subtitle">Pengaturan tombol WhatsApp mengambang dan pesan default.</p>

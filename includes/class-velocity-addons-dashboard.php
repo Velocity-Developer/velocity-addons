@@ -79,7 +79,7 @@ class Velocity_Addons_Dashboard
         $moderated_comments = (int) (wp_count_comments()->moderated ?? 0);
 ?>
         <div class="velocity-dashboard-wrapper">
-
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
 
             <div class="vd-header">
                 <h1 class="vd-title">Dashboard</h1>
