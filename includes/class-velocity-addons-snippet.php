@@ -56,10 +56,6 @@ class Velocity_Addons_Snippet
         ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">Code Snippet</h1>
-                <p class="vd-subtitle">Masukkan snippet untuk Head, Body, dan Footer.</p>
-            </div>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">

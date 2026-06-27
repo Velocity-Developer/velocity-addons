@@ -267,10 +267,6 @@ class Velocity_Addons_News
 ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">News Scraper</h1>
-                <p class="vd-subtitle">Ambil artikel dari API Velocity.</p>
-            </div>
             <form method="post" id="velocity-news-import-form">
                 <?php wp_nonce_field('velocity_news_import_action', 'velocity_news_import_nonce'); ?>
                 <div class="vd-grid-2">

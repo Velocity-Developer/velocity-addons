@@ -63,10 +63,6 @@ class Velocity_Addons_SEO
 ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">SEO Settings</h1>
-                <p class="vd-subtitle">Pengaturan meta dan sharing untuk situs.</p>
-            </div>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-grid-2">
                     <div>

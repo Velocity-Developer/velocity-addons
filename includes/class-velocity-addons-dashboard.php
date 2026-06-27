@@ -81,11 +81,6 @@ class Velocity_Addons_Dashboard
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
 
-            <div class="vd-header">
-                <h1 class="vd-title">Dashboard</h1>
-                <p class="vd-subtitle">Ringkasan status dan informasi Velocity Addons.</p>
-            </div>
-
             <div class="vd-section" style="margin-top:-10px">
                 <div class="vd-section-body" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                     <?php if ($license_active): ?>

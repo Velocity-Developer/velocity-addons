@@ -542,10 +542,6 @@ class Custom_Admin_Option_Page
         unset($pages_tabs['umum']);
 ?>
         <div class="velocity-dashboard-wrapper vd-ons">
-            <div class="vd-header">
-                <h1 class="vd-title">Pengaturan Admin</h1>
-                <p class="vd-subtitle">Gunakan submenu di bawah "Velocity Addons" untuk mengakses masing-masing pengaturan.</p>
-            </div>
             <div class="vd-section">
                 <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
                     <h3 style="margin:0; font-size:1.1rem; color:#374151;">Quick Links</h3>
@@ -603,10 +599,6 @@ class Custom_Admin_Option_Page
     ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render($page_slug); ?>
-            <div class="vd-header">
-                <h1 class="vd-title"><?php echo esc_html($title); ?></h1>
-                <p class="vd-subtitle"><?php echo esc_html($subtitle); ?></p>
-            </div>
             <form id="velocity-general-form" method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -686,10 +678,6 @@ class Custom_Admin_Option_Page
     ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">Captcha</h1>
-                <p class="vd-subtitle">Pengaturan Captcha (Google reCaptcha v2 atau Gambar).</p>
-            </div>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -776,10 +764,6 @@ class Custom_Admin_Option_Page
     ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">Maintenance Mode</h1>
-                <p class="vd-subtitle">Pengaturan tampilan dan status maintenance situs.</p>
-            </div>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -898,10 +882,6 @@ class Custom_Admin_Option_Page
     ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">License</h1>
-                <p class="vd-subtitle">Verifikasi lisensi Velocity Addons.</p>
-            </div>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -941,10 +921,6 @@ class Custom_Admin_Option_Page
     ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">Security</h1>
-                <p class="vd-subtitle">Pengaturan keamanan akses dan login.</p>
-            </div>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -1003,10 +979,6 @@ class Custom_Admin_Option_Page
     ?>
         <div class="velocity-dashboard-wrapper">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">Auto Resize Image</h1>
-                <p class="vd-subtitle">Pengaturan re-sizing otomatis untuk gambar.</p>
-            </div>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -1081,10 +1053,6 @@ class Custom_Admin_Option_Page
     ?>
         <div class="velocity-dashboard-wrapper vd-ons" id="velocity-statistics-page">
             <?php Velocity_Addons_Admin_Navigation::render('velocity_statistics'); ?>
-            <div class="vd-header">
-                <h1 class="vd-title">Statistik Pengunjung</h1>
-                <p class="vd-subtitle">Ringkasan trafik dan halaman populer situs.</p>
-            </div>
             <div id="velocity-statistics-notice" class="notice <?php echo $rebuild_message ? 'notice-success' : ''; ?>" style="display:<?php echo $rebuild_message ? 'block' : 'none'; ?>">
                 <?php if ($rebuild_message): ?>
                     <p><?php echo esc_html($rebuild_message); ?></p>
