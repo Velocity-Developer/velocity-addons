@@ -168,10 +168,26 @@ class Custom_Admin_Option_Page
 
         add_submenu_page(
             'admin_velocity_addons',
-            'Code Snippet',
-            'Code Snippet',
+            'Snippet Header',
+            'Header',
             'manage_options',
             'velocity_snippet_settings',
+            array($this, 'velocity_snippet_settings'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Snippet Body',
+            'Body',
+            'manage_options',
+            'velocity_snippet_body_settings',
+            array($this, 'velocity_snippet_settings'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Snippet Footer',
+            'Footer',
+            'manage_options',
+            'velocity_snippet_footer_settings',
             array($this, 'velocity_snippet_settings'),
         );
 

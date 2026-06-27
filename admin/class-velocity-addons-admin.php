@@ -139,6 +139,39 @@ class Velocity_Addons_Admin
 			wp_script_add_data($actions_handle, 'defer', true);
 		}
 
+		if (in_array($page, array('velocity_snippet_settings', 'velocity_snippet_body_settings', 'velocity_snippet_footer_settings'), true)) {
+			if (function_exists('wp_enqueue_code_editor')) {
+				$settings = function_exists('wp_code_editor_settings')
+					? wp_code_editor_settings(array(
+						'type'       => 'htmlmixed',
+						'codemirror' => array(
+							'indentUnit'    => 2,
+							'tabSize'       => 2,
+							'lineWrapping'  => true,
+							'lineNumbers'   => true,
+							'autoCloseTags' => true,
+							'matchTags'     => array('bothTags' => true),
+						),
+					))
+					: array(
+						'type'       => 'htmlmixed',
+						'codemirror' => array(
+							'indentUnit'    => 2,
+							'tabSize'       => 2,
+							'lineWrapping'  => true,
+							'lineNumbers'   => true,
+							'autoCloseTags' => true,
+							'matchTags'     => array('bothTags' => true),
+						),
+					);
+				wp_enqueue_code_editor($settings);
+				wp_add_inline_script(
+					'code-editor',
+					'jQuery(function(){var ids=["#header_snippet","#body_snippet","#footer_snippet"];ids.forEach(function(sel){var el=document.querySelector(sel);if(el&&window.wp&&wp.codeEditor){var ed=wp.codeEditor.initialize(el,' . wp_json_encode($settings) . ');if(ed&&ed.codemirror){ed.codemirror.on("change",function(){el.value=ed.codemirror.getValue();});}}});});'
+				);
+			}
+		}
+
 		if ($page == 'admin_velocity_addons') {
 			if (file_exists(get_template_directory() . '/js/theme.min.js')) {
 				$the_theme     = wp_get_theme();
@@ -166,6 +199,8 @@ class Velocity_Addons_Admin
 			'velocity_floating_whatsapp',
 			'velocity_floating_whatsapp_style',
 			'velocity_snippet_settings',
+			'velocity_snippet_body_settings',
+			'velocity_snippet_footer_settings',
 			'velocity_duitku_settings',
 			'velocity_news_settings',
 		), true);
@@ -245,13 +280,37 @@ class Velocity_Addons_Admin_Navigation
 				),
 			),
 			array(
-				'page'  => 'velocity_snippet_settings',
-				'label' => 'Snippet',
+				'page'     => 'velocity_snippet_settings',
+				'label'    => 'Snippet',
+				'children' => array(
+					array(
+						'page'  => 'velocity_snippet_settings',
+						'label' => 'Header',
+					),
+					array(
+						'page'  => 'velocity_snippet_body_settings',
+						'label' => 'Body',
+					),
+					array(
+						'page'  => 'velocity_snippet_footer_settings',
+						'label' => 'Footer',
+					),
+				),
 			),
 			array(
-				'page'    => 'velocity_floating_whatsapp',
-				'label'   => 'WhatsApp',
-				'enabled' => get_option('floating_whatsapp', '1') === '1',
+				'page'     => 'velocity_floating_whatsapp',
+				'label'    => 'WhatsApp',
+				'enabled'  => get_option('floating_whatsapp', '1') === '1',
+				'children' => array(
+					array(
+						'page'  => 'velocity_floating_whatsapp',
+						'label' => 'General',
+					),
+					array(
+						'page'  => 'velocity_floating_whatsapp_style',
+						'label' => 'Style',
+					),
+				),
 			),
 			array(
 				'page'    => 'velocity_duitku_settings',

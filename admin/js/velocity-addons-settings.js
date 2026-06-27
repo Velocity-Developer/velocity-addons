@@ -42,6 +42,14 @@
       route: "snippet",
       formSelector: "form[data-velocity-settings='1']",
     },
+    velocity_snippet_body_settings: {
+      route: "snippet",
+      formSelector: "form[data-velocity-settings='1']",
+    },
+    velocity_snippet_footer_settings: {
+      route: "snippet",
+      formSelector: "form[data-velocity-settings='1']",
+    },
     velocity_duitku_settings: {
       route: "duitku",
       formSelector: "form[data-velocity-settings='1']",

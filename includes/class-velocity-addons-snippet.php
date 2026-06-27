@@ -53,37 +53,46 @@ class Velocity_Addons_Snippet
     }
     public static function snippet_page()
     {
+        $current_page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : 'velocity_snippet_settings';
+
+        $field_map = [
+            'velocity_snippet_settings' => [
+                'id'    => 'header_snippet',
+                'title' => 'Header Snippet',
+                'label' => 'Kode ditempatkan di dalam <head>.',
+            ],
+            'velocity_snippet_body_settings' => [
+                'id'    => 'body_snippet',
+                'title' => 'Body Snippet',
+                'label' => 'Kode ditempatkan tepat setelah tag pembuka <body>.',
+            ],
+            'velocity_snippet_footer_settings' => [
+                'id'    => 'footer_snippet',
+                'title' => 'Footer Snippet',
+                'label' => 'Kode ditempatkan sebelum tag penutup </body>.',
+            ],
+        ];
+
+        $field = $field_map[$current_page] ?? $field_map['velocity_snippet_settings'];
+        $val   = get_option($field['id'], '');
         ?>
         <div class="velocity-dashboard-wrapper">
-            <?php Velocity_Addons_Admin_Navigation::render(); ?>
+            <?php Velocity_Addons_Admin_Navigation::render($current_page); ?>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Snippet</h3>
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;"><?php echo esc_html($field['title']); ?></h3>
                     </div>
                     <div class="vd-section-body">
-                        <?php
-                        $fields = [
-                            ['id' => 'header_snippet', 'type' => 'textarea', 'title' => 'Header Snippet', 'label' => 'Kode ditempatkan di dalam <head>.'],
-                            ['id' => 'body_snippet', 'type' => 'textarea', 'title' => 'Body Snippet', 'label' => 'Kode ditempatkan tepat setelah tag pembuka <body>.'],
-                            ['id' => 'footer_snippet', 'type' => 'textarea', 'title' => 'Footer Snippet', 'label' => 'Kode ditempatkan sebelum tag penutup </body>.'],
-                        ];
-                        foreach ($fields as $data) {
-                            $id = $data['id'];
-                            $title = $data['title'];
-                            $label = isset($data['label']) ? $data['label'] : '';
-                            $val = get_option($id, '');
-                            echo '<div class="vd-form-group">';
-                            echo '<div class="vd-form-left">';
-                            echo '<label class="vd-form-label" for="' . esc_attr($id) . '">' . esc_html($title) . '</label>';
-                            if ($label) echo '<small class="vd-form-hint">' . esc_html($label) . '</small>';
-                            echo '</div>';
-                            echo '<div class="vd-form-right">';
-                            echo '<textarea class="large-text code" id="' . esc_attr($id) . '" name="' . esc_attr($id) . '" rows="10" cols="40">' . esc_textarea($val) . '</textarea>';
-                            echo '</div>';
-                            echo '</div>';
-                        }
-                        ?>
+                        <div class="vd-form-group">
+                            <div class="vd-form-left">
+                                <label class="vd-form-label" for="<?php echo esc_attr($field['id']); ?>"><?php echo esc_html($field['title']); ?></label>
+                                <small class="vd-form-hint"><?php echo esc_html($field['label']); ?></small>
+                            </div>
+                            <div class="vd-form-right">
+                                <textarea class="large-text code" id="<?php echo esc_attr($field['id']); ?>" name="<?php echo esc_attr($field['id']); ?>" rows="10" cols="40"><?php echo esc_textarea($val); ?></textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <?php submit_button(); ?>
