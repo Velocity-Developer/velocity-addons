@@ -164,6 +164,7 @@ class Velocity_Addons_Admin
 			'velocity_auto_resize_settings',
 			'velocity_seo_settings',
 			'velocity_floating_whatsapp',
+			'velocity_floating_whatsapp_style',
 			'velocity_snippet_settings',
 			'velocity_duitku_settings',
 			'velocity_news_settings',
@@ -174,6 +175,7 @@ class Velocity_Addons_Admin
 	{
 		return in_array($page, array(
 			'velocity_statistics',
+			'velocity_statistics_shortcode',
 			'velocity_optimize_db',
 		), true);
 	}
@@ -257,9 +259,19 @@ class Velocity_Addons_Admin_Navigation
 				'enabled' => get_option('velocity_duitku', '0') === '1',
 			),
 			array(
-				'page'    => 'velocity_statistics',
-				'label'   => 'Statistik',
-				'enabled' => get_option('statistik_velocity', '1') === '1',
+				'page'     => 'velocity_statistics',
+				'label'    => 'Statistics',
+				'enabled'  => get_option('statistik_velocity', '1') === '1',
+				'children' => array(
+					array(
+						'page'  => 'velocity_statistics',
+						'label' => 'Statistic',
+					),
+					array(
+						'page'  => 'velocity_statistics_shortcode',
+						'label' => 'Shortcode',
+					),
+				),
 			),
 			array(
 				'page'    => 'velocity_optimize_db',

@@ -44,6 +44,9 @@ class Velocity_Addons_Floating_Whatsapp
 
     public static function floating_whatsapp_page()
     {
+        $current_page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : 'velocity_floating_whatsapp';
+        $is_style_page = $current_page === 'velocity_floating_whatsapp_style';
+
         $contacts = self::normalize_whatsapp_contacts(get_option('nomor_whatsapp_contacts', []));
         if (empty($contacts)) {
             $contacts = [['name' => '', 'number' => '']];
@@ -52,75 +55,73 @@ class Velocity_Addons_Floating_Whatsapp
         $whatsapp_message = get_option('whatsapp_message', 'Hallo...');
 ?>
         <div class="velocity-dashboard-wrapper">
-            <?php Velocity_Addons_Admin_Navigation::render(); ?>
+            <?php Velocity_Addons_Admin_Navigation::render($current_page); ?>
             <form method="post" data-velocity-settings="1">
-                <div class="vd-grid-2">
-                    <div>
-                        <div class="vd-section">
-                            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Detail Whatsapp</h3>
+                <?php if ($is_style_page) : ?>
+                    <div class="vd-section">
+                        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Position</h3>
+                        </div>
+                        <div class="vd-section-body">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Whatsapp Position</label>
+                                <select name="whatsapp_position">
+                                    <option value="right" <?php selected(get_option('whatsapp_position'), 'right'); ?>>Right</option>
+                                    <option value="left"  <?php selected(get_option('whatsapp_position'), 'left'); ?>>Left</option>
+                                </select>
                             </div>
-                            <div class="vd-section-body">
-                                <div style="margin-bottom: 1rem;">
-                                    <div id="wa-contacts-list" class="wa-contacts-list">
-                                        <?php foreach ($contacts as $index => $contact) : ?>
-                                            <?php $hide_remove = $index === 0 ? ' wa-remove-contact--hidden' : ''; ?>
-                                            <div class="wa-contact-item">
-                                                <div class="wa-contact-row">
-                                                    <div class="wa-contact-field">
-                                                        <label>Nama Kontak</label>
-                                                        <input class="regular-text" type="text" name="nomor_whatsapp_contacts[<?php echo esc_attr($index); ?>][name]" value="<?php echo esc_attr($contact['name'] ?? ''); ?>" placeholder="Customer Service" />
-                                                    </div>
-                                                    <div class="wa-contact-field">
-                                                        <label>Nomor Whatsapp</label>
-                                                        <input class="regular-text" type="text" name="nomor_whatsapp_contacts[<?php echo esc_attr($index); ?>][number]" value="<?php echo esc_attr($contact['number'] ?? ''); ?>" placeholder="62xxxx atau 08xxxx" />
-                                                        <small>Bisa diawali 62 atau 08</small>
-                                                    </div>
-                                                    <div class="wa-remove-contact<?php echo $hide_remove; ?>">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                                        </svg>
-                                                    </div>
+                            <p>Posisi tombol dan tombol scroll-to-top akan mengikuti pilihan kanan/kiri.</p>
+                        </div>
+                    </div>
+                <?php else : ?>
+                    <div class="vd-section">
+                        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Detail Whatsapp</h3>
+                        </div>
+                        <div class="vd-section-body">
+                            <div style="margin-bottom: 1rem;">
+                                <div id="wa-contacts-list" class="wa-contacts-list">
+                                    <?php foreach ($contacts as $index => $contact) : ?>
+                                        <?php $hide_remove = $index === 0 ? ' wa-remove-contact--hidden' : ''; ?>
+                                        <div class="wa-contact-item">
+                                            <div class="wa-contact-row">
+                                                <div class="wa-contact-field">
+                                                    <label>Nama Kontak</label>
+                                                    <input class="regular-text" type="text" name="nomor_whatsapp_contacts[<?php echo esc_attr($index); ?>][name]" value="<?php echo esc_attr($contact['name'] ?? ''); ?>" placeholder="Customer Service" />
                                                 </div>
-                                                <hr class="wa-contact-separator">
+                                                <div class="wa-contact-field">
+                                                    <label>Nomor Whatsapp</label>
+                                                    <input class="regular-text" type="text" name="nomor_whatsapp_contacts[<?php echo esc_attr($index); ?>][number]" value="<?php echo esc_attr($contact['number'] ?? ''); ?>" placeholder="62xxxx atau 08xxxx" />
+                                                    <small>Bisa diawali 62 atau 08</small>
+                                                </div>
+                                                <div class="wa-remove-contact<?php echo $hide_remove; ?>">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                    </svg>
+                                                </div>
                                             </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <button type="button" class="button button-secondary" id="add-wa-contact">Tambah Nomor</button>
+                                            <hr class="wa-contact-separator">
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Text Whatsapp</label>
-                                    <input class="regular-text" type="text" name="whatsapp_text" value="<?php echo esc_attr($whatsapp_text); ?>" />
-                                    <small>Akan ditampilkan jika nama kontak tidak diisi</small>
-                                </div>
-                                <div style="margin-bottom: 0;">
-                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Pesan Whatsapp</label>
-                                    <textarea class="large-text" name="whatsapp_message" rows="4" cols="40"><?php echo esc_textarea($whatsapp_message); ?></textarea>
-                                </div>
+                                <button type="button" class="button button-secondary" id="add-wa-contact">Tambah Nomor</button>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Text Whatsapp</label>
+                                <input class="regular-text" type="text" name="whatsapp_text" value="<?php echo esc_attr($whatsapp_text); ?>" />
+                                <small>Akan ditampilkan jika nama kontak tidak diisi</small>
+                            </div>
+                            <div style="margin-bottom: 0;">
+                                <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Pesan Whatsapp</label>
+                                <textarea class="large-text" name="whatsapp_message" rows="4" cols="40"><?php echo esc_textarea($whatsapp_message); ?></textarea>
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="vd-section">
-                            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Posisi & Opsi</h3>
-                            </div>
-                            <div class="vd-section-body">
-                                <div style="margin-bottom: 1rem;">
-                                    <label style="display:block; font-weight:600; margin-bottom:0.25rem;">Whatsapp Position</label>
-                                    <select name="whatsapp_position">
-                                        <option value="right" <?php selected(get_option('whatsapp_position'), 'right'); ?>>Right</option>
-                                        <option value="left"  <?php selected(get_option('whatsapp_position'),  'left'); ?>>Left</option>
-                                    </select>
-                                </div>
-                                <p>Posisi tombol dan tombol scroll-to-top akan mengikuti pilihan kanan/kiri.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
                 <?php submit_button(); ?>
             </form>
+            <?php if (! $is_style_page) : ?>
             <script>
                 (function() {
                     const list = document.getElementById('wa-contacts-list');
@@ -164,6 +165,7 @@ class Velocity_Addons_Floating_Whatsapp
                     });
                 })();
             </script>
+            <?php endif; ?>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
