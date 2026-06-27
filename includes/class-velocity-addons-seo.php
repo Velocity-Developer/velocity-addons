@@ -62,10 +62,7 @@ class Velocity_Addons_SEO
         $post_types = array_diff($all_post_types, $excluded_post_types);
 ?>
         <div class="velocity-dashboard-wrapper">
-            <div class="vd-header">
-                <h1 class="vd-title">SEO Settings</h1>
-                <p class="vd-subtitle">Pengaturan meta dan sharing untuk situs.</p>
-            </div>
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-grid-2">
                     <div>

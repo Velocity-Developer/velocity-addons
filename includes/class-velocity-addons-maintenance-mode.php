@@ -55,11 +55,9 @@ class Velocity_Addons_Maintenance_Mode
 
         $heading        = esc_html($hd);
         $body_content   = wpautop(wp_kses_post($bd));
-
-        // Setup background style
-        $style_bg = $bg_url
-            ? "background: url('" . esc_url($bg_url) . "') no-repeat center center fixed; background-size: cover;"
-            : "background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);";
+        $shell_background = $bg_url
+            ? "background-image: linear-gradient(rgba(255,255,255,.78), rgba(255,255,255,.88)), url('" . esc_url($bg_url) . "'); background-position: center; background-repeat: no-repeat; background-size: cover;"
+            : "background: #ffffff;";
 
         // Set Headers for 503 Service Unavailable
         if (!headers_sent()) {
@@ -80,58 +78,132 @@ class Velocity_Addons_Maintenance_Mode
                     box-sizing: border-box;
                 }
 
+                :root {
+                    --maintenance-text: #111111;
+                    --maintenance-muted: #666666;
+                    --maintenance-border: #e7e7e7;
+                    --maintenance-button: #111111;
+                    --maintenance-button-hover: #000000;
+                }
+
+                html,
                 body {
-                    <?php echo $style_bg; ?>min-height: 100vh;
+                    min-height: 100%;
+                }
+
+                body {
+                    margin: 0;
+                    min-height: 100vh;
+                    background: #ffffff;
+                    color: var(--maintenance-text);
+                    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                }
+
+                .maintenance-shell {
+                    min-height: 100vh;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                    color: #fff;
-                    margin: 0;
-                    padding: 20px;
+                    padding: 32px 20px;
+                    <?php echo $shell_background; ?>
                 }
 
                 .maintenance-card {
-                    background: rgba(255, 255, 255, 0.98);
-                    color: #1e293b;
-                    border-radius: 16px;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-                    padding: 3rem;
-                    max-width: 600px;
                     width: 100%;
-                    position: relative;
-                    overflow: hidden;
+                    max-width: 720px;
                     text-align: center;
+                    background: transparent;
+                    border: 0;
+                    border-radius: 0;
+                    padding: 56px 40px;
+                    box-shadow: none;
                 }
 
-                .maintenance-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 6px;
-                    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+                .maintenance-media {
+                    width: min(32vw, 150px);
+                    margin: 0 auto 24px;
+                    aspect-ratio: 1;
+                    display: grid;
+                    place-items: center;
+                }
+
+                .maintenance-media .logo {
+                    width: 78%;
+                    overflow: visible;
+                    filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.32));
+                }
+
+                .maintenance-media .ring-outer,
+                .maintenance-media .ring-inner,
+                .maintenance-media .bolt-shadow,
+                .maintenance-media .bolt-main {
+                    transform-box: fill-box;
+                    transform-origin: center;
+                }
+
+                .maintenance-media .ring-inner {
+                    opacity: 0;
+                    animation: inner-cycle 1.2s ease-out forwards;
+                }
+
+                .maintenance-media .ring-outer {
+                    opacity: 0;
+                    animation: outer-cycle 1.45s ease-out .12s forwards;
+                }
+
+                .maintenance-media .bolt-shadow,
+                .maintenance-media .bolt-main {
+                    transform-origin: center bottom;
+                }
+
+                .maintenance-media .bolt-shadow {
+                    opacity: 0;
+                    animation: shadow-cycle .56s cubic-bezier(.12, .84, .24, 1) .08s forwards;
+                }
+
+                .maintenance-media .bolt-main {
+                    opacity: 0;
+                    animation: main-cycle .56s cubic-bezier(.12, .84, .24, 1) .12s forwards;
+                }
+
+                .maintenance-media .speed-line {
+                    fill: none;
+                    stroke: #aefe22;
+                    stroke-width: 1.15;
+                    stroke-linecap: round;
+                    stroke-dasharray: 18;
+                    stroke-dashoffset: 18;
+                    opacity: 0;
+                    animation: speed-trail .42s linear .1s forwards;
+                }
+
+                .maintenance-media .speed-line.second {
+                    animation-delay: 0.1s;
+                }
+
+                .maintenance-media .speed-line.third {
+                    animation-delay: 0.16s;
                 }
 
                 .maintenance-card h1 {
+                    margin: 0 0 14px;
+                    color: var(--maintenance-text);
+                    font-size: clamp(2rem, 4vw, 3.25rem);
+                    line-height: 1.08;
+                    letter-spacing: -0.04em;
                     font-weight: 800;
-                    color: #0f172a;
-                    margin: 0 0 1.5rem 0;
-                    font-size: 2rem;
-                    line-height: 1.2;
                 }
 
                 .maintenance-card .content {
-                    font-size: 1.1rem;
-                    color: #475569;
-                    line-height: 1.7;
-                    margin-bottom: 2rem;
+                    max-width: 560px;
+                    margin: 0 auto 28px;
+                    color: var(--maintenance-muted);
+                    font-size: 1.05rem;
+                    line-height: 1.75;
                 }
 
                 .maintenance-card .content p {
-                    margin-top: 0;
-                    margin-bottom: 1rem;
+                    margin: 0 0 1rem;
                 }
 
                 .maintenance-card .content p:last-child {
@@ -139,47 +211,202 @@ class Velocity_Addons_Maintenance_Mode
                 }
 
                 .btn-reload {
-                    background-color: #0f172a;
-                    color: #fff;
-                    padding: 0.75rem 2rem;
-                    border-radius: 50px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 180px;
+                    padding: 14px 24px;
+                    border-radius: 999px;
+                    border: 1px solid var(--maintenance-button);
+                    background: var(--maintenance-button);
+                    color: #ffffff;
                     text-decoration: none;
-                    font-weight: 600;
-                    transition: all 0.3s ease;
-                    display: inline-block;
-                    cursor: pointer;
-                    border: none;
-                    font-size: 1rem;
+                    font-size: 0.95rem;
+                    font-weight: 700;
+                    letter-spacing: 0.01em;
+                    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
                 }
 
                 .btn-reload:hover {
-                    background-color: #334155;
-                    color: #fff;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    background: var(--maintenance-button-hover);
+                    border-color: var(--maintenance-button-hover);
+                    color: #ffffff;
+                    transform: translateY(-1px);
+                }
+
+                @keyframes inner-cycle {
+                    0% {
+                        opacity: 0;
+                        transform: scale(0.3) rotate(-35deg);
+                    }
+
+                    72% {
+                        opacity: 1;
+                        transform: scale(1.08) rotate(2deg);
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes outer-cycle {
+
+                    0%,
+                    18% {
+                        opacity: 0;
+                        transform: scale(0.3) rotate(-35deg);
+                    }
+
+                    74% {
+                        opacity: 1;
+                        transform: scale(1.08) rotate(2deg);
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes shadow-cycle {
+
+                    0%,
+                    8% {
+                        opacity: 0;
+                        transform: translate(72px, -88px) scale(0.38, 0.72);
+                    }
+
+                    62% {
+                        opacity: 1;
+                        transform: translate(-2px, 3px) scale(1.03);
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: translate(0) scale(1);
+                    }
+                }
+
+                @keyframes main-cycle {
+
+                    0%,
+                    10% {
+                        opacity: 0;
+                        transform: translate(72px, -88px) scale(0.38, 0.72);
+                    }
+
+                    66% {
+                        opacity: 1;
+                        transform: translate(-2px, 3px) scale(1.03);
+                        filter: drop-shadow(0 0 9px rgba(190, 255, 32, 0.95));
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: translate(0) scale(1);
+                        filter: none;
+                    }
+                }
+
+                @keyframes speed-trail {
+
+                    0%,
+                    18% {
+                        opacity: 0;
+                        stroke-dashoffset: 18;
+                    }
+
+                    56% {
+                        opacity: 0.9;
+                    }
+
+                    100% {
+                        opacity: 0;
+                        stroke-dashoffset: -18;
+                    }
+                }
+
+                @keyframes float {
+
+                    0%,
+                    100% {
+                        transform: translateY(0);
+                    }
+
+                    50% {
+                        transform: translateY(-9px);
+                    }
                 }
 
                 @media (max-width: 640px) {
-                    .maintenance-card {
-                        padding: 2rem;
+                    .maintenance-shell {
+                        padding: 20px 14px;
                     }
 
-                    .maintenance-card h1 {
-                        font-size: 1.75rem;
+                    .maintenance-card {
+                        padding: 36px 22px;
+                    }
+
+                    .maintenance-media {
+                        width: min(42vw, 120px);
+                        margin-bottom: 20px;
+                    }
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+
+                    .maintenance-media .logo,
+                    .maintenance-media .ring-outer,
+                    .maintenance-media .ring-inner,
+                    .maintenance-media .bolt-shadow,
+                    .maintenance-media .bolt-main,
+                    .maintenance-media .speed-line {
+                        animation: none !important;
                     }
                 }
             </style>
         </head>
 
         <body>
-            <div class="maintenance-card">
-                <h1><?php echo $heading; ?></h1>
-                <div class="content">
-                    <?php echo $body_content; ?>
+            <div class="maintenance-shell">
+                <div class="maintenance-card">
+                    <div class="maintenance-media" aria-hidden="true">
+                        <svg class="logo" viewBox="0 0 93.300247 107.21929" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="vd-blue" x1="82" y1="75" x2="113" y2="146" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#0b85ad" />
+                                    <stop offset=".45" stop-color="#04759f" />
+                                    <stop offset="1" stop-color="#061c42" />
+                                </linearGradient>
+                                <linearGradient id="vd-green" x1="120" y1="70" x2="76" y2="140" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#008c08" />
+                                    <stop offset="1" stop-color="#0b8f00" />
+                                </linearGradient>
+                                <linearGradient id="vd-lime" x1="126" y1="52" x2="78" y2="140" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#c9ff19" />
+                                    <stop offset=".48" stop-color="#adff1d" />
+                                    <stop offset="1" stop-color="#59cf2e" />
+                                </linearGradient>
+                            </defs>
+                            <g transform="translate(-49.06732 -47.742905)">
+                                <path class="ring-outer" fill="url(#vd-blue)" d="M95.7177 61.661952a46.65 46.65 0 1 0 0 93.300248 46.65 46.65 0 0 0 0-93.300248Zm0 10.20041a37.05 36.45 0 1 1 0 72.899938 37.05 36.45 0 0 1 0-72.899938Z" />
+                                <path class="ring-inner" fill="url(#vd-blue)" d="M84.317601 93.352764a27.55924 27.55924 0 1 0 0 55.118626 27.55924 27.55924 0 0 0 0-55.118626Zm0 6.026046a21.887887 21.533426 0 1 1 0 43.06683 21.887887 21.533426 0 0 1 0-43.06683Z" />
+                                <path class="speed-line" d="m151 39-21 24" />
+                                <path class="speed-line second" d="m157 53-18 20" />
+                                <path class="speed-line third" d="m143 34-15 17" />
+                                <path class="bolt-shadow" fill="url(#vd-green)" d="m102.0894 70.232492 39.6875-.52917-66.93958 70.643748Z" />
+                                <path class="bolt-main" fill="url(#vd-lime)" d="m98.64982 56.209572 34.39583-8.466667-58.20833 92.604165Z" />
+                            </g>
+                        </svg>
+                    </div>
+                    <h1><?php echo $heading; ?></h1>
+                    <div class="content">
+                        <?php echo $body_content; ?>
+                    </div>
+                    <a href="<?php echo esc_url(home_url()); ?>" class="btn-reload">Muat Ulang</a>
                 </div>
-                <a href="<?php echo esc_url(home_url()); ?>" class="btn-reload">
-                    Muat Ulang
-                </a>
             </div>
         </body>
 
@@ -188,48 +415,9 @@ class Velocity_Addons_Maintenance_Mode
         exit();
     }
 
-    public static function qc_maintenance()
-    {
-        echo '<div class="notice notice-warning notice-alt">';
-        echo self::check_permalink_settings();
-        echo self::check_site_icon();
-        echo self::check_recaptcha();
-        echo self::check_seo();
-        echo self::check_domain_extension();
-        echo self::check_installed_plugins();
-        echo '</div>';
-    }
+    public static function qc_maintenance() {}
 
-    public static function qc_maintenance_list()
-    {
-        $parts = array(
-            self::check_permalink_settings(),
-            self::check_site_icon(),
-            self::check_recaptcha(),
-            self::check_seo(),
-            self::check_domain_extension(),
-            self::check_installed_plugins(),
-        );
-        $items = array();
-        foreach ($parts as $html) {
-            $html = trim((string) $html);
-            if ($html === '') {
-                continue;
-            }
-            if (preg_match_all('~<p>(.*?)</p>~is', $html, $m)) {
-                foreach ($m[1] as $segment) {
-                    $items[] = '<li>' . $segment . '</li>';
-                }
-            } else {
-                $items[] = '<li>' . $html . '</li>';
-            }
-        }
-        if (empty($items)) {
-            echo '<p>Tidak ada item QC yang perlu ditampilkan.</p>';
-            return;
-        }
-        echo '<ul class="vd-list">' . implode('', $items) . '</ul>';
-    }
+    public static function qc_maintenance_list() {}
 
     public static function check_domain_extension()
     {

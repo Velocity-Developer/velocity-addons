@@ -28,7 +28,7 @@ jQuery(document).ready(function ($) {
       $("#vd-share-dropzone").addClass("has-image");
       if (attachment.height < 200 || attachment.width < 200) {
         $("#vd-share-dropzone .vd-share-preview").append(
-          '<div class="vdaddons-notice">Minimal Ukuran gambar 200x200</div>'
+          '<div class="vdaddons-notice">Minimal Ukuran gambar 200x200</div>',
         );
       }
     });
@@ -77,17 +77,17 @@ jQuery(document).ready(function ($) {
           $("#reset-message").html(
             '<div class="notice notice-success is-dismissible"><p>' +
               response.data +
-              "</p></div>"
+              "</p></div>",
           );
         } else {
           $("#reset-message").html(
-            '<div class="notice notice-error is-dismissible"><p>Terjadi kesalahan saat mereset data.</p></div>'
+            '<div class="notice notice-error is-dismissible"><p>Terjadi kesalahan saat mereset data.</p></div>',
           );
         }
       },
       error: function () {
         $("#reset-message").html(
-          '<div class="notice notice-error is-dismissible"><p>Terjadi kesalahan saat mengirim permintaan AJAX.</p></div>'
+          '<div class="notice notice-error is-dismissible"><p>Terjadi kesalahan saat mengirim permintaan AJAX.</p></div>',
         );
       },
     });

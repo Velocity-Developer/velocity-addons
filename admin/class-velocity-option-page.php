@@ -53,39 +53,92 @@ class Custom_Admin_Option_Page
             70
         );
 
-        $seo_velocity = get_option('seo_velocity', '1');
-        if ($seo_velocity == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'SEO',
-                'SEO',
-                'manage_options',
-                'velocity_seo_settings',
-                array($this, 'velocity_seo_page'),
-            );
-        }
-
         $floating_whatsapp = get_option('floating_whatsapp', '1');
         if ($floating_whatsapp == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
-                'Floating Whatsapp',
-                'Floating Whatsapp',
+                'WhatsApp General',
+                'WhatsApp',
                 'manage_options',
                 'velocity_floating_whatsapp',
                 [$this, 'velocity_floating_whatsapp_page'],
             );
         }
 
-        $news_generate = get_option('news_generate', '1');
-        if ($news_generate == '1') {
+        add_submenu_page(
+            'admin_velocity_addons',
+            'General',
+            'General',
+            'manage_options',
+            'velocity_general_settings',
+            array($this, 'velocity_general_page'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Pengaturan Fitur',
+            'Fitur',
+            'manage_options',
+            'velocity_feature_settings',
+            array($this, 'velocity_feature_page'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Security',
+            'Security',
+            'manage_options',
+            'velocity_security_settings',
+            array($this, 'velocity_security_page'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Captcha',
+            'Captcha',
+            'manage_options',
+            'velocity_captcha_settings',
+            array($this, 'velocity_captcha_page'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Maintenance Mode',
+            'Maintenance',
+            'manage_options',
+            'velocity_maintenance_settings',
+            array($this, 'velocity_maintenance_page'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Script Header',
+            'Script',
+            'manage_options',
+            'velocity_snippet_settings',
+            array($this, 'velocity_snippet_settings'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Snippet Body',
+            'Body',
+            'manage_options',
+            'velocity_snippet_body_settings',
+            array($this, 'velocity_snippet_settings'),
+        );
+        add_submenu_page(
+            'admin_velocity_addons',
+            'Script Footer',
+            'Footer',
+            'manage_options',
+            'velocity_snippet_footer_settings',
+            array($this, 'velocity_snippet_settings'),
+        );
+
+        $floating_whatsapp = get_option('floating_whatsapp', '1');
+        if ($floating_whatsapp == '1') {
             add_submenu_page(
                 'admin_velocity_addons',
-                'Import Artikel',
-                'Import Artikel',
+                'WhatsApp General',
+                'WhatsApp',
                 'manage_options',
-                'velocity_news_settings',
-                array($this, 'velocity_news_page'),
+                'velocity_floating_whatsapp',
+                [$this, 'velocity_floating_whatsapp_page'],
             );
         }
 
@@ -101,46 +154,44 @@ class Custom_Admin_Option_Page
             );
         }
 
+        $statistik_velocity = get_option('statistik_velocity', '1');
+        if ($statistik_velocity == '1') {
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Statistic',
+                'Statistics',
+                'manage_options',
+                'velocity_statistics',
+                array($this, 'visitor_stats_page_callback')
+            );
+            add_submenu_page(
+                'admin_velocity_addons',
+                'Shortcode Statistik',
+                'Shortcode',
+                'manage_options',
+                'velocity_statistics_shortcode',
+                array($this, 'visitor_stats_page_callback')
+            );
+        }
+
         add_submenu_page(
             'admin_velocity_addons',
-            'Pengaturan Umum',
-            'Pengaturan Umum',
+            'Optimize Database',
+            'Optimize',
             'manage_options',
-            'velocity_general_settings',
-            array($this, 'velocity_general_page'),
+            'velocity_optimize_db',
+            array($this, 'optimize_db_page_callback')
         );
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Captcha',
-            'Captcha',
-            'manage_options',
-            'velocity_captcha_settings',
-            array($this, 'velocity_captcha_page'),
-        );
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Maintenance Mode',
-            'Maintenance Mode',
-            'manage_options',
-            'velocity_maintenance_settings',
-            array($this, 'velocity_maintenance_page'),
-        );
+
         add_submenu_page(
             'admin_velocity_addons',
             'License',
-            'License',
+            'PRO',
             'manage_options',
             'velocity_license_settings',
             array($this, 'velocity_license_page'),
         );
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Security',
-            'Security',
-            'manage_options',
-            'velocity_security_settings',
-            array($this, 'velocity_security_page'),
-        );
+
         add_submenu_page(
             'admin_velocity_addons',
             'Auto Resize',
@@ -150,37 +201,21 @@ class Custom_Admin_Option_Page
             array($this, 'velocity_auto_resize_page'),
         );
 
-        add_submenu_page(
-            'admin_velocity_addons',
-            'Code Snippet',
-            'Code Snippet',
-            'manage_options',
-            'velocity_snippet_settings',
-            array($this, 'velocity_snippet_settings'),
+        $hidden_submenus = array(
+            'velocity_seo_settings',
+            'velocity_news_settings',
+            'velocity_feature_settings',
+            'velocity_captcha_settings',
+            'velocity_maintenance_settings',
+            'velocity_auto_resize_settings',
+            'velocity_snippet_body_settings',
+            'velocity_snippet_footer_settings',
+            'velocity_floating_whatsapp_style',
+            'velocity_statistics_shortcode',
         );
 
-        $statistik_velocity = get_option('statistik_velocity', '1');
-        if ($statistik_velocity == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Statistik Pengunjung',
-                'Statistik Pengunjung',
-                'manage_options',
-                'velocity_statistics',
-                array($this, 'visitor_stats_page_callback')
-            );
-        }
-
-        $optimasi_velocity = get_option('velocity_optimasi', '0');
-        if ($optimasi_velocity == '1') {
-            add_submenu_page(
-                'admin_velocity_addons',
-                'Optimize Database',
-                'Optimize Database',
-                'manage_options',
-                'velocity_optimize_db',
-                array($this, 'optimize_db_page_callback')
-            );
+        foreach ($hidden_submenus as $submenu_slug) {
+            remove_submenu_page('admin_velocity_addons', $submenu_slug);
         }
     }
 
@@ -209,9 +244,72 @@ class Custom_Admin_Option_Page
         Velocity_Addons_Duitku::render_settings_page();
     }
 
-    public function page_velocity_addons()
+    private function get_admin_velocity_addons_sub_pages()
+    {
+        return array(
+            'dashboard' => array($this, 'render_dashboard_page'),
+            'auto-resize' => array($this, 'velocity_auto_resize_page'),
+            'seo' => array($this, 'velocity_seo_page'),
+            'general' => array($this, 'velocity_general_page'),
+            'fitur' => array($this, 'velocity_feature_page'),
+            'security' => array($this, 'velocity_security_page'),
+            'captcha' => array($this, 'velocity_captcha_page'),
+            'maintenance' => array($this, 'velocity_maintenance_page'),
+            'script' => array($this, 'velocity_snippet_settings'),
+            'body' => array($this, 'velocity_snippet_settings'),
+            'footer' => array($this, 'velocity_snippet_settings'),
+            'whatsapp' => array($this, 'velocity_floating_whatsapp_page'),
+            'whatsapp-style' => array($this, 'velocity_floating_whatsapp_page'),
+            'duitku' => array($this, 'velocity_duitku_page'),
+            'statistics' => array($this, 'visitor_stats_page_callback'),
+            'shortcode' => array($this, 'visitor_stats_page_callback'),
+            'optimasi' => array($this, 'optimize_db_page_callback'),
+            'license' => array($this, 'velocity_license_page'),
+            'import-artikel' => array($this, 'velocity_news_page'),
+        );
+    }
+
+    public function render_dashboard_page()
     {
         Velocity_Addons_Dashboard::render_dashboard_page();
+    }
+
+    public function page_velocity_addons()
+    {
+        $sub = isset($_GET['sub']) ? sanitize_key(wp_unslash($_GET['sub'])) : 'dashboard';
+        $pages = $this->get_admin_velocity_addons_sub_pages();
+        $page_slugs = [
+            'dashboard' => 'admin_velocity_addons',
+            'auto-resize' => 'velocity_auto_resize_settings',
+            'seo' => 'velocity_seo_settings',
+            'general' => 'velocity_general_settings',
+            'fitur' => 'velocity_feature_settings',
+            'security' => 'velocity_security_settings',
+            'captcha' => 'velocity_captcha_settings',
+            'maintenance' => 'velocity_maintenance_settings',
+            'script' => 'velocity_snippet_settings',
+            'body' => 'velocity_snippet_body_settings',
+            'footer' => 'velocity_snippet_footer_settings',
+            'whatsapp' => 'velocity_floating_whatsapp',
+            'whatsapp-style' => 'velocity_floating_whatsapp_style',
+            'duitku' => 'velocity_duitku_settings',
+            'statistics' => 'velocity_statistics',
+            'shortcode' => 'velocity_statistics_shortcode',
+            'optimasi' => 'velocity_optimize_db',
+            'license' => 'velocity_license_settings',
+            'import-artikel' => 'velocity_news_settings',
+        ];
+
+        if (isset($page_slugs[$sub])) {
+            $_GET['page'] = $page_slugs[$sub];
+        }
+
+        if (isset($pages[$sub]) && is_callable($pages[$sub])) {
+            call_user_func($pages[$sub]);
+            return;
+        }
+
+        $this->render_dashboard_page();
     }
 
     public function register_settings()
@@ -534,25 +632,6 @@ class Custom_Admin_Option_Page
         unset($pages_tabs['umum']);
 ?>
         <div class="velocity-dashboard-wrapper vd-ons">
-            <div class="vd-header">
-                <h1 class="vd-title">Pengaturan Admin</h1>
-                <p class="vd-subtitle">Gunakan submenu di bawah "Velocity Addons" untuk mengakses masing-masing pengaturan.</p>
-            </div>
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Quick Links</h3>
-                </div>
-                <div class="vd-section-body">
-                    <ul class="vd-list">
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_general_settings'); ?>">Pengaturan Umum</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_captcha_settings'); ?>">Captcha</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_maintenance_settings'); ?>">Maintenance Mode</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_license_settings'); ?>">License</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_security_settings'); ?>">Security</a></li>
-                        <li><a href="<?php echo admin_url('admin.php?page=velocity_auto_resize_settings'); ?>">Auto Resize</a></li>
-                    </ul>
-                </div>
-            </div>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
@@ -563,35 +642,44 @@ class Custom_Admin_Option_Page
     public function velocity_general_page()
     {
         if (!current_user_can('manage_options')) return;
+        $fields = [
+            ['id' => 'fully_disable_comment', 'type' => 'checkbox', 'title' => 'Disable Comment', 'std' => 1, 'label' => 'Nonaktifkan fitur komentar pada situs.'],
+            ['id' => 'hide_admin_notice', 'type' => 'checkbox', 'title' => 'Hide Admin Notice', 'std' => 0, 'label' => 'Sembunyikan pemberitahuan admin di halaman admin. Pemberitahuan admin seringkali muncul untuk memberikan informasi atau peringatan kepada admin situs.'],
+            ['id' => 'disable_gutenberg', 'type' => 'checkbox', 'title' => 'Disable Gutenberg', 'std' => 0, 'label' => 'Aktifkan editor klasik WordPress menggantikan Gutenberg.'],
+            ['id' => 'classic_widget_velocity', 'type' => 'checkbox', 'title' => 'Classic Widget', 'std' => 1, 'label' => 'Aktifkan widget klasik.'],
+            ['id' => 'enable_xml_sitemap', 'type' => 'checkbox', 'title' => 'XML Sitemap', 'std' => 1, 'label' => 'Aktifkan XML Sitemap Generator (sitemap.xml).'],
+            ['id' => 'floating_scrollTop', 'type' => 'checkbox', 'title' => 'Floating Scrolltop', 'std' => 1, 'label' => 'Aktifkan scrollTop ke halaman atas.'],
+            ['id' => 'remove_slug_category_velocity', 'type' => 'checkbox', 'title' => 'Remove Slug Category', 'std' => 0, 'label' => 'Aktifkan untuk hapus slug /category/ dari URL.'],
+        ];
+        $this->render_general_settings_section('velocity_general_settings', 'General', 'Pengaturan dasar situs dan perilaku WordPress.', $fields);
+    }
+
+    public function velocity_feature_page()
+    {
+        if (!current_user_can('manage_options')) return;
+        $fields = [
+            ['id' => 'seo_velocity', 'type' => 'checkbox', 'title' => 'SEO', 'std' => 1, 'label' => 'Aktifkan SEO dari Velocity Developer.'],
+            ['id' => 'statistik_velocity', 'type' => 'checkbox', 'title' => 'Statistik Pengunjung', 'std' => 1, 'label' => 'Aktifkan statistik pengunjung dari Velocity Developer.'],
+            ['id' => 'floating_whatsapp', 'type' => 'checkbox', 'title' => 'Floating Whatsapp', 'std' => 1, 'label' => 'Aktifkan Whatsapp Floating.'],
+            ['id' => 'news_generate', 'type' => 'checkbox', 'title' => 'Import Artikel dari API', 'std' => 1, 'label' => 'Aktifkan fungsi untuk import artikel postingan.'],
+            ['id' => 'velocity_gallery', 'type' => 'checkbox', 'title' => 'Gallery Post Type', 'std' => 0, 'label' => 'Aktifkan fungsi untuk menggunakan Gallery Post Type.'],
+            ['id' => 'velocity_duitku', 'type' => 'checkbox', 'title' => 'Payment Gateway Duitku', 'std' => 0, 'label' => 'Aktifkan payment gateway Duitku.'],
+        ];
+        $this->render_general_settings_section('velocity_feature_settings', 'Pengaturan Fitur', 'Aktif/nonaktif fitur addon Velocity.', $fields);
+    }
+
+    private function render_general_settings_section($page_slug, $title, $subtitle, $fields)
+    {
     ?>
         <div class="velocity-dashboard-wrapper">
-            <div class="vd-header">
-                <h1 class="vd-title">Pengaturan Umum</h1>
-                <p class="vd-subtitle">Pengaturan dasar fitur Velocity Addons.</p>
-            </div>
+            <?php Velocity_Addons_Admin_Navigation::render($page_slug); ?>
             <form id="velocity-general-form" method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Umum</h3>
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;"><?php echo esc_html($title); ?></h3>
                     </div>
                     <div class="vd-section-body">
                         <?php
-                        $fields = [
-                            ['id' => 'fully_disable_comment', 'type' => 'checkbox', 'title' => 'Disable Comment', 'std' => 1, 'label' => 'Nonaktifkan fitur komentar pada situs.'],
-                            ['id' => 'hide_admin_notice', 'type' => 'checkbox', 'title' => 'Hide Admin Notice', 'std' => 0, 'label' => 'Sembunyikan pemberitahuan admin di halaman admin. Pemberitahuan admin seringkali muncul untuk memberikan informasi atau peringatan kepada admin situs.'],
-                            ['id' => 'disable_gutenberg', 'type' => 'checkbox', 'title' => 'Disable Gutenberg', 'std' => 0, 'label' => 'Aktifkan editor klasik WordPress menggantikan Gutenberg.'],
-                            ['id' => 'classic_widget_velocity', 'type' => 'checkbox', 'title' => 'Classic Widget', 'std' => 1, 'label' => 'Aktifkan widget klasik.'],
-                            ['id' => 'enable_xml_sitemap', 'type' => 'checkbox', 'title' => 'XML Sitemap', 'std' => 1, 'label' => 'Aktifkan XML Sitemap Generator (sitemap.xml).'],
-                            ['id' => 'seo_velocity', 'type' => 'checkbox', 'title' => 'SEO', 'std' => 1, 'label' => 'Aktifkan SEO dari Velocity Developer.'],
-                            ['id' => 'statistik_velocity', 'type' => 'checkbox', 'title' => 'Statistik Pengunjung', 'std' => 1, 'label' => 'Aktifkan statistik pengunjung dari Velocity Developer.'],
-                            ['id' => 'floating_whatsapp', 'type' => 'checkbox', 'title' => 'Floating Whatsapp', 'std' => 1, 'label' => 'Aktifkan Whatsapp Floating.'],
-                            ['id' => 'floating_scrollTop', 'type' => 'checkbox', 'title' => 'Floating Scrolltop', 'std' => 1, 'label' => 'Aktifkan scrollTop ke halaman atas.'],
-                            ['id' => 'remove_slug_category_velocity', 'type' => 'checkbox', 'title' => 'Remove Slug Category', 'std' => 0, 'label' => 'Aktifkan untuk hapus slug /category/ dari URL.'],
-                            ['id' => 'news_generate', 'type' => 'checkbox', 'title' => 'Import Artikel dari API', 'std' => 1, 'label' => 'Aktifkan fungsi untuk import artikel postingan.'],
-                            ['id' => 'velocity_gallery', 'type' => 'checkbox', 'title' => 'Gallery Post Type', 'std' => 0, 'label' => 'Aktifkan fungsi untuk menggunakan Gallery Post Type.'],
-                            ['id' => 'velocity_optimasi', 'type' => 'checkbox', 'title' => 'Optimize Database', 'std' => 0, 'label' => 'Aktifkan fungsi untuk mengoptimalkan situs dari database.'],
-                            ['id' => 'velocity_duitku', 'type' => 'checkbox', 'title' => 'Payment Gateway Duitku', 'std' => 0, 'label' => 'Aktifkan payment gateway Duitku.'],
-                        ];
                         foreach ($fields as $data) {
                             $id   = $data['id'];
                             $std  = isset($data['std']) ? $data['std'] : '';
@@ -616,11 +704,13 @@ class Custom_Admin_Option_Page
             </form>
             <div class="vd-actions">
                 <button type="submit" class="button button-primary" form="velocity-general-form">Simpan Perubahan</button>
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                    <?php wp_nonce_field('velocity_reset_general_defaults'); ?>
-                    <input type="hidden" name="action" value="velocity_reset_general_defaults">
-                    <button type="submit" class="button">Set ke Default</button>
-                </form>
+                <?php if ($page_slug === 'velocity_general_settings') : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <?php wp_nonce_field('velocity_reset_general_defaults'); ?>
+                        <input type="hidden" name="action" value="velocity_reset_general_defaults">
+                        <button type="submit" class="button">Set ke Default</button>
+                    </form>
+                <?php endif; ?>
             </div>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
@@ -663,10 +753,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
-            <div class="vd-header">
-                <h1 class="vd-title">Captcha</h1>
-                <p class="vd-subtitle">Pengaturan Captcha (Google reCaptcha v2 atau Gambar).</p>
-            </div>
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -675,7 +762,7 @@ class Custom_Admin_Option_Page
                     <div class="vd-section-body">
                         <?php
                         $opt = get_option('captcha_velocity', []);
-                        $providerVal = isset($opt['provider']) ? $opt['provider'] : 'google';
+                        $providerVal = isset($opt['provider']) ? $opt['provider'] : 'image';
                         $fields = [
                             ['id' => 'captcha_velocity', 'sub' => 'provider', 'type' => 'select', 'title' => 'Provider', 'label' => 'Pilih jenis captcha yang digunakan.', 'options' => ['google' => 'Google reCaptcha v2', 'image' => 'Captcha Gambar']],
                             ['id' => 'captcha_velocity', 'sub' => 'aktif', 'type' => 'checkbox', 'title' => 'Captcha', 'std' => 1, 'label' => 'Aktifkan Captcha', 'desc' => 'Gunakan Captcha di Form Login, Komentar dan Velocity Toko. Untuk Contact Form 7 gunakan [velocity_captcha]'],
@@ -752,10 +839,7 @@ class Custom_Admin_Option_Page
         if (function_exists('wp_enqueue_media')) wp_enqueue_media();
     ?>
         <div class="velocity-dashboard-wrapper">
-            <div class="vd-header">
-                <h1 class="vd-title">Maintenance Mode</h1>
-                <p class="vd-subtitle">Pengaturan tampilan dan status maintenance situs.</p>
-            </div>
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -873,10 +957,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
-            <div class="vd-header">
-                <h1 class="vd-title">License</h1>
-                <p class="vd-subtitle">Verifikasi lisensi Velocity Addons.</p>
-            </div>
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -915,10 +996,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
-            <div class="vd-header">
-                <h1 class="vd-title">Security</h1>
-                <p class="vd-subtitle">Pengaturan keamanan akses dan login.</p>
-            </div>
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -976,10 +1054,7 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <div class="velocity-dashboard-wrapper">
-            <div class="vd-header">
-                <h1 class="vd-title">Auto Resize Image</h1>
-                <p class="vd-subtitle">Pengaturan re-sizing otomatis untuk gambar.</p>
-            </div>
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <form method="post" data-velocity-settings="1">
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
@@ -1036,13 +1111,16 @@ class Custom_Admin_Option_Page
             wp_die(__('You do not have sufficient permissions to access this page.'));
         }
 
+        $current_page      = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : 'velocity_statistics';
+        $is_shortcode_page = $current_page === 'velocity_statistics_shortcode';
+
         static $stats_handler = null;
         if (! $stats_handler) {
             $stats_handler = new Velocity_Addons_Statistic();
         }
 
         $rebuild_message = '';
-        if (isset($_POST['reset_stats']) && check_admin_referer('reset_stats')) {
+        if (! $is_shortcode_page && isset($_POST['reset_stats']) && check_admin_referer('reset_stats')) {
             $stats_handler->reset_statistics();
             $rebuild_message = 'Statistik berhasil di-reset. Semua data statistik dan meta hit telah dihapus.';
         }
@@ -1053,220 +1131,227 @@ class Custom_Admin_Option_Page
 
     ?>
         <div class="velocity-dashboard-wrapper vd-ons" id="velocity-statistics-page">
-            <div class="vd-header">
-                <h1 class="vd-title">Statistik Pengunjung</h1>
-                <p class="vd-subtitle">Ringkasan trafik dan halaman populer situs.</p>
-            </div>
-            <div id="velocity-statistics-notice" class="notice <?php echo $rebuild_message ? 'notice-success' : ''; ?>" style="display:<?php echo $rebuild_message ? 'block' : 'none'; ?>">
-                <?php if ($rebuild_message): ?>
-                    <p><?php echo esc_html($rebuild_message); ?></p>
-                <?php endif; ?>
-            </div>
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Reset & Tools</h3>
-                </div>
-                <div class="vd-section-body">
-                    <form method="post" style="display:inline;" id="velocity-statistics-reset-form">
-                        <?php wp_nonce_field('reset_stats'); ?>
-                        <input type="hidden" name="reset_stats" value="1">
-                        <button type="submit" class="button button-secondary"
-                            id="velocity-statistics-reset-button"
-                            data-confirm-message="Apakah Anda yakin ingin me-reset statistik? Tindakan ini akan menghapus semua data statistik dan meta hit secara permanen.">
-                            Reset Statistik
-                        </button>
-                        <span style="vertical-align:middle;margin-left:10px;color:#666;font-size:13px;">Gunakan ini untuk mengosongkan seluruh data statistik</span>
-                    </form>
-                </div>
-            </div>
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Ringkasan</h3>
-                </div>
-                <div class="vd-section-body">
-                    <div class="vd-grid">
-                        <?php
-                        $cards = array(
-                            'today'      => array('label' => 'Hari Ini', 'data' => $summary_stats['today']),
-                            'this_week'  => array('label' => 'Minggu Ini', 'data' => $summary_stats['this_week']),
-                            'this_month' => array('label' => 'Bulan Ini', 'data' => $summary_stats['this_month']),
-                            'all_time'   => array('label' => 'All Time', 'data' => $summary_stats['all_time']),
-                        );
-                        foreach ($cards as $card_key => $card):
-                            $label = $card['label'];
-                            $obj   = $card['data'];
-                        ?>
-                            <div class="vd-card" style="text-align:center" data-stat-card="<?php echo esc_attr($card_key); ?>">
-                                <h3 style="margin:0 0 10px;color:#0073aa;"><?php echo esc_html($label); ?></h3>
-                                <div style="font-size:24px;font-weight:700;color:#23282d;" data-stat-unique><?php echo number_format_i18n((int) ($obj->unique_visitors ?? 0)); ?></div>
-                                <div style="color:#666;font-size:14px;">Pengunjung Unik</div>
-                                <div style="color:#999;font-size:12px;"><span data-stat-total><?php echo number_format_i18n((int) ($obj->total_visits ?? 0)); ?></span> total visits</div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </div>
-            <div class="vd-grid-2">
+            <?php Velocity_Addons_Admin_Navigation::render($current_page); ?>
+
+            <?php if ($is_shortcode_page) : ?>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Daily Visits (Last 30 Days)</h3>
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Shortcode: [velocity-statistics]</h3>
                     </div>
                     <div class="vd-section-body">
-                        <canvas id="dailyVisitsChart" style="width:100%;height:220px"></canvas>
+                        <p>Tampilkan statistik visitor di halaman, post, atau widget.</p>
+                        <ul class="vd-list">
+                            <li><span class="vd-code">style</span>: pilih tampilan statistik. <span class="vd-code">list</span> atau <span class="vd-code">inline</span></li>
+                            <li><span class="vd-code">show</span>: filter data yang ditampilkan. <span class="vd-code">all</span>, <span class="vd-code">today</span>, atau <span class="vd-code">total</span></li>
+                            <li><span class="vd-code">with_online</span>: tampilkan jumlah pengunjung online saat ini</li>
+                            <li><span class="vd-code">label_*</span>: ganti label baris counter</li>
+                        </ul>
+                        <div class="vd-grid-2">
+                            <div>
+                                <h6>Basic</h6>
+                                <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                    <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics]')">[velocity-statistics]</span>
+                                    <button onclick="copyToClipboard('[velocity-statistics]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                                </div>
+                                <div style="font-size:13px;color:#666;">Semua statistik</div>
+                                <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin:10px 0;overflow:hidden;">
+                                    <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics show=&quot;today&quot;]')">[velocity-statistics show="today"]</span>
+                                    <button onclick="copyToClipboard('[velocity-statistics show=&quot;today&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                                </div>
+                                <div style="font-size:13px;color:#666;">Hanya hari ini</div>
+                            </div>
+                            <div>
+                                <h6>Advanced</h6>
+                                <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                    <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics with_online=&quot;0&quot;]')">[velocity-statistics with_online="0"]</span>
+                                    <button onclick="copyToClipboard('[velocity-statistics with_online=&quot;0&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                                </div>
+                                <div style="font-size:13px;color:#666;">Sembunyikan baris Pengunjung Online</div>
+                                <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin:10px 0;overflow:hidden;">
+                                    <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')">[velocity-statistics label_today_visits="Traffic Hari Ini" label_today_visitors="Visitor Hari Ini" label_total_visits="Total Traffic" label_total_visitors="Total Visitor"]</span>
+                                    <button onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                                </div>
+                                <div style="font-size:13px;color:#666;">Custom label counter</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="vd-section">
                     <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Halaman Teratas</h3>
+                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Shortcode: [velocity-hits]</h3>
                     </div>
                     <div class="vd-section-body">
-                        <canvas id="topPagesChart" style="width:100%;height:220px"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Shortcode: [velocity-statistics]</h3>
-                </div>
-                <div class="vd-section-body">
-                    <p>Tampilkan statistik visitor di halaman, post, atau widget.</p>
-                    <ul class="vd-list">
-                        <li><span class="vd-code">style</span>: pilih tampilan statistik. <span class="vd-code">list</span> atau <span class="vd-code">inline</span></li>
-                        <li><span class="vd-code">show</span>: filter data yang ditampilkan. <span class="vd-code">all</span>, <span class="vd-code">today</span>, atau <span class="vd-code">total</span></li>
-                        <li><span class="vd-code">with_online</span>: tampilkan jumlah pengunjung online saat ini</li>
-                        <li><span class="vd-code">label_*</span>: ganti label baris counter</li>
-                    </ul>
-                    <div class="vd-grid-2">
-                        <div>
-                            <h6>Basic</h6>
-                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
-                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics]')">[velocity-statistics]</span>
-                                <button onclick="copyToClipboard('[velocity-statistics]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                        <p>Tampilkan nilai meta hit pada posting.</p>
+                        <ul class="vd-list">
+                            <li><span class="vd-code">post_id</span>: ID posting (opsional)</li>
+                            <li><span class="vd-code">format</span>: <span class="vd-code">number</span> atau <span class="vd-code">compact</span></li>
+                            <li><span class="vd-code">before</span>/<span class="vd-code">after</span>: teks sebelum/sesudah angka</li>
+                            <li><span class="vd-code">class</span>: CSS class untuk elemen angka</li>
+                        </ul>
+                        <div class="vd-grid-2">
+                            <div>
+                                <h6>Basic</h6>
+                                <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                    <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-hits]')">[velocity-hits]</span>
+                                    <button onclick="copyToClipboard('[velocity-hits]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                                </div>
+                                <div style="font-size:13px;color:#666;">Memakai get_the_ID()</div>
                             </div>
-                            <div style="font-size:13px;color:#666;">Semua statistik</div>
-                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin:10px 0;overflow:hidden;">
-                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics show=&quot;today&quot;]')">[velocity-statistics show="today"]</span>
-                                <button onclick="copyToClipboard('[velocity-statistics show=&quot;today&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                            <div>
+                                <h6>Advanced</h6>
+                                <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
+                                    <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-hits post_id=&quot;123&quot; format=&quot;compact&quot; before=&quot;&quot; after=&quot; views&quot;]')">[velocity-hits post_id="123" format="compact" before="" after=" views"]</span>
+                                    <button onclick="copyToClipboard('[velocity-hits post_id=&quot;123&quot; format=&quot;compact&quot; before=&quot;&quot; after=&quot; views&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
+                                </div>
+                                <div style="font-size:13px;color:#666;">Pakai ID tertentu + format singkat + label</div>
                             </div>
-                            <div style="font-size:13px;color:#666;">Hanya hari ini</div>
-                        </div>
-                        <div>
-                            <h6>Advanced</h6>
-                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
-                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics with_online=&quot;0&quot;]')">[velocity-statistics with_online="0"]</span>
-                                <button onclick="copyToClipboard('[velocity-statistics with_online=&quot;0&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
-                            </div>
-                            <div style="font-size:13px;color:#666;">Sembunyikan baris Pengunjung Online</div>
-                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin:10px 0;overflow:hidden;">
-                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')">[velocity-statistics label_today_visits="Traffic Hari Ini" label_today_visitors="Visitor Hari Ini" label_total_visits="Total Traffic" label_total_visitors="Total Visitor"]</span>
-                                <button onclick="copyToClipboard('[velocity-statistics label_today_visits=&quot;Traffic Hari Ini&quot; label_today_visitors=&quot;Visitor Hari Ini&quot; label_total_visits=&quot;Total Traffic&quot; label_total_visitors=&quot;Total Visitor&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
-                            </div>
-                            <div style="font-size:13px;color:#666;">Custom label counter</div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="vd-section">
-                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Shortcode: [velocity-hits]</h3>
+                <div class="vd-footer">
+                    <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
                 </div>
-                <div class="vd-section-body">
-                    <p>Tampilkan nilai meta hit pada posting.</p>
-                    <ul class="vd-list">
-                        <li><span class="vd-code">post_id</span>: ID posting (opsional)</li>
-                        <li><span class="vd-code">format</span>: <span class="vd-code">number</span> atau <span class="vd-code">compact</span></li>
-                        <li><span class="vd-code">before</span>/<span class="vd-code">after</span>: teks sebelum/sesudah angka</li>
-                        <li><span class="vd-code">class</span>: CSS class untuk elemen angka</li>
-                    </ul>
-                    <div class="vd-grid-2">
-                        <div>
-                            <h6>Basic</h6>
-                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
-                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-hits]')">[velocity-hits]</span>
-                                <button onclick="copyToClipboard('[velocity-hits]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
-                            </div>
-                            <div style="font-size:13px;color:#666;">Memakai get_the_ID()</div>
-                        </div>
-                        <div>
-                            <h6>Advanced</h6>
-                            <div style="background:#f1f1f1;padding:12px;border-radius:6px;font-family:monospace;margin-bottom:10px;overflow:hidden;">
-                                <span style="color:#0073aa;cursor:pointer;" onclick="copyToClipboard('[velocity-hits post_id=&quot;123&quot; format=&quot;compact&quot; before=&quot;&quot; after=&quot; views&quot;]')">[velocity-hits post_id="123" format="compact" before="" after=" views"]</span>
-                                <button onclick="copyToClipboard('[velocity-hits post_id=&quot;123&quot; format=&quot;compact&quot; before=&quot;&quot; after=&quot; views&quot;]')" class="button button-secondary" style="float: right;background: #0073aa;color: white;border: none;padding: 1px 8px;border-radius: 4px;font-size: 11px;cursor: pointer;line-height: 13px;min-height: 20px;">Copy</button>
-                            </div>
-                            <div style="font-size:13px;color:#666;">Pakai ID tertentu + format singkat + label</div>
-                        </div>
+        </div>
+    <?php
+                return;
+            endif;
+    ?>
+    <div id="velocity-statistics-notice" class="notice <?php echo $rebuild_message ? 'notice-success' : ''; ?>" style="display:<?php echo $rebuild_message ? 'block' : 'none'; ?>">
+        <?php if ($rebuild_message): ?>
+            <p><?php echo esc_html($rebuild_message); ?></p>
+        <?php endif; ?>
+    </div>
+    <div class="vd-section">
+        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Ringkasan</h3>
+        </div>
+        <div class="vd-section-body">
+            <div class="vd-grid">
+                <?php
+                $cards = array(
+                    'today'      => array('label' => 'Hari Ini', 'data' => $summary_stats['today']),
+                    'this_week'  => array('label' => 'Minggu Ini', 'data' => $summary_stats['this_week']),
+                    'this_month' => array('label' => 'Bulan Ini', 'data' => $summary_stats['this_month']),
+                    'all_time'   => array('label' => 'All Time', 'data' => $summary_stats['all_time']),
+                );
+                foreach ($cards as $card_key => $card):
+                    $label = $card['label'];
+                    $obj   = $card['data'];
+                ?>
+                    <div class="vd-card" style="text-align:center" data-stat-card="<?php echo esc_attr($card_key); ?>">
+                        <h3 style="margin:0 0 10px;color:#0073aa;"><?php echo esc_html($label); ?></h3>
+                        <div style="font-size:24px;font-weight:700;color:#23282d;" data-stat-unique><?php echo number_format_i18n((int) ($obj->unique_visitors ?? 0)); ?></div>
+                        <div style="color:#666;font-size:14px;">Pengunjung Unik</div>
+                        <div style="color:#999;font-size:12px;"><span data-stat-total><?php echo number_format_i18n((int) ($obj->total_visits ?? 0)); ?></span> total visits</div>
                     </div>
-                </div>
-            </div>
-            <div class="vd-grid-2">
-                <div class="vd-section">
-                    <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Halaman Teratas (30 Hari)</h3>
-                    </div>
-                    <div class="vd-section-body">
-                        <table class="widefat striped" style="margin-top:5px;">
-                            <thead>
-                                <tr>
-                                    <th>Page URL</th>
-                                    <th>Pengunjung Unik</th>
-                                    <th>Total Tampilan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="velocity-statistics-pages-body">
-                                <?php if (empty($page_stats)) : ?>
-                                    <tr>
-                                        <td colspan="3" style="text-align:center;color:#666;">No data available</td>
-                                    </tr>
-                                    <?php else: foreach ($page_stats as $page): ?>
-                                        <tr>
-                                            <td>
-                                                <?php
-                                                $full = home_url($page->page_url);
-                                                echo '<a href="' . esc_url($full) . '" target="_blank" rel="noopener noreferrer"><code>' . esc_html($page->page_url) . '</code></a>';
-                                                ?>
-                                            </td>
-                                            <td><?php echo number_format_i18n((int) $page->unique_visitors); ?></td>
-                                            <td><?php echo number_format_i18n((int) $page->total_views); ?></td>
-                                        </tr>
-                                <?php endforeach;
-                                endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="vd-section">
-                    <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#374151;">Rujukan Teratas (30 Hari)</h3>
-                    </div>
-                    <div class="vd-section-body">
-                        <table class="widefat striped" style="margin-top:5px;">
-                            <thead>
-                                <tr>
-                                    <th>Referrer</th>
-                                    <th>Visits</th>
-                                </tr>
-                            </thead>
-                            <tbody id="velocity-statistics-referrers-body">
-                                <?php if (empty($referer_stats)) : ?>
-                                    <tr>
-                                        <td colspan="2" style="text-align:center;color:#666;">No data available</td>
-                                    </tr>
-                                    <?php else: foreach ($referer_stats as $ref): ?>
-                                        <tr>
-                                            <td><code><?php echo esc_html(parse_url($ref->referer, PHP_URL_HOST) ?: $ref->referer); ?></code></td>
-                                            <td><?php echo number_format_i18n((int) $ref->visits); ?></td>
-                                        </tr>
-                                <?php endforeach;
-                                endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="vd-footer">
-                <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+                <?php endforeach; ?>
             </div>
         </div>
+    </div>
+    <div class="vd-grid-2">
+        <div class="vd-section">
+            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Daily Visits (Last 30 Days)</h3>
+            </div>
+            <div class="vd-section-body">
+                <canvas id="dailyVisitsChart" style="width:100%;height:220px"></canvas>
+            </div>
+        </div>
+        <div class="vd-section">
+            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Halaman Teratas</h3>
+            </div>
+            <div class="vd-section-body">
+                <canvas id="topPagesChart" style="width:100%;height:220px"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="vd-grid-2">
+        <div class="vd-section">
+            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Halaman Teratas (30 Hari)</h3>
+            </div>
+            <div class="vd-section-body">
+                <table class="widefat striped" style="margin-top:5px;">
+                    <thead>
+                        <tr>
+                            <th>Page URL</th>
+                            <th>Pengunjung Unik</th>
+                            <th>Total Tampilan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="velocity-statistics-pages-body">
+                        <?php if (empty($page_stats)) : ?>
+                            <tr>
+                                <td colspan="3" style="text-align:center;color:#666;">No data available</td>
+                            </tr>
+                            <?php else: foreach ($page_stats as $page): ?>
+                                <tr>
+                                    <td>
+                                        <?php
+                                        $full = home_url($page->page_url);
+                                        echo '<a href="' . esc_url($full) . '" target="_blank" rel="noopener noreferrer"><code>' . esc_html($page->page_url) . '</code></a>';
+                                        ?>
+                                    </td>
+                                    <td><?php echo number_format_i18n((int) $page->unique_visitors); ?></td>
+                                    <td><?php echo number_format_i18n((int) $page->total_views); ?></td>
+                                </tr>
+                        <?php endforeach;
+                        endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="vd-section">
+            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Rujukan Teratas (30 Hari)</h3>
+            </div>
+            <div class="vd-section-body">
+                <table class="widefat striped" style="margin-top:5px;">
+                    <thead>
+                        <tr>
+                            <th>Referrer</th>
+                            <th>Visits</th>
+                        </tr>
+                    </thead>
+                    <tbody id="velocity-statistics-referrers-body">
+                        <?php if (empty($referer_stats)) : ?>
+                            <tr>
+                                <td colspan="2" style="text-align:center;color:#666;">No data available</td>
+                            </tr>
+                            <?php else: foreach ($referer_stats as $ref): ?>
+                                <tr>
+                                    <td><code><?php echo esc_html(parse_url($ref->referer, PHP_URL_HOST) ?: $ref->referer); ?></code></td>
+                                    <td><?php echo number_format_i18n((int) $ref->visits); ?></td>
+                                </tr>
+                        <?php endforeach;
+                        endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="vd-section">
+        <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+            <h3 style="margin:0; font-size:1.1rem; color:#374151;">Reset & Tools</h3>
+        </div>
+        <div class="vd-section-body">
+            <form method="post" style="display:inline;" id="velocity-statistics-reset-form">
+                <?php wp_nonce_field('reset_stats'); ?>
+                <input type="hidden" name="reset_stats" value="1">
+                <button type="submit" class="button button-secondary"
+                    id="velocity-statistics-reset-button"
+                    data-confirm-message="Apakah Anda yakin ingin me-reset statistik? Tindakan ini akan menghapus semua data statistik dan meta hit secara permanen.">
+                    Reset Statistik
+                </button>
+                <span style="vertical-align:middle;margin-left:10px;color:#666;font-size:13px;">Gunakan ini untuk mengosongkan seluruh data statistik</span>
+            </form>
+        </div>
+    </div>
+    <div class="vd-footer">
+        <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+    </div>
+    </div>
 <?php
     }
 

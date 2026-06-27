@@ -1,131 +1,237 @@
 .vdgallery-kolom {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -moz-box;
-    display: -ms-flexbox;
     display: flex;
-    -webkit-flex-wrap: wrap;
-    -ms-flex-wrap: wrap;
     flex-wrap: wrap;
-    margin-right: -.5rem;
-    margin-left: -.5rem;
+    margin-right: -8px;
+    margin-left: -8px;
 }
-.vdgallery-kolom *,.vdgallery-kolom ::after,.vdgallery-kolom ::before {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
+
+.vdgallery-kolom *,
+.vdgallery-kolom ::after,
+.vdgallery-kolom ::before {
     box-sizing: border-box;
 }
+
 .vdgallery-kolom .vdgallery-item {
-    -webkit-box-flex: 0;
-    -webkit-flex: 0 0 25%;
-    -moz-box-flex: 0;
-    -ms-flex: 0 0 25%;
     flex: 0 0 25%;
     max-width: 25%;
-    padding-right: .5rem;
-    padding-left: .5rem;
-    padding-bottom: 1rem;
-    text-align: center;
+    padding: 0 8px 16px;
+    text-align: left;
 }
-.vdgallery-galleryshow .vdgallery-item-inside {
+
+.vdgallery-galleryshow,
+.vdgallery-slideshow {
     position: relative;
-    display: inline-block;
-    overflow: hidden;
-    width: 100%;
 }
-.vdgallery-kolom .vdgallery-item img {
-    margin: 0;    
-    width: 100%;
-    display: block;
-}
-.vdgallery-kolom .vdgallery-item a {
-    display: inline-block;
-    width: 100%;
-}
-.vdgallery-galleryshow .vdgallery-item-caption-hover,
-.vdgallery-galleryshow .vdgallery-item-caption-inside {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgb(0 0 0 / 51%);
-    color: #ffffff;
-    padding: .4rem;
-    font-size: .7rem;
-    line-height: 1rem;
-    height: 1.6rem;
-    overflow: hidden;
-    transition: all 400ms;
-}
-.vdgallery-galleryshow .vdgallery-item-caption-hover {    
-    bottom: -100%;
-}
-.vdgallery-galleryshow .vdgallery-item-inside:hover .vdgallery-item-caption-hover {    
-    bottom: 0;
-}
-.vdgallery-pagination {
-    text-align: center;
-    margin: .3rem 0 1rem;
-}
-.vdgallery-pagi-btn {
-    display: inline-block;
-    margin-bottom: .3rem;
-}
-.vdgallery-pagination .vdgallery-pagi-btn:not(:last-child) {
-    margin-right: .3rem;
-}
-.vdgallery-pagi-btn span {
-    background-color: #fff;
-    border: 1px solid #555;
-    padding: .2rem .5rem;
-    font-size: 1rem;
-    cursor: pointer;
-    color: #333;
-}
-.vdgallery-pagi-btn.active span,
-.vdgallery-pagi-btn:hover span  {
-    background-color: #ddd;
-    border-color: #949494;
-}
-.vdgallery-slideshow .vdgallery-item-image {
-    width: 100%;
-    display: block;
-}
-.vdgallery-slideshow .vdgallery-item-link {
-    display: block;
-    overflow: hidden;
-}
+
+.vdgallery-galleryshow .vdgallery-item-inside,
 .vdgallery-slideshow .vdgallery-item-inside {
     position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #f4f4f4;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+    transition: transform .28s ease, box-shadow .28s ease;
+}
+
+.vdgallery-galleryshow .vdgallery-item-inside:hover,
+.vdgallery-slideshow .vdgallery-item-inside:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 45px rgba(15, 23, 42, 0.14);
+}
+
+.vdgallery-kolom .vdgallery-item img,
+.vdgallery-slideshow .vdgallery-item-image {
+    margin: 0;
+    width: 100%;
+    display: block;
+}
+
+.vdgallery-kolom .vdgallery-item a,
+.vdgallery-slideshow .vdgallery-item-link {
+    display: block;
+    width: 100%;
+    color: inherit;
+}
+
+.vdgallery-galleryshow .vdgallery-item-link,
+.vdgallery-slideshow .vdgallery-item-link {
     overflow: hidden;
 }
+
+.vdgallery-galleryshow .vdgallery-item-image,
+.vdgallery-slideshow .vdgallery-item-image {
+    transition: transform .45s ease;
+}
+
+.vdgallery-galleryshow .vdgallery-item-inside:hover .vdgallery-item-image,
+.vdgallery-slideshow .vdgallery-item-inside:hover .vdgallery-item-image {
+    transform: scale(1.04);
+}
+
+.vdgallery-galleryshow .vdgallery-item-caption-hover,
+.vdgallery-galleryshow .vdgallery-item-caption-inside,
 .vdgallery-slideshow .vdgallery-item-caption-hover,
 .vdgallery-slideshow .vdgallery-item-caption-inside {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgb(0 0 0 / 51%);
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 2;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(17, 17, 17, 0.14), rgba(17, 17, 17, 0.78));
     color: #ffffff;
-    padding: .4rem;
-    font-size: .7rem;
-    line-height: 1rem;
-    max-height: 2.2rem;
+    font-size: .82rem;
+    line-height: 1.45;
+    height: auto;
+    max-height: none;
     overflow: hidden;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
+
+.vdgallery-galleryshow .vdgallery-item-caption-hover,
 .vdgallery-slideshow .vdgallery-item-caption-hover {
-    bottom: -100%;
-    transition: all 400ms;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity .3s ease, transform .3s ease;
 }
+
+.vdgallery-galleryshow .vdgallery-item-inside:hover .vdgallery-item-caption-hover,
 .vdgallery-slideshow .vdgallery-item-inside:hover .vdgallery-item-caption-hover {
-    bottom: 0;
+    opacity: 1;
+    transform: translateY(0);
 }
+
+.vdgallery-galleryshow .vdgallery-item-caption-inside,
+.vdgallery-slideshow .vdgallery-item-caption-inside {
+    opacity: 1;
+}
+
+.vdgallery-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0 0;
+}
+
+.vdgallery-pagi-btn {
+    display: inline-flex;
+    margin: 0;
+}
+
+.vdgallery-pagi-btn span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid #d9dce1;
+    background: #ffffff;
+    font-size: .92rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #222222;
+    transition: all .25s ease;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.vdgallery-pagi-btn.active span,
+.vdgallery-pagi-btn:hover span {
+    background-color: #111111;
+    border-color: #111111;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.vdgallery-slideshow .flickity-viewport {
+    overflow: visible;
+}
+
+.vdgallery-slideshow .vdgallery-item {
+    padding: 0 8px;
+}
+
 .vdgallery-slideshow .flickity-page-dots {
-    bottom: auto;
     position: relative;
-    margin-top: .5rem;
+    bottom: auto;
+    margin-top: 18px;
 }
+
+.vdgallery-slideshow .flickity-page-dots .dot {
+    width: 10px;
+    height: 10px;
+    margin: 0 5px;
+    border-radius: 999px;
+    background: #c9ced6;
+    opacity: 1;
+    transition: all .25s ease;
+}
+
+.vdgallery-slideshow .flickity-page-dots .dot.is-selected {
+    width: 28px;
+    background: #111111;
+}
+
 .vdgallery-slideshow .flickity-prev-next-button {
-    width: 25px;
-    height: 25px;
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+    transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+
+.vdgallery-slideshow .flickity-prev-next-button:hover {
+    background: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 18px 32px rgba(15, 23, 42, 0.16);
+}
+
+.vdgallery-slideshow .flickity-prev-next-button .flickity-button-icon {
+    fill: #111111;
+}
+
+@media (max-width: 767px) {
+    .vdgallery-kolom .vdgallery-item {
+        padding: 0 6px 12px;
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .vdgallery-galleryshow .vdgallery-item-inside,
+    .vdgallery-slideshow .vdgallery-item-inside {
+        border-radius: 8px;
+    }
+
+    .vdgallery-galleryshow .vdgallery-item-caption-hover,
+    .vdgallery-galleryshow .vdgallery-item-caption-inside,
+    .vdgallery-slideshow .vdgallery-item-caption-hover,
+    .vdgallery-slideshow .vdgallery-item-caption-inside {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        padding: 9px 10px;
+        font-size: .78rem;
+    }
+
+    .vdgallery-slideshow .vdgallery-item {
+        padding: 0 6px;
+    }
+
+    .vdgallery-slideshow .flickity-prev-next-button {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 520px) {
+    .vdgallery-kolom .vdgallery-item {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 }

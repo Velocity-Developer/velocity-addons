@@ -9,6 +9,10 @@
       formSelector: "#velocity-general-form",
       withReset: true,
     },
+    velocity_feature_settings: {
+      route: "general",
+      formSelector: "#velocity-general-form",
+    },
     velocity_captcha_settings: {
       route: "captcha",
       formSelector: "form[data-velocity-settings='1']",
@@ -39,6 +43,14 @@
       formSelector: "form[data-velocity-settings='1']",
     },
     velocity_snippet_settings: {
+      route: "snippet",
+      formSelector: "form[data-velocity-settings='1']",
+    },
+    velocity_snippet_body_settings: {
+      route: "snippet",
+      formSelector: "form[data-velocity-settings='1']",
+    },
+    velocity_snippet_footer_settings: {
       route: "snippet",
       formSelector: "form[data-velocity-settings='1']",
     },

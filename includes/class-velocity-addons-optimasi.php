@@ -27,10 +27,6 @@ class Velocity_Addons_Optimasi
 
     public function __construct()
     {
-        if (!get_option('velocity_optimasi')) {
-            return;
-        }
-
         add_action('admin_post_velocity_optimize_db', array($this, 'handle_optimize'));
     }
 
@@ -323,10 +319,9 @@ class Velocity_Addons_Optimasi
         $payload = self::get_stats_payload();
         $url     = admin_url('admin-post.php');
 
-        echo '<div class="wrap">';
-        echo '<h2>Optimize Database</h2>';
+        echo '<div class="velocity-dashboard-wrapper">';
         echo '<style>
-        .vd-grid{display:grid;grid-template-columns:2fr 1fr;gap:15px;align-items:start;margin-top:10px}
+        .vd-grid{display:grid;grid-template-columns:2fr 1fr;gap:15px;align-items:start}
         @media(max-width:1024px){.vd-grid{grid-template-columns:1fr}}
         .vd-chart{width:100%;height:260px}
         .vd-chart canvas{width:100%!important;height:100%!important}
@@ -339,10 +334,21 @@ class Velocity_Addons_Optimasi
         .vd-col-count,.vd-col-size{white-space:nowrap;text-align:right}
         @media(max-width:782px){.vd-col-select{width:30px}.vd-col-count,.vd-col-size{min-width:50px}}
         </style>';
+        echo Velocity_Addons_Admin_Navigation::render('velocity_optimize_db');
 
         $chart_json = wp_json_encode(isset($payload['chart']) ? $payload['chart'] : array());
 
-        echo '<div style="margin:10px 0;background:#fff;padding:12px;border:1px solid #ddd;border-radius:4px;">';
+        echo '<form id="velocity-optimize-form" method="post" action="' . esc_url($url) . '">';
+        echo '<input type="hidden" name="action" value="velocity_optimize_db" />';
+        echo wp_nonce_field('velocity_optimize_db', '_velocity_optimize_db', true, false);
+
+        $items = self::get_item_labels();
+
+        echo '<div class="vd-section">';
+        echo '<div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;"><h3 style="margin:0; font-size:1.1rem; color:#374151;">Optimize Database</h3></div>';
+        echo '<div class="vd-section-body">';
+
+        echo '<div style="margin:0 0 1.5rem;background:#fff;padding:12px;border:1px solid #e5e7eb;border-radius:12px;">';
         echo '<strong>Statistik Kandidat</strong>: <span id="vd-optimize-total-rows">' . esc_html(isset($payload['totals']['rows_label']) ? $payload['totals']['rows_label'] : '0') . '</span> row, <span id="vd-optimize-total-size">' . esc_html(isset($payload['totals']['size_label']) ? $payload['totals']['size_label'] : '0 B') . '</span>';
         echo '<div style="margin-top:8px;color:#555"><strong><em>Top berdasarkan ukuran:</em></strong> <ul id="vd-optimize-top-list">';
         if (!empty($payload['top'])) {
@@ -354,17 +360,11 @@ class Velocity_Addons_Optimasi
         echo '<div class="vd-chart"><canvas id="optimizeChart" data-chart=\'' . esc_attr($chart_json) . '\'></canvas></div>';
         echo '</div>';
 
-        echo '<div id="velocity-optimize-notice" class="notice" style="display:' . ($done ? 'block' : 'none') . '">';
+        echo '<div id="velocity-optimize-notice" class="notice notice-success inline" style="display:' . ($done ? 'block' : 'none') . ';margin:0 0 1.5rem;">';
         if ($done) {
             echo '<p><strong>Optimize selesai</strong> - ' . esc_html($done) . '</p>';
         }
         echo '</div>';
-
-        echo '<form id="velocity-optimize-form" method="post" action="' . esc_url($url) . '">';
-        echo '<input type="hidden" name="action" value="velocity_optimize_db" />';
-        echo wp_nonce_field('velocity_optimize_db', '_velocity_optimize_db', true, false);
-
-        $items = self::get_item_labels();
 
         echo '<div class="vd-grid">';
         echo '<div>';
@@ -380,10 +380,9 @@ class Velocity_Addons_Optimasi
             echo '</tr>';
         }
         echo '</tbody></table></div>';
-
         echo '</div>';
         echo '<div>';
-        echo '<div style="margin-top:0;background:#fff;padding:15px;border:1px solid #ddd;border-radius:4px;">'
+        echo '<div style="margin-top:0;background:#fff;padding:15px;border:1px solid #e5e7eb;border-radius:12px;">'
             . '<h3 style="margin:0 0 10px">Penjelasan & Dampak</h3>'
             . '<p>Kolom "Row" menampilkan jumlah row yang akan dihapus; "Estimasi Ukuran" adalah perkiraan total byte konten terkait.</p>'
             . '<ul style="margin:0 0 0 18px;list-style:disc">'
@@ -398,12 +397,16 @@ class Velocity_Addons_Optimasi
         echo '</div>';
         echo '</div>';
 
-        echo '<p style="margin-top:15px">';
+        echo '</div>';
+        echo '</div>';
+
+        echo '<div class="vd-actions">';
         echo '<button class="button button-primary" type="submit" name="do" value="selected">Hapus Terpilih</button> ';
         echo '<button class="button" type="submit" name="do" value="all">Hapus Semua</button>';
-        echo '</p>';
+        echo '</div>';
 
         echo '</form>';
+        echo '<div class="vd-footer"><small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small></div>';
         echo '</div>';
     }
 
