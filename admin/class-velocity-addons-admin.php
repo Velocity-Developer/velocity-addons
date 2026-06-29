@@ -96,6 +96,9 @@ class Velocity_Addons_Admin
 			'footer' => 'velocity_snippet_footer_settings',
 			'duitku' => 'velocity_duitku_settings',
 			'import-artikel' => 'velocity_news_settings',
+			'statistics' => 'velocity_statistics',
+			'shortcode' => 'velocity_statistics_shortcode',
+			'optimasi' => 'velocity_optimize_db',
 		);
 
 		$sub = sanitize_key(wp_unslash($_GET['sub']));
@@ -146,7 +149,7 @@ class Velocity_Addons_Admin
 			wp_script_add_data($alpine_handle, 'defer', true);
 		}
 
-		if ($this->is_velocity_rest_action_page($page)) {
+		if ($this->is_velocity_rest_action_page($resolved_page)) {
 			$actions_handle = 'velocity-addons-admin-actions';
 			$actions_path   = plugin_dir_path(__FILE__) . 'js/velocity-addons-admin-actions.js';
 			$actions_ver    = file_exists($actions_path) ? (string) filemtime($actions_path) : $this->version;
@@ -164,7 +167,7 @@ class Velocity_Addons_Admin
 				array(
 					'restBase' => esc_url_raw(rest_url('velocity-addons/v1')),
 					'nonce'    => wp_create_nonce('wp_rest'),
-					'page'     => $page,
+					'page'     => $resolved_page,
 				)
 			);
 			wp_script_add_data($actions_handle, 'defer', true);

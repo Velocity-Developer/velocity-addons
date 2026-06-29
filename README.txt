@@ -4,7 +4,7 @@ Donate link: https://velocitydeveloper.com
 Tags: comments, spam
 Requires at least: 3.0.1
 Tested up to: 6.2
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,10 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.1.3=
+- Perbaiki tombol salin shortcode (`copyToClipboard`) pada halaman Shortcode di navigasi admin terpadu.
+- Pastikan script aksi dimuat dengan konteks halaman yang benar pada halaman Statistik, Shortcode, dan Optimize Database.
 
 =2.1.2=
 - Perbaiki upload Gambar Share pada pengaturan SEO yang gagal membuka WordPress Media Library karena error `wp.media.frames`.
