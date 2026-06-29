@@ -41,7 +41,10 @@ class Velocity_Addons_SEO
 
     public function enqueue_media_uploader()
     {
-        if (isset($_GET['page']) && $_GET['page'] == 'velocity_seo_settings') {
+        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+        $sub  = isset($_GET['sub']) ? sanitize_key(wp_unslash($_GET['sub'])) : '';
+
+        if ($page === 'velocity_seo_settings' || ($page === 'admin_velocity_addons' && $sub === 'seo')) {
             wp_enqueue_media();
         }
     }

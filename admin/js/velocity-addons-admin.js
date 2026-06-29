@@ -1,11 +1,17 @@
 jQuery(document).ready(function ($) {
   var custom_uploader;
   function openShareImagePicker() {
+    if (typeof window.wp === "undefined" || typeof window.wp.media !== "function") {
+      window.alert("Media Library WordPress gagal dimuat. Silakan muat ulang halaman.");
+      return;
+    }
+
     if (custom_uploader) {
       custom_uploader.open();
       return;
     }
-    custom_uploader = wp.media.frames.file_frame = wp.media({
+
+    custom_uploader = wp.media({
       title: "Choose Image",
       button: {
         text: "Choose Image",
@@ -42,6 +48,10 @@ jQuery(document).ready(function ($) {
   var $drop = $("#vd-share-dropzone");
   if ($drop.length) {
     $drop.on("click", function (e) {
+      if ($(e.target).closest(".delete_share_image").length) {
+        return;
+      }
+
       e.preventDefault();
       openShareImagePicker();
     });
@@ -60,6 +70,8 @@ jQuery(document).ready(function ($) {
     });
   }
   $(document).on("click", ".delete_share_image", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
     $("#share_image").val("");
     $("#vd-share-dropzone .vd-share-preview").html("");
     $("#vd-share-dropzone").removeClass("has-image");

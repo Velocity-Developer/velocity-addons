@@ -4,7 +4,7 @@ Donate link: https://velocitydeveloper.com
 Tags: comments, spam
 Requires at least: 3.0.1
 Tested up to: 6.2
-Stable tag: 2.0.3
+Stable tag: 2.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,12 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.1.2=
+- Perbaiki upload Gambar Share pada pengaturan SEO yang gagal membuka WordPress Media Library karena error `wp.media.frames`.
+- Pastikan Media Library dimuat pada halaman SEO di navigasi admin terpadu.
+- Perbaiki tombol Delete Gambar Share agar tidak membuka kembali pemilih media.
+- Tambahkan cache-busting pada JavaScript admin agar perbaikan langsung dimuat setelah plugin diperbarui.
 
 =2.0.3=
 - VD Gallery: tambah Global Option untuk Galeri Option dan Slideshow Option pada submenu CPT.

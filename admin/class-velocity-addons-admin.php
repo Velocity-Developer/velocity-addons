@@ -104,8 +104,10 @@ class Velocity_Addons_Admin
 
 	public function enqueue_scripts()
 	{
+		$admin_script_path = plugin_dir_path(__FILE__) . 'js/velocity-addons-admin.js';
+		$admin_script_ver  = file_exists($admin_script_path) ? (string) filemtime($admin_script_path) : $this->version;
 
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/velocity-addons-admin.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/velocity-addons-admin.js', array('jquery'), $admin_script_ver, false);
 
 		$page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
 		$resolved_page = $this->resolve_velocity_settings_page($page);
