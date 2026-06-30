@@ -266,6 +266,7 @@ class Custom_Admin_Option_Page
             'shortcode' => array($this, 'visitor_stats_page_callback'),
             'optimasi' => array($this, 'optimize_db_page_callback'),
             'license' => array($this, 'velocity_license_page'),
+            '1-click-setup' => array($this, 'velocity_one_click_setup_page'),
             'import-artikel' => array($this, 'velocity_news_page'),
         );
     }
@@ -986,6 +987,127 @@ class Custom_Admin_Option_Page
                 </div>
                 <?php submit_button(); ?>
             </form>
+            <div class="vd-footer">
+                <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+            </div>
+        </div>
+    <?php
+    }
+
+    public function velocity_one_click_setup_page()
+    {
+        if (!current_user_can('manage_options')) return;
+    ?>
+        <div class="velocity-dashboard-wrapper" id="velocity-one-click-setup-page">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
+            <div class="vd-section">
+                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">1 Click setup</h3>
+                </div>
+                <div class="vd-section-body">
+                    <p>Jalankan setup otomatis untuk permalink dan SEO home.</p>
+                    <ol style="margin:0 0 16px 18px;">
+                        <li>Set permalink ke <code>/%category%/%postname%/</code></li>
+                        <li>Generate <strong>Home Title</strong> dan <strong>Home Description</strong> dari Site Title + Tagline</li>
+                    </ol>
+                    <button type="button" class="button button-primary" id="velocity-one-click-setup-run">Run 1 Click setup</button>
+                    <p style="margin-top:10px;color:#666;">API pakai license aktif dan source domain situs ini.</p>
+                    <div id="velocity-one-click-setup-log" style="margin-top:16px;background:#111827;color:#e5e7eb;border-radius:8px;padding:14px;min-height:180px;font-family:monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow:auto;">Klik tombol untuk mulai setup...</div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var logEl = document.getElementById('velocity-one-click-setup-log');
+                            var button = document.getElementById('velocity-one-click-setup-run');
+                            var config = window.velocitySettingsConfig || {};
+
+                            function setLog(lines) {
+                                if (!logEl) {
+                                    return;
+                                }
+                                logEl.textContent = Array.isArray(lines) ? lines.join('\n') : String(lines || '');
+                                logEl.scrollTop = logEl.scrollHeight;
+                            }
+
+                            function appendLog(line) {
+                                if (!logEl) {
+                                    return;
+                                }
+                                logEl.textContent += '\n' + String(line || '');
+                                logEl.scrollTop = logEl.scrollHeight;
+                            }
+
+                            setLog([
+                                '[inline] DOMContentLoaded OK',
+                                '[inline] button=' + (!!button),
+                                '[inline] page=' + (config.page ? config.page : 'missing'),
+                                '[inline] restBase=' + (config.restBase ? config.restBase : 'missing'),
+                                '[inline] nonce=' + (!!config.nonce)
+                            ]);
+
+                            if (!button) {
+                                return;
+                            }
+
+                            button.addEventListener('click', function() {
+                                appendLog('[inline] click detected');
+
+                                if (!config.restBase) {
+                                    appendLog('[inline] error: restBase missing');
+                                    return;
+                                }
+
+                                button.disabled = true;
+                                button.setAttribute('aria-busy', 'true');
+                                appendLog('[inline] request start');
+
+                                fetch(String(config.restBase).replace(/\/$/, '') + '/one-click-setup/run', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-WP-Nonce': config.nonce || ''
+                                        },
+                                        credentials: 'same-origin',
+                                        body: JSON.stringify({})
+                                    })
+                                    .then(function(response) {
+                                        return response.json().catch(function() {
+                                            return {};
+                                        }).then(function(json) {
+                                            appendLog('[inline] http=' + response.status);
+                                            if (!response.ok) {
+                                                if (json.logs && Array.isArray(json.logs)) {
+                                                    setLog(json.logs);
+                                                }
+                                                throw new Error((json && json.message) || 'Request gagal.');
+                                            }
+                                            return json;
+                                        });
+                                    })
+                                    .then(function(json) {
+                                        if (json.logs && Array.isArray(json.logs)) {
+                                            setLog(json.logs);
+                                        } else {
+                                            appendLog('[inline] request selesai');
+                                        }
+
+                                        if (json.data) {
+                                            appendLog('---');
+                                            appendLog('Permalink: ' + (json.data.permalink || ''));
+                                            appendLog('Home Title: ' + (json.data.home_title || ''));
+                                            appendLog('Home Description: ' + (json.data.home_description || ''));
+                                        }
+                                    })
+                                    .catch(function(error) {
+                                        appendLog('[inline] error: ' + (error && error.message ? error.message : 'unknown'));
+                                    })
+                                    .finally(function() {
+                                        button.disabled = false;
+                                        button.setAttribute('aria-busy', 'false');
+                                    });
+                            });
+                        });
+                    </script>
+                </div>
+            </div>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>

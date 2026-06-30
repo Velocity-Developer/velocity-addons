@@ -263,6 +263,81 @@
       });
   }
 
+  function initOneClickSetupPage() {
+    var root = document.getElementById("velocity-one-click-setup-page");
+    if (!root) {
+      return;
+    }
+
+    var button = document.getElementById("velocity-one-click-setup-run");
+    var logEl = document.getElementById("velocity-one-click-setup-log");
+    if (!button) {
+      return;
+    }
+
+    function setLog(lines) {
+      if (!logEl) {
+        return;
+      }
+      if (!Array.isArray(lines)) {
+        lines = [String(lines || "")];
+      }
+      logEl.textContent = lines.join("\n");
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function appendLog(line) {
+      if (!logEl) {
+        return;
+      }
+      var current = logEl.textContent ? logEl.textContent + "\n" : "";
+      logEl.textContent = current + String(line || "");
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    button.addEventListener("click", function () {
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      setLog([
+        "[start] Menjalankan 1 Click setup...",
+        "[wait] Request dikirim ke backend"
+      ]);
+
+      // #region debug-point E:request-start
+      fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"one-click-setup-button",runId:"pre",hypothesisId:"E",location:"velocity-addons-admin-actions.js:apiRequest.before",msg:"[DEBUG] one-click apiRequest start",data:{restBase:config.restBase||"",hasNonce:!!config.nonce},ts:Date.now()})}).catch(function(){});
+      // #endregion
+      apiRequest("/one-click-setup/run", "POST", {})
+        .then(function (response) {
+          if (response && Array.isArray(response.logs) && response.logs.length) {
+            setLog(response.logs);
+          } else {
+            appendLog("[ok] Request selesai");
+          }
+
+          if (response && response.data) {
+            appendLog("---");
+            appendLog("Permalink: " + String(response.data.permalink || ""));
+            appendLog("Home Title: " + String(response.data.home_title || ""));
+            appendLog("Home Description: " + String(response.data.home_description || ""));
+          }
+
+          showNotice(null, response.message || "1 Click setup selesai.", "success");
+        })
+        .catch(function (error) {
+          if (error && Array.isArray(error.logs) && error.logs.length) {
+            setLog(error.logs);
+          } else {
+            appendLog("[error] " + String((error && error.message) || "Gagal menjalankan 1 Click setup."));
+          }
+          showNotice(null, error.message || "Gagal menjalankan 1 Click setup.", "error");
+        })
+        .finally(function () {
+          button.disabled = false;
+          button.setAttribute("aria-busy", "false");
+        });
+    });
+  }
+
   function renderDailyChart(canvas, chartRef, rows) {
     if (!canvas || typeof window.Chart === "undefined") {
       return chartRef;
@@ -612,7 +687,13 @@
         })
         .then(function (json) {
           if (!response.ok) {
-            throw new Error((json && json.message) || "Request gagal.");
+            var error = new Error((json && json.message) || "Request gagal.");
+            if (json && Array.isArray(json.logs)) {
+              error.logs = json.logs;
+            } else if (json && json.data && Array.isArray(json.data.logs)) {
+              error.logs = json.data.logs;
+            }
+            throw error;
           }
           return json;
         });

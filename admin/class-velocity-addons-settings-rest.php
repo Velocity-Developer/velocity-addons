@@ -63,6 +63,18 @@ class Velocity_Addons_Admin_Settings_REST
                 ),
             )
         );
+
+        register_rest_route(
+            $this->namespace,
+            '/one-click-setup/run',
+            array(
+                array(
+                    'methods'             => WP_REST_Server::EDITABLE,
+                    'callback'            => array($this, 'run_one_click_setup'),
+                    'permission_callback' => array($this, 'permissions_manage_options'),
+                ),
+            )
+        );
     }
 
     public function permissions_manage_options()
@@ -207,6 +219,138 @@ class Velocity_Addons_Admin_Settings_REST
                 'message'  => __('License verified.', 'velocity-addons'),
                 'result'   => $result,
                 'settings' => $this->get_page_settings($this->get_page_definition('license')),
+            )
+        );
+    }
+
+    public function run_one_click_setup(WP_REST_Request $request)
+    {
+        $logs = array();
+        $logs[] = 'Mulai 1 Click setup';
+
+        $license = get_option('velocity_license', array());
+        $license_key = is_array($license) && isset($license['key']) ? sanitize_text_field((string) $license['key']) : '';
+        $logs[] = $license_key !== '' ? 'License key ditemukan' : 'License key kosong';
+
+        if ($license_key === '') {
+            return new WP_Error(
+                'velocity_license_required',
+                __('Please enter a license key.', 'velocity-addons'),
+                array('status' => 400, 'logs' => $logs)
+            );
+        }
+
+        $site_title = wp_strip_all_tags((string) get_bloginfo('name'));
+        $site_description = wp_strip_all_tags((string) get_bloginfo('description'));
+        $topic = trim($site_title . ' - ' . $site_description);
+        $logs[] = 'Site title: ' . $site_title;
+        $logs[] = 'Tagline: ' . $site_description;
+
+        if ($topic === '' || $topic === '-') {
+            $topic = $site_title !== '' ? $site_title : parse_url(get_site_url(), PHP_URL_HOST);
+        }
+        $logs[] = 'Topic request: ' . $topic;
+
+        $logs[] = 'Kirim request ke API generator';
+        $response = wp_remote_post(
+            'https://api.velocitydeveloper.co/api/v1/article-generator',
+            array(
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                    'license'      => $license_key,
+                    'source'       => parse_url(get_site_url(), PHP_URL_HOST),
+                ),
+                'body'    => wp_json_encode(array(
+                    'topic' => $topic,
+                )),
+                'timeout' => 20,
+            )
+        );
+
+        if (is_wp_error($response)) {
+            $logs[] = 'Request API gagal: ' . $response->get_error_message();
+            return new WP_Error(
+                'velocity_one_click_setup_failed',
+                $response->get_error_message(),
+                array('status' => 500, 'logs' => $logs)
+            );
+        }
+
+        $http_code = (int) wp_remote_retrieve_response_code($response);
+        $logs[] = 'HTTP code API: ' . $http_code;
+
+        $decoded = json_decode((string) wp_remote_retrieve_body($response), true);
+        if (!is_array($decoded)) {
+            $logs[] = 'Response API bukan JSON valid';
+            return new WP_Error(
+                'velocity_one_click_setup_invalid_response',
+                __('Invalid response from API.', 'velocity-addons'),
+                array('status' => 500, 'logs' => $logs)
+            );
+        }
+
+        $logs[] = 'Response API diterima';
+        $generated_text = '';
+        if (isset($decoded['data']['text']) && is_scalar($decoded['data']['text'])) {
+            $generated_text = (string) $decoded['data']['text'];
+            $logs[] = 'Pakai field response: data.text';
+        } elseif (isset($decoded['data']['content']) && is_scalar($decoded['data']['content'])) {
+            $generated_text = (string) $decoded['data']['content'];
+            $logs[] = 'Pakai field response: data.content';
+        } elseif (isset($decoded['text']) && is_scalar($decoded['text'])) {
+            $generated_text = (string) $decoded['text'];
+            $logs[] = 'Pakai field response: text';
+        } elseif (isset($decoded['message']) && is_scalar($decoded['message'])) {
+            $generated_text = (string) $decoded['message'];
+            $logs[] = 'Pakai field response: message';
+        }
+
+        $generated_text = trim(wp_strip_all_tags($generated_text));
+        if ($generated_text === '') {
+            $logs[] = 'Text hasil API kosong';
+            return new WP_Error(
+                'velocity_one_click_setup_empty_text',
+                __('API returned empty text.', 'velocity-addons'),
+                array('status' => 500, 'details' => $decoded, 'logs' => $logs)
+            );
+        }
+
+        $home_title = $site_title;
+        $home_description = $generated_text;
+        if (function_exists('mb_substr')) {
+            $home_description = trim(mb_substr($home_description, 0, 160));
+        } else {
+            $home_description = trim(substr($home_description, 0, 160));
+        }
+        $logs[] = 'Home title disiapkan';
+        $logs[] = 'Home description disiapkan';
+
+        update_option('permalink_structure', '/%category%/%postname%/');
+        $logs[] = 'Option permalink_structure diupdate';
+        global $wp_rewrite;
+        if ($wp_rewrite instanceof WP_Rewrite) {
+            $wp_rewrite->set_permalink_structure('/%category%/%postname%/');
+            $wp_rewrite->flush_rules();
+            $logs[] = 'Rewrite rules di-flush';
+        }
+
+        update_option('home_title', $home_title);
+        update_option('home_description', $home_description);
+        $logs[] = 'SEO home title tersimpan';
+        $logs[] = 'SEO home description tersimpan';
+        $logs[] = 'Selesai';
+
+        return rest_ensure_response(
+            array(
+                'success' => true,
+                'message' => __('1 Click setup selesai.', 'velocity-addons'),
+                'data'    => array(
+                    'topic'            => $topic,
+                    'home_title'       => $home_title,
+                    'home_description' => $home_description,
+                    'permalink'        => '/%category%/%postname%/',
+                ),
+                'logs'    => $logs,
             )
         );
     }

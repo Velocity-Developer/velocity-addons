@@ -99,6 +99,7 @@ class Velocity_Addons_Admin
 			'statistics' => 'velocity_statistics',
 			'shortcode' => 'velocity_statistics_shortcode',
 			'optimasi' => 'velocity_optimize_db',
+			'1-click-setup' => 'velocity_one_click_setup',
 		);
 
 		$sub = sanitize_key(wp_unslash($_GET['sub']));
@@ -243,6 +244,7 @@ class Velocity_Addons_Admin
 			'velocity_statistics',
 			'velocity_statistics_shortcode',
 			'velocity_optimize_db',
+			'velocity_one_click_setup',
 		), true);
 	}
 }
