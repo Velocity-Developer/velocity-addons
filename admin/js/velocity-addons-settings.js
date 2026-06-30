@@ -77,7 +77,6 @@
       saveButtons: [],
       resetForm: null,
       licenseButton: null,
-      licenseStatusEl: null,
       licenseButtonDefaultLabel: "",
       boot: function (formEl) {
         this.form = formEl;
@@ -169,17 +168,11 @@
             this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
             applyValuesToForm(this.form, response.settings);
           }
-          if (this.licenseStatusEl) {
-            this.licenseStatusEl.textContent = "License verified.";
-          }
           if (this.licenseButton) {
             this.licenseButton.textContent = "License Verified!";
           }
           this.showNotice("License berhasil diverifikasi.", "success");
         } catch (error) {
-          if (this.licenseStatusEl) {
-            this.licenseStatusEl.textContent = error.message || "License check gagal.";
-          }
           if (input) {
             input.value = "";
           }
@@ -219,17 +212,11 @@
             this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
             applyValuesToForm(this.form, response.settings);
           }
-          if (this.licenseStatusEl) {
-            this.licenseStatusEl.textContent = "License auto activated.";
-          }
           if (this.licenseButton) {
             this.licenseButton.textContent = "License Verified!";
           }
           this.showNotice(response.message || "License auto activate berhasil.", "success");
         } catch (error) {
-          if (this.licenseStatusEl) {
-            this.licenseStatusEl.textContent = error.message || "Auto activate gagal.";
-          }
           this.showNotice(error.message || "Auto activate gagal.", "error");
         } finally {
           if (this.autoLicenseButton) {
@@ -241,7 +228,6 @@
       bindLicenseCheck: function () {
         this.licenseButton = this.form.querySelector(".check-license");
         this.autoLicenseButton = this.form.querySelector(".auto-license");
-        this.licenseStatusEl = this.form.querySelector(".license-status");
         if (this.licenseButton) {
           this.licenseButtonDefaultLabel = this.licenseButton.textContent || "Check License";
         }

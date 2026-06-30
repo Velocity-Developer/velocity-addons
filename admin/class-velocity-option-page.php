@@ -982,7 +982,6 @@ class Custom_Admin_Option_Page
                             echo '<div style="display:flex;gap:8px;align-items:center;margin-left:12px;">';
                             echo '<a class="check-license button button-primary">' . $this->status_lisensi . '</a>';
                             echo '<a class="auto-license button button-secondary">Auto Activate</a>';
-                            echo '<span class="license-status"></span>';
                             echo '</div>';
                             echo '</div>';
                         }
