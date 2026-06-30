@@ -1005,13 +1005,12 @@ class Custom_Admin_Option_Page
                     <h3 style="margin:0; font-size:1.1rem; color:#374151;">1 Click setup</h3>
                 </div>
                 <div class="vd-section-body">
-                    <p>Jalankan setup otomatis untuk permalink dan SEO home.</p>
+                    <p>Jalankan setup otomatis.</p>
                     <ol style="margin:0 0 16px 18px;">
                         <li>Set permalink ke <code>/%category%/%postname%/</code></li>
-                        <li>Generate <strong>Home Title</strong> dan <strong>Home Description</strong> dari Site Title + Tagline</li>
+                        <li>Generate <strong>Home Title</strong>,<strong>Home Description</strong>,<strong>Home Keywords</strong></li>
                     </ol>
                     <button type="button" class="button button-primary" id="velocity-one-click-setup-run">Run 1 Click setup</button>
-                    <p style="margin-top:10px;color:#666;">API pakai license aktif dan source domain situs ini.</p>
                     <div id="velocity-one-click-setup-log" style="margin-top:16px;background:#111827;color:#e5e7eb;border-radius:8px;padding:14px;min-height:180px;font-family:monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow:auto;">Klik tombol untuk mulai setup...</div>
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {

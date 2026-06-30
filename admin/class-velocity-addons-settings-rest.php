@@ -304,7 +304,7 @@ class Velocity_Addons_Admin_Settings_REST
     {
         $source = parse_url(get_site_url(), PHP_URL_HOST);
         $prompt = 'Buat SEO homepage website. Balas hanya JSON valid tanpa markdown dengan format {"description":"string","keywords":"keyword1, keyword2, keyword3"}. Description maksimal 160 karakter. Keywords maksimal 12 keyword, dipisahkan koma.';
-        $content = "Judul website: {$site_title}\nDeskripsi website: {$site_description}\nTopik utama: {$topic}";
+        $content = "Judul website: {$site_title}\nDeskripsi website: {$site_description}";
 
         $fallback = array(
             'using_api'   => false,
@@ -343,37 +343,66 @@ class Velocity_Addons_Admin_Settings_REST
             return $fallback;
         }
 
+        if ($http_code >= 400) {
+            $error_message = '';
+            if (isset($decoded['message']) && is_scalar($decoded['message'])) {
+                $error_message = trim(wp_strip_all_tags((string) $decoded['message']));
+                $logs[] = 'AI meta error: ' . $error_message;
+            }
+
+            $raw_error = wp_json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (is_string($raw_error) && $raw_error !== '') {
+                $logs[] = 'Raw AI error response: ' . $raw_error;
+            } elseif ($error_message !== '') {
+                $logs[] = 'Raw AI error response: ' . $error_message;
+            }
+
+            $logs[] = 'AI meta HTTP error, fallback lokal';
+            return $fallback;
+        }
+
+        $meta = array();
         $result = '';
-        if (isset($decoded['data']['content']) && is_scalar($decoded['data']['content'])) {
-            $result = (string) $decoded['data']['content'];
-            $logs[] = 'Pakai field AI meta: data.content';
-        } elseif (isset($decoded['data']['text']) && is_scalar($decoded['data']['text'])) {
-            $result = (string) $decoded['data']['text'];
-            $logs[] = 'Pakai field AI meta: data.text';
-        } elseif (isset($decoded['content']) && is_scalar($decoded['content'])) {
-            $result = (string) $decoded['content'];
-            $logs[] = 'Pakai field AI meta: content';
-        } elseif (isset($decoded['message']) && is_scalar($decoded['message'])) {
-            $result = (string) $decoded['message'];
-            $logs[] = 'Pakai field AI meta: message';
-        }
 
-        $result = trim((string) $result);
-        if ($result === '') {
-            $logs[] = 'AI meta kosong, fallback lokal';
-            return $fallback;
-        }
+        if (isset($decoded['description']) || isset($decoded['keywords'])) {
+            $meta = $decoded;
+            $logs[] = 'Pakai field AI meta: root';
+        } elseif (isset($decoded['data']) && is_array($decoded['data']) && (isset($decoded['data']['description']) || isset($decoded['data']['keywords']))) {
+            $meta = $decoded['data'];
+            $logs[] = 'Pakai field AI meta: data';
+        } else {
+            if (isset($decoded['data']['content']) && is_scalar($decoded['data']['content'])) {
+                $result = (string) $decoded['data']['content'];
+                $logs[] = 'Pakai field AI meta: data.content';
+            } elseif (isset($decoded['data']['text']) && is_scalar($decoded['data']['text'])) {
+                $result = (string) $decoded['data']['text'];
+                $logs[] = 'Pakai field AI meta: data.text';
+            } elseif (isset($decoded['content']) && is_scalar($decoded['content'])) {
+                $result = (string) $decoded['content'];
+                $logs[] = 'Pakai field AI meta: content';
+            } elseif (isset($decoded['message']) && is_scalar($decoded['message'])) {
+                $result = (string) $decoded['message'];
+                $logs[] = 'Pakai field AI meta: message';
+                $logs[] = 'Raw AI message: ' . trim(wp_strip_all_tags($result));
+            }
 
-        $json_start = strpos($result, '{');
-        $json_end = strrpos($result, '}');
-        if ($json_start !== false && $json_end !== false && $json_end >= $json_start) {
-            $result = substr($result, $json_start, $json_end - $json_start + 1);
-        }
+            $result = trim((string) $result);
+            if ($result === '') {
+                $logs[] = 'AI meta kosong, fallback lokal';
+                return $fallback;
+            }
 
-        $meta = json_decode($result, true);
-        if (!is_array($meta)) {
-            $logs[] = 'AI meta tidak bisa diparse sebagai JSON, fallback lokal';
-            return $fallback;
+            $json_start = strpos($result, '{');
+            $json_end = strrpos($result, '}');
+            if ($json_start !== false && $json_end !== false && $json_end >= $json_start) {
+                $result = substr($result, $json_start, $json_end - $json_start + 1);
+            }
+
+            $meta = json_decode($result, true);
+            if (!is_array($meta)) {
+                $logs[] = 'AI meta tidak bisa diparse sebagai JSON, fallback lokal';
+                return $fallback;
+            }
         }
 
         $description = isset($meta['description']) && is_scalar($meta['description']) ? trim(wp_strip_all_tags((string) $meta['description'])) : '';
