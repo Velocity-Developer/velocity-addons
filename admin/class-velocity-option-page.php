@@ -1094,6 +1094,7 @@ class Custom_Admin_Option_Page
                                             appendLog('Permalink: ' + (json.data.permalink || ''));
                                             appendLog('Home Title: ' + (json.data.home_title || ''));
                                             appendLog('Home Description: ' + (json.data.home_description || ''));
+                                            appendLog('Home Keywords: ' + (json.data.home_keywords || ''));
                                         }
                                     })
                                     .catch(function(error) {

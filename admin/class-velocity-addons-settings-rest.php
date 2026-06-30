@@ -251,79 +251,21 @@ class Velocity_Addons_Admin_Settings_REST
         }
         $logs[] = 'Topic request: ' . $topic;
 
-        $logs[] = 'Kirim request ke API generator';
-        $response = wp_remote_post(
-            'https://api.velocitydeveloper.co/api/v1/article-generator',
-            array(
-                'headers' => array(
-                    'Content-Type' => 'application/json',
-                    'license'      => $license_key,
-                    'source'       => parse_url(get_site_url(), PHP_URL_HOST),
-                ),
-                'body'    => wp_json_encode(array(
-                    'topic' => $topic,
-                )),
-                'timeout' => 20,
-            )
-        );
-
-        if (is_wp_error($response)) {
-            $logs[] = 'Request API gagal: ' . $response->get_error_message();
-            return new WP_Error(
-                'velocity_one_click_setup_failed',
-                $response->get_error_message(),
-                array('status' => 500, 'logs' => $logs)
-            );
-        }
-
-        $http_code = (int) wp_remote_retrieve_response_code($response);
-        $logs[] = 'HTTP code API: ' . $http_code;
-
-        $decoded = json_decode((string) wp_remote_retrieve_body($response), true);
-        if (!is_array($decoded)) {
-            $logs[] = 'Response API bukan JSON valid';
-            return new WP_Error(
-                'velocity_one_click_setup_invalid_response',
-                __('Invalid response from API.', 'velocity-addons'),
-                array('status' => 500, 'logs' => $logs)
-            );
-        }
-
-        $logs[] = 'Response API diterima';
-        $generated_text = '';
-        if (isset($decoded['data']['text']) && is_scalar($decoded['data']['text'])) {
-            $generated_text = (string) $decoded['data']['text'];
-            $logs[] = 'Pakai field response: data.text';
-        } elseif (isset($decoded['data']['content']) && is_scalar($decoded['data']['content'])) {
-            $generated_text = (string) $decoded['data']['content'];
-            $logs[] = 'Pakai field response: data.content';
-        } elseif (isset($decoded['text']) && is_scalar($decoded['text'])) {
-            $generated_text = (string) $decoded['text'];
-            $logs[] = 'Pakai field response: text';
-        } elseif (isset($decoded['message']) && is_scalar($decoded['message'])) {
-            $generated_text = (string) $decoded['message'];
-            $logs[] = 'Pakai field response: message';
-        }
-
-        $generated_text = trim(wp_strip_all_tags($generated_text));
-        if ($generated_text === '') {
-            $logs[] = 'Text hasil API kosong';
-            return new WP_Error(
-                'velocity_one_click_setup_empty_text',
-                __('API returned empty text.', 'velocity-addons'),
-                array('status' => 500, 'details' => $decoded, 'logs' => $logs)
-            );
-        }
+        $ai_home = self::generate_ai_home_meta($license_key, $site_title, $site_description, $topic, $logs);
+        $using_api = !empty($ai_home['using_api']);
 
         $home_title = $site_title;
-        $home_description = $generated_text;
+        $home_description = !empty($ai_home['description']) ? $ai_home['description'] : $site_description;
         if (function_exists('mb_substr')) {
             $home_description = trim(mb_substr($home_description, 0, 160));
         } else {
             $home_description = trim(substr($home_description, 0, 160));
         }
         $logs[] = 'Home title disiapkan';
-        $logs[] = 'Home description disiapkan';
+        $logs[] = 'Home description disiapkan' . ($using_api ? ' (dari AI)' : ' (lokal)');
+
+        $home_keywords = !empty($ai_home['keywords']) ? $ai_home['keywords'] : trim($site_title . ', ' . $site_description, ', ');
+        $logs[] = 'Home keywords disiapkan' . ($using_api ? ' (dari AI)' : ' (lokal)');
 
         update_option('permalink_structure', '/%category%/%postname%/');
         $logs[] = 'Option permalink_structure diupdate';
@@ -336,8 +278,10 @@ class Velocity_Addons_Admin_Settings_REST
 
         update_option('home_title', $home_title);
         update_option('home_description', $home_description);
+        update_option('home_keywords', $home_keywords);
         $logs[] = 'SEO home title tersimpan';
         $logs[] = 'SEO home description tersimpan';
+        $logs[] = 'SEO home keywords tersimpan';
         $logs[] = 'Selesai';
 
         return rest_ensure_response(
@@ -348,10 +292,104 @@ class Velocity_Addons_Admin_Settings_REST
                     'topic'            => $topic,
                     'home_title'       => $home_title,
                     'home_description' => $home_description,
+                    'home_keywords'    => $home_keywords,
                     'permalink'        => '/%category%/%postname%/',
                 ),
                 'logs'    => $logs,
             )
+        );
+    }
+
+    private static function generate_ai_home_meta($license_key, $site_title, $site_description, $topic, &$logs)
+    {
+        $source = parse_url(get_site_url(), PHP_URL_HOST);
+        $prompt = 'Buat SEO homepage website. Balas hanya JSON valid tanpa markdown dengan format {"description":"string","keywords":"keyword1, keyword2, keyword3"}. Description maksimal 160 karakter. Keywords maksimal 12 keyword, dipisahkan koma.';
+        $content = "Judul website: {$site_title}\nDeskripsi website: {$site_description}\nTopik utama: {$topic}";
+
+        $fallback = array(
+            'using_api'   => false,
+            'description' => $site_description,
+            'keywords'    => trim($site_title . ', ' . $site_description, ', '),
+        );
+
+        $logs[] = 'Kirim request ke AI chat untuk description + keyword';
+        $response = wp_remote_post(
+            'https://api.velocitydeveloper.co/api/v1/ai/chat',
+            array(
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                    'license'      => $license_key,
+                    'source'       => $source,
+                ),
+                'body'    => wp_json_encode(array(
+                    'prompt'  => $prompt,
+                    'content' => $content,
+                )),
+                'timeout' => 20,
+            )
+        );
+
+        if (is_wp_error($response)) {
+            $logs[] = 'AI meta gagal: ' . $response->get_error_message();
+            return $fallback;
+        }
+
+        $http_code = (int) wp_remote_retrieve_response_code($response);
+        $logs[] = 'HTTP code AI meta: ' . $http_code;
+
+        $decoded = json_decode((string) wp_remote_retrieve_body($response), true);
+        if (!is_array($decoded)) {
+            $logs[] = 'Response AI meta bukan JSON valid';
+            return $fallback;
+        }
+
+        $result = '';
+        if (isset($decoded['data']['content']) && is_scalar($decoded['data']['content'])) {
+            $result = (string) $decoded['data']['content'];
+            $logs[] = 'Pakai field AI meta: data.content';
+        } elseif (isset($decoded['data']['text']) && is_scalar($decoded['data']['text'])) {
+            $result = (string) $decoded['data']['text'];
+            $logs[] = 'Pakai field AI meta: data.text';
+        } elseif (isset($decoded['content']) && is_scalar($decoded['content'])) {
+            $result = (string) $decoded['content'];
+            $logs[] = 'Pakai field AI meta: content';
+        } elseif (isset($decoded['message']) && is_scalar($decoded['message'])) {
+            $result = (string) $decoded['message'];
+            $logs[] = 'Pakai field AI meta: message';
+        }
+
+        $result = trim((string) $result);
+        if ($result === '') {
+            $logs[] = 'AI meta kosong, fallback lokal';
+            return $fallback;
+        }
+
+        $json_start = strpos($result, '{');
+        $json_end = strrpos($result, '}');
+        if ($json_start !== false && $json_end !== false && $json_end >= $json_start) {
+            $result = substr($result, $json_start, $json_end - $json_start + 1);
+        }
+
+        $meta = json_decode($result, true);
+        if (!is_array($meta)) {
+            $logs[] = 'AI meta tidak bisa diparse sebagai JSON, fallback lokal';
+            return $fallback;
+        }
+
+        $description = isset($meta['description']) && is_scalar($meta['description']) ? trim(wp_strip_all_tags((string) $meta['description'])) : '';
+        $keywords = isset($meta['keywords']) && is_scalar($meta['keywords']) ? trim(wp_strip_all_tags((string) $meta['keywords'])) : '';
+
+        if ($description === '') {
+            $description = $fallback['description'];
+        }
+        if ($keywords === '') {
+            $keywords = $fallback['keywords'];
+        }
+
+        return array(
+            'using_api'   => true,
+            'description' => $description,
+            'keywords'    => $keywords,
         );
     }
 
@@ -647,7 +685,7 @@ class Velocity_Addons_Admin_Settings_REST
             'statistik_velocity'           => 1,
             'floating_whatsapp'            => 1,
             'floating_scrollTop'           => 1,
-            'remove_slug_category_velocity'=> 0,
+            'remove_slug_category_velocity' => 0,
             'news_generate'                => 1,
             'velocity_gallery'             => 0,
             'velocity_optimasi'            => 0,
@@ -683,7 +721,7 @@ class Velocity_Addons_Admin_Settings_REST
                         'properties' => array(
                             'provider'  => array('type' => 'select', 'allowed' => array('google', 'image'), 'default' => 'google'),
                             'aktif'     => array('type' => 'bool', 'default' => 1),
-                            'difficulty'=> array('type' => 'select', 'allowed' => array('easy', 'medium', 'hard'), 'default' => 'medium'),
+                            'difficulty' => array('type' => 'select', 'allowed' => array('easy', 'medium', 'hard'), 'default' => 'medium'),
                             'sitekey'   => array('type' => 'text', 'default' => ''),
                             'secretkey' => array('type' => 'text', 'default' => ''),
                         ),

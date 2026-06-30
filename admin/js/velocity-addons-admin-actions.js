@@ -303,9 +303,6 @@
         "[wait] Request dikirim ke backend"
       ]);
 
-      // #region debug-point E:request-start
-      fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"one-click-setup-button",runId:"pre",hypothesisId:"E",location:"velocity-addons-admin-actions.js:apiRequest.before",msg:"[DEBUG] one-click apiRequest start",data:{restBase:config.restBase||"",hasNonce:!!config.nonce},ts:Date.now()})}).catch(function(){});
-      // #endregion
       apiRequest("/one-click-setup/run", "POST", {})
         .then(function (response) {
           if (response && Array.isArray(response.logs) && response.logs.length) {
