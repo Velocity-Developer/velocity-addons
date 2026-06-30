@@ -372,6 +372,10 @@ class Velocity_Addons_Admin_Navigation
 						'label' => 'License',
 					),
 					array(
+						'page'  => 'velocity_one_click_setup',
+						'label' => '1 Click setup',
+					),
+					array(
 						'page'    => 'velocity_news_settings',
 						'label'   => 'Import Artikel',
 						'enabled' => get_option('news_generate', '1') === '1',
@@ -392,10 +396,11 @@ class Velocity_Addons_Admin_Navigation
 
 	private static function get_license_badge()
 	{
-		$opt          = get_option('velocity_license');
-		$is_active    = is_array($opt) && isset($opt['status']) && $opt['status'] === 'active';
-		$label        = $is_active ? 'Active' : 'Inactive';
-		$bg           = $is_active ? '#16a34a' : '#dc2626';
+		$opt = get_option('velocity_license');
+		$status = is_array($opt) && isset($opt['status']) ? strtolower(trim((string) $opt['status'])) : '';
+		$is_active = in_array($status, array('active', 'activated', 'valid', '1', 'true', '200'), true);
+		$label = $is_active ? 'Active' : 'Inactive';
+		$bg = $is_active ? '#16a34a' : '#dc2626';
 
 		return array(
 			'label' => $label,
@@ -441,6 +446,7 @@ class Velocity_Addons_Admin_Navigation
 			'velocity_statistics_shortcode' => 'shortcode',
 			'velocity_optimize_db' => 'optimasi',
 			'velocity_license_settings' => 'license',
+			'velocity_one_click_setup' => '1-click-setup',
 			'velocity_news_settings' => 'import-artikel',
 		);
 	}

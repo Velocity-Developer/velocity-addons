@@ -31,7 +31,8 @@ class Custom_Admin_Option_Page
         $this->status_lisensi = get_option('velocity_license', ['status' => false]);
 
         // Pastikan key 'status' ada, dan set default 'Check License' jika tidak ada atau tidak aktif
-        $this->status_lisensi = !empty($this->status_lisensi['status']) && $this->status_lisensi['status'] === 'active'
+        $license_status = !empty($this->status_lisensi['status']) ? strtolower(trim((string) $this->status_lisensi['status'])) : '';
+        $this->status_lisensi = in_array($license_status, ['active', 'activated', 'valid', '1', 'true', '200'], true)
             ? 'License Verified!'
             : 'Check License';
 
@@ -297,6 +298,7 @@ class Custom_Admin_Option_Page
             'shortcode' => 'velocity_statistics_shortcode',
             'optimasi' => 'velocity_optimize_db',
             'license' => 'velocity_license_settings',
+            '1-click-setup' => 'velocity_one_click_setup',
             'import-artikel' => 'velocity_news_settings',
         ];
 

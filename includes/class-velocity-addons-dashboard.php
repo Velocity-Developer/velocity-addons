@@ -64,7 +64,8 @@ class Velocity_Addons_Dashboard
         $page_count = wp_count_posts('page')->publish;
         $media_count = wp_count_posts('attachment')->inherit;
         $license_opt = get_option('velocity_license');
-        $license_active = is_array($license_opt) && isset($license_opt['status']) && $license_opt['status'] === 'active';
+        $license_status = is_array($license_opt) && isset($license_opt['status']) ? strtolower(trim((string) $license_opt['status'])) : '';
+        $license_active = in_array($license_status, ['active', 'activated', 'valid', '1', 'true', '200'], true);
         $license_exp = is_array($license_opt) && isset($license_opt['expire_date']) ? $license_opt['expire_date'] : '';
         $summary_stats = null;
         $online_count  = null;
