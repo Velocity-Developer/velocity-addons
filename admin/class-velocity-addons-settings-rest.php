@@ -228,6 +228,25 @@ class Velocity_Addons_Admin_Settings_REST
         $logs = array();
         $logs[] = 'Mulai 1 Click setup';
 
+        $params = $request->get_json_params();
+        $tasks = isset($params['tasks']) && is_array($params['tasks']) ? $params['tasks'] : array();
+        $run_permalink = !empty($tasks['permalink']);
+        $run_timezone = !empty($tasks['timezone']);
+        $run_home_seo = !empty($tasks['home_seo']);
+        $run_share_image = !empty($tasks['share_image']);
+
+        if (!$run_permalink && !$run_timezone && !$run_home_seo && !$run_share_image) {
+            $run_permalink = true;
+            $run_timezone = true;
+            $run_home_seo = true;
+            $run_share_image = true;
+        }
+
+        $logs[] = 'Task permalink: ' . ($run_permalink ? 'ya' : 'tidak');
+        $logs[] = 'Task timezone: ' . ($run_timezone ? 'ya' : 'tidak');
+        $logs[] = 'Task home seo: ' . ($run_home_seo ? 'ya' : 'tidak');
+        $logs[] = 'Task share image: ' . ($run_share_image ? 'ya' : 'tidak');
+
         $license = get_option('velocity_license', array());
         $license_key = is_array($license) && isset($license['key']) ? sanitize_text_field((string) $license['key']) : '';
         $logs[] = $license_key !== '' ? 'License key ditemukan' : 'License key kosong';
@@ -251,8 +270,12 @@ class Velocity_Addons_Admin_Settings_REST
         }
         $logs[] = 'Topic request: ' . $topic;
 
-        $ai_home = self::generate_ai_home_meta($license_key, $site_title, $site_description, $topic, $logs);
-        $using_api = !empty($ai_home['using_api']);
+        $ai_home = array();
+        $using_api = false;
+        if ($run_home_seo) {
+            $ai_home = self::generate_ai_home_meta($license_key, $site_title, $site_description, $topic, $logs);
+            $using_api = !empty($ai_home['using_api']);
+        }
 
         $home_title = $site_title;
         $home_description = !empty($ai_home['description']) ? $ai_home['description'] : $site_description;
@@ -261,27 +284,66 @@ class Velocity_Addons_Admin_Settings_REST
         } else {
             $home_description = trim(substr($home_description, 0, 160));
         }
-        $logs[] = 'Home title disiapkan';
-        $logs[] = 'Home description disiapkan' . ($using_api ? ' (dari AI)' : ' (lokal)');
-
         $home_keywords = !empty($ai_home['keywords']) ? $ai_home['keywords'] : trim($site_title . ', ' . $site_description, ', ');
-        $logs[] = 'Home keywords disiapkan' . ($using_api ? ' (dari AI)' : ' (lokal)');
 
-        update_option('permalink_structure', '/%category%/%postname%/');
-        $logs[] = 'Option permalink_structure diupdate';
-        global $wp_rewrite;
-        if ($wp_rewrite instanceof WP_Rewrite) {
-            $wp_rewrite->set_permalink_structure('/%category%/%postname%/');
-            $wp_rewrite->flush_rules();
-            $logs[] = 'Rewrite rules di-flush';
+        $share_image = '';
+        $timezone = '';
+        if ($run_permalink) {
+            update_option('permalink_structure', '/%category%/%postname%/');
+            $logs[] = 'Option permalink_structure diupdate';
+            global $wp_rewrite;
+            if ($wp_rewrite instanceof WP_Rewrite) {
+                $wp_rewrite->set_permalink_structure('/%category%/%postname%/');
+                $wp_rewrite->flush_rules();
+                $logs[] = 'Rewrite rules di-flush';
+            }
+        } else {
+            $logs[] = 'Skip permalink';
         }
 
-        update_option('home_title', $home_title);
-        update_option('home_description', $home_description);
-        update_option('home_keywords', $home_keywords);
-        $logs[] = 'SEO home title tersimpan';
-        $logs[] = 'SEO home description tersimpan';
-        $logs[] = 'SEO home keywords tersimpan';
+        if ($run_timezone) {
+            $timezone = 'Asia/Jakarta';
+            update_option('timezone_string', $timezone);
+            update_option('gmt_offset', 7);
+            $logs[] = 'Timezone diset ke Asia/Jakarta';
+        } else {
+            $logs[] = 'Skip timezone';
+        }
+
+        if ($run_home_seo) {
+            $logs[] = 'Home title disiapkan';
+            $logs[] = 'Home description disiapkan' . ($using_api ? ' (dari AI)' : ' (lokal)');
+            $logs[] = 'Home keywords disiapkan' . ($using_api ? ' (dari AI)' : ' (lokal)');
+            update_option('home_title', $home_title);
+            update_option('home_description', $home_description);
+            update_option('home_keywords', $home_keywords);
+            $logs[] = 'SEO home title tersimpan';
+            $logs[] = 'SEO home description tersimpan';
+            $logs[] = 'SEO home keywords tersimpan';
+        } else {
+            $logs[] = 'Skip home seo';
+        }
+
+        if ($run_share_image) {
+            $site_icon_id = (int) get_option('site_icon');
+            if ($site_icon_id > 0) {
+                $share_image = wp_get_attachment_image_url($site_icon_id, 'full');
+            }
+
+            if (empty($share_image)) {
+                $share_image = get_site_icon_url();
+            }
+
+            if (!empty($share_image)) {
+                update_option('share_image', esc_url_raw($share_image));
+                $logs[] = 'Share image SEO tersimpan dari favicon';
+            } else {
+                $logs[] = 'Share image skip, favicon tidak ada';
+            }
+        } else {
+            $logs[] = 'Skip share image';
+        }
+
         $logs[] = 'Selesai';
 
         return rest_ensure_response(
@@ -290,10 +352,12 @@ class Velocity_Addons_Admin_Settings_REST
                 'message' => __('1 Click setup selesai.', 'velocity-addons'),
                 'data'    => array(
                     'topic'            => $topic,
-                    'home_title'       => $home_title,
-                    'home_description' => $home_description,
-                    'home_keywords'    => $home_keywords,
-                    'permalink'        => '/%category%/%postname%/',
+                    'home_title'       => $run_home_seo ? $home_title : '',
+                    'home_description' => $run_home_seo ? $home_description : '',
+                    'home_keywords'    => $run_home_seo ? $home_keywords : '',
+                    'permalink'        => $run_permalink ? '/%category%/%postname%/' : '',
+                    'timezone'         => $timezone,
+                    'share_image'      => $share_image,
                 ),
                 'logs'    => $logs,
             )

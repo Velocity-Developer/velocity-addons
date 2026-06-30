@@ -1005,17 +1005,30 @@ class Custom_Admin_Option_Page
                     <h3 style="margin:0; font-size:1.1rem; color:#374151;">1 Click setup</h3>
                 </div>
                 <div class="vd-section-body">
-                    <p>Jalankan setup otomatis.</p>
-                    <ol style="margin:0 0 16px 18px;">
-                        <li>Set permalink ke <code>/%category%/%postname%/</code></li>
-                        <li>Generate <strong>Home Title</strong>,<strong>Home Description</strong>,<strong>Home Keywords</strong></li>
-                    </ol>
+                    <p>Jalankan setup otomatis. Centang poin yang ingin dijalankan.</p>
+                    <div style="display:grid;gap:12px;margin:0 0 16px;">
+                        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="velocity-setup-task-permalink" checked>
+                            <span>Set permalink ke <code>/%category%/%postname%/</code></span>
+                        </label>
+                        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="velocity-setup-task-home-seo" checked>
+                            <span>Generate <strong>Home Title</strong>, <strong>Home Description</strong>, <strong>Home Keywords</strong></span>
+                        </label>
+                        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="velocity-setup-task-share-image" checked>
+                            <span>Setup <strong>share_image</strong> SEO dari favicon bila ada</span>
+                        </label>
+                    </div>
                     <button type="button" class="button button-primary" id="velocity-one-click-setup-run">Run 1 Click setup</button>
                     <div id="velocity-one-click-setup-log" style="margin-top:16px;background:#111827;color:#e5e7eb;border-radius:8px;padding:14px;min-height:180px;font-family:monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow:auto;">Klik tombol untuk mulai setup...</div>
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             var logEl = document.getElementById('velocity-one-click-setup-log');
                             var button = document.getElementById('velocity-one-click-setup-run');
+                            var permalinkCheckbox = document.getElementById('velocity-setup-task-permalink');
+                            var homeSeoCheckbox = document.getElementById('velocity-setup-task-home-seo');
+                            var shareImageCheckbox = document.getElementById('velocity-setup-task-share-image');
                             var config = window.velocitySettingsConfig || {};
 
                             function setLog(lines) {
@@ -1054,6 +1067,17 @@ class Custom_Admin_Option_Page
                                     return;
                                 }
 
+                                var tasks = {
+                                    permalink: !!(permalinkCheckbox && permalinkCheckbox.checked),
+                                    home_seo: !!(homeSeoCheckbox && homeSeoCheckbox.checked),
+                                    share_image: !!(shareImageCheckbox && shareImageCheckbox.checked)
+                                };
+
+                                if (!tasks.permalink && !tasks.home_seo && !tasks.share_image) {
+                                    appendLog('[inline] error: pilih minimal 1 poin');
+                                    return;
+                                }
+
                                 button.disabled = true;
                                 button.setAttribute('aria-busy', 'true');
                                 appendLog('[inline] request start');
@@ -1065,7 +1089,9 @@ class Custom_Admin_Option_Page
                                             'X-WP-Nonce': config.nonce || ''
                                         },
                                         credentials: 'same-origin',
-                                        body: JSON.stringify({})
+                                        body: JSON.stringify({
+                                            tasks: tasks
+                                        })
                                     })
                                     .then(function(response) {
                                         return response.json().catch(function() {
@@ -1091,9 +1117,11 @@ class Custom_Admin_Option_Page
                                         if (json.data) {
                                             appendLog('---');
                                             appendLog('Permalink: ' + (json.data.permalink || ''));
+                                            appendLog('Timezone: ' + (json.data.timezone || ''));
                                             appendLog('Home Title: ' + (json.data.home_title || ''));
                                             appendLog('Home Description: ' + (json.data.home_description || ''));
                                             appendLog('Home Keywords: ' + (json.data.home_keywords || ''));
+                                            appendLog('Share Image: ' + (json.data.share_image || ''));
                                         }
                                     })
                                     .catch(function(error) {
