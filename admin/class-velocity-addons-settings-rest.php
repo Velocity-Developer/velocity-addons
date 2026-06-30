@@ -66,6 +66,18 @@ class Velocity_Addons_Admin_Settings_REST
 
         register_rest_route(
             $this->namespace,
+            '/license/auto-activate',
+            array(
+                array(
+                    'methods'             => WP_REST_Server::EDITABLE,
+                    'callback'            => array($this, 'auto_activate_license'),
+                    'permission_callback' => array($this, 'permissions_manage_options'),
+                ),
+            )
+        );
+
+        register_rest_route(
+            $this->namespace,
             '/one-click-setup/run',
             array(
                 array(
@@ -223,6 +235,83 @@ class Velocity_Addons_Admin_Settings_REST
         );
     }
 
+    public function auto_activate_license(WP_REST_Request $request)
+    {
+        $source = parse_url(get_site_url(), PHP_URL_HOST);
+        $response = wp_remote_get(
+            'https://api.velocitydeveloper.co/api/v1/get-auto-license',
+            array(
+                'headers' => array(
+                    'source' => $source,
+                ),
+                'timeout' => 20,
+            )
+        );
+
+        if (is_wp_error($response)) {
+            return new WP_Error(
+                'velocity_auto_license_failed',
+                $response->get_error_message(),
+                array('status' => 400)
+            );
+        }
+
+        $http_code = (int) wp_remote_retrieve_response_code($response);
+        $decoded = json_decode((string) wp_remote_retrieve_body($response), true);
+
+        if ($http_code < 200 || $http_code >= 300 || !is_array($decoded)) {
+            $message = is_array($decoded) && isset($decoded['message']) ? (string) $decoded['message'] : __('Auto license request failed.', 'velocity-addons');
+            return new WP_Error(
+                'velocity_auto_license_invalid',
+                $message,
+                array('status' => 400, 'details' => $decoded)
+            );
+        }
+
+        $license_key = '';
+        if (isset($decoded['data']['code']) && is_scalar($decoded['data']['code'])) {
+            $license_key = sanitize_text_field((string) $decoded['data']['code']);
+        } elseif (isset($decoded['data']['license']) && is_scalar($decoded['data']['license'])) {
+            $license_key = sanitize_text_field((string) $decoded['data']['license']);
+        } elseif (isset($decoded['license']) && is_scalar($decoded['license'])) {
+            $license_key = sanitize_text_field((string) $decoded['license']);
+        } elseif (isset($decoded['key']) && is_scalar($decoded['key'])) {
+            $license_key = sanitize_text_field((string) $decoded['key']);
+        }
+
+        if ($license_key === '') {
+            return new WP_Error(
+                'velocity_auto_license_missing',
+                __('License key not found from auto activate endpoint.', 'velocity-addons'),
+                array('status' => 400, 'details' => $decoded)
+            );
+        }
+
+        global $velocity_license;
+        if (!($velocity_license instanceof Velocity_Addons_License)) {
+            $velocity_license = new Velocity_Addons_License();
+        }
+
+        $result = $velocity_license->verify_license_key($license_key);
+        if (empty($result['success'])) {
+            return new WP_Error(
+                'velocity_auto_license_verify_failed',
+                isset($result['message']) ? (string) $result['message'] : __('Auto license verification failed.', 'velocity-addons'),
+                array('status' => 400, 'details' => $result)
+            );
+        }
+
+        return rest_ensure_response(
+            array(
+                'success'  => true,
+                'message'  => __('License auto activated.', 'velocity-addons'),
+                'key'      => $license_key,
+                'result'   => $result,
+                'settings' => $this->get_page_settings($this->get_page_definition('license')),
+            )
+        );
+    }
+
     public function run_one_click_setup(WP_REST_Request $request)
     {
         $logs = array();
@@ -232,18 +321,21 @@ class Velocity_Addons_Admin_Settings_REST
         $tasks = isset($params['tasks']) && is_array($params['tasks']) ? $params['tasks'] : array();
         $run_permalink = !empty($tasks['permalink']);
         $run_timezone = !empty($tasks['timezone']);
+        $run_datetime = !empty($tasks['datetime']);
         $run_home_seo = !empty($tasks['home_seo']);
         $run_share_image = !empty($tasks['share_image']);
 
-        if (!$run_permalink && !$run_timezone && !$run_home_seo && !$run_share_image) {
+        if (!$run_permalink && !$run_timezone && !$run_datetime && !$run_home_seo && !$run_share_image) {
             $run_permalink = true;
             $run_timezone = true;
+            $run_datetime = true;
             $run_home_seo = true;
             $run_share_image = true;
         }
 
         $logs[] = 'Task permalink: ' . ($run_permalink ? 'ya' : 'tidak');
         $logs[] = 'Task timezone: ' . ($run_timezone ? 'ya' : 'tidak');
+        $logs[] = 'Task datetime: ' . ($run_datetime ? 'ya' : 'tidak');
         $logs[] = 'Task home seo: ' . ($run_home_seo ? 'ya' : 'tidak');
         $logs[] = 'Task share image: ' . ($run_share_image ? 'ya' : 'tidak');
 
@@ -288,6 +380,9 @@ class Velocity_Addons_Admin_Settings_REST
 
         $share_image = '';
         $timezone = '';
+        $date_format = '';
+        $time_format = '';
+        $start_of_week = '';
         if ($run_permalink) {
             update_option('permalink_structure', '/%category%/%postname%/');
             $logs[] = 'Option permalink_structure diupdate';
@@ -308,6 +403,52 @@ class Velocity_Addons_Admin_Settings_REST
             $logs[] = 'Timezone diset ke Asia/Jakarta';
         } else {
             $logs[] = 'Skip timezone';
+        }
+
+        if ($run_datetime) {
+            $date_format = 'j F Y';
+            $time_format = 'H:i';
+            $start_of_week = '0';
+            update_option('date_format', $date_format);
+            update_option('time_format', $time_format);
+            update_option('start_of_week', 0);
+            $logs[] = 'Date format diset ke j F Y';
+            $logs[] = 'Time format diset ke H:i';
+            $logs[] = 'Hari mulai minggu diset ke Minggu';
+        } else {
+            $logs[] = 'Skip datetime';
+        }
+
+        if ($run_standard_pages) {
+            $page_titles = array('Home', 'Profile', 'Gallery', 'Contact');
+            $created_pages = array();
+            $home_page_id = 0;
+
+            foreach ($page_titles as $page_title) {
+                $page_id = $this->get_or_create_page_by_title($page_title);
+                if ($page_id > 0) {
+                    $created_pages[] = $page_title;
+                    $logs[] = 'Page siap: ' . $page_title . ' (#' . $page_id . ')';
+                    if ($page_title === 'Home') {
+                        $home_page_id = $page_id;
+                    }
+                }
+            }
+
+            if (!empty($created_pages)) {
+                $standard_pages = implode(', ', $created_pages);
+            }
+
+            if ($home_page_id > 0) {
+                update_option('show_on_front', 'page');
+                update_option('page_on_front', $home_page_id);
+                $page_on_front = $home_page_id;
+                $logs[] = 'Reading homepage diset ke Home (#' . $home_page_id . ')';
+            } else {
+                $logs[] = 'Reading homepage skip, page Home tidak ditemukan';
+            }
+        } else {
+            $logs[] = 'Skip standard pages';
         }
 
         if ($run_home_seo) {
@@ -357,6 +498,9 @@ class Velocity_Addons_Admin_Settings_REST
                     'home_keywords'    => $run_home_seo ? $home_keywords : '',
                     'permalink'        => $run_permalink ? '/%category%/%postname%/' : '',
                     'timezone'         => $timezone,
+                    'date_format'      => $date_format,
+                    'time_format'      => $time_format,
+                    'start_of_week'    => $start_of_week,
                     'share_image'      => $share_image,
                 ),
                 'logs'    => $logs,

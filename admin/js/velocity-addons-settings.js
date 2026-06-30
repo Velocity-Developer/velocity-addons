@@ -207,18 +207,60 @@
           self.resetGeneral();
         });
       },
+      autoActivateLicense: async function () {
+        if (this.autoLicenseButton) {
+          this.autoLicenseButton.textContent = "Loading...";
+          this.autoLicenseButton.setAttribute("aria-busy", "true");
+        }
+
+        try {
+          var response = await apiRequest("/license/auto-activate", "POST", {});
+          if (response && response.settings) {
+            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
+            applyValuesToForm(this.form, response.settings);
+          }
+          if (this.licenseStatusEl) {
+            this.licenseStatusEl.textContent = "License auto activated.";
+          }
+          if (this.licenseButton) {
+            this.licenseButton.textContent = "License Verified!";
+          }
+          this.showNotice(response.message || "License auto activate berhasil.", "success");
+        } catch (error) {
+          if (this.licenseStatusEl) {
+            this.licenseStatusEl.textContent = error.message || "Auto activate gagal.";
+          }
+          this.showNotice(error.message || "Auto activate gagal.", "error");
+        } finally {
+          if (this.autoLicenseButton) {
+            this.autoLicenseButton.textContent = this.autoLicenseButtonDefaultLabel || "Auto Activate";
+            this.autoLicenseButton.removeAttribute("aria-busy");
+          }
+        }
+      },
       bindLicenseCheck: function () {
         this.licenseButton = this.form.querySelector(".check-license");
+        this.autoLicenseButton = this.form.querySelector(".auto-license");
         this.licenseStatusEl = this.form.querySelector(".license-status");
-        if (!this.licenseButton) {
-          return;
+        if (this.licenseButton) {
+          this.licenseButtonDefaultLabel = this.licenseButton.textContent || "Check License";
         }
-        this.licenseButtonDefaultLabel = this.licenseButton.textContent || "Check License";
+        if (this.autoLicenseButton) {
+          this.autoLicenseButtonDefaultLabel = this.autoLicenseButton.textContent || "Auto Activate";
+        }
         var self = this;
-        this.licenseButton.addEventListener("click", function (event) {
-          event.preventDefault();
-          self.checkLicense();
-        });
+        if (this.licenseButton) {
+          this.licenseButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            self.checkLicense();
+          });
+        }
+        if (this.autoLicenseButton) {
+          this.autoLicenseButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            self.autoActivateLicense();
+          });
+        }
       },
       setSaving: function (isSaving) {
         for (var i = 0; i < this.saveButtons.length; i++) {

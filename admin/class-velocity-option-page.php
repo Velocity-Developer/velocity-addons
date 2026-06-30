@@ -979,7 +979,11 @@ class Custom_Admin_Option_Page
                             echo '<small class="vd-form-hint">Masukkan kunci lisensi Anda lalu klik verifikasi.</small>';
                             echo '</div>';
                             $this->field($data);
-                            echo '<a class="check-license button button-primary" style="margin-left:12px">' . $this->status_lisensi . '</a><span class="license-status" style="margin-left:8px"></span>';
+                            echo '<div style="display:flex;gap:8px;align-items:center;margin-left:12px;">';
+                            echo '<a class="check-license button button-primary">' . $this->status_lisensi . '</a>';
+                            echo '<a class="auto-license button button-secondary">Auto Activate</a>';
+                            echo '<span class="license-status"></span>';
+                            echo '</div>';
                             echo '</div>';
                         }
                         ?>
@@ -1008,15 +1012,23 @@ class Custom_Admin_Option_Page
                     <p>Jalankan setup otomatis. Centang poin yang ingin dijalankan.</p>
                     <div style="display:grid;gap:12px;margin:0 0 16px;">
                         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-                            <input type="checkbox" id="velocity-setup-task-permalink" checked>
+                            <input type="checkbox" id="velocity-setup-task-permalink" checked style="margin-top:4px;">
                             <span>Set permalink ke <code>/%category%/%postname%/</code></span>
                         </label>
                         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-                            <input type="checkbox" id="velocity-setup-task-home-seo" checked>
+                            <input type="checkbox" id="velocity-setup-task-timezone" checked style="margin-top:4px;">
+                            <span>Set timezone ke <strong>Asia/Jakarta</strong></span>
+                        </label>
+                        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="velocity-setup-task-datetime" checked style="margin-top:4px;">
+                            <span>Set date format ke <code>j F Y</code>, time format ke <code>H:i</code>, minggu dimulai di <strong>Minggu</strong></span>
+                        </label>
+                        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="velocity-setup-task-home-seo" checked style="margin-top:4px;">
                             <span>Generate <strong>Home Title</strong>, <strong>Home Description</strong>, <strong>Home Keywords</strong></span>
                         </label>
                         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-                            <input type="checkbox" id="velocity-setup-task-share-image" checked>
+                            <input type="checkbox" id="velocity-setup-task-share-image" checked style="margin-top:4px;">
                             <span>Setup <strong>share_image</strong> SEO dari favicon bila ada</span>
                         </label>
                     </div>
@@ -1027,6 +1039,8 @@ class Custom_Admin_Option_Page
                             var logEl = document.getElementById('velocity-one-click-setup-log');
                             var button = document.getElementById('velocity-one-click-setup-run');
                             var permalinkCheckbox = document.getElementById('velocity-setup-task-permalink');
+                            var timezoneCheckbox = document.getElementById('velocity-setup-task-timezone');
+                            var dateTimeCheckbox = document.getElementById('velocity-setup-task-datetime');
                             var homeSeoCheckbox = document.getElementById('velocity-setup-task-home-seo');
                             var shareImageCheckbox = document.getElementById('velocity-setup-task-share-image');
                             var config = window.velocitySettingsConfig || {};
@@ -1069,11 +1083,13 @@ class Custom_Admin_Option_Page
 
                                 var tasks = {
                                     permalink: !!(permalinkCheckbox && permalinkCheckbox.checked),
+                                    timezone: !!(timezoneCheckbox && timezoneCheckbox.checked),
+                                    datetime: !!(dateTimeCheckbox && dateTimeCheckbox.checked),
                                     home_seo: !!(homeSeoCheckbox && homeSeoCheckbox.checked),
                                     share_image: !!(shareImageCheckbox && shareImageCheckbox.checked)
                                 };
 
-                                if (!tasks.permalink && !tasks.home_seo && !tasks.share_image) {
+                                if (!tasks.permalink && !tasks.timezone && !tasks.datetime && !tasks.home_seo && !tasks.share_image) {
                                     appendLog('[inline] error: pilih minimal 1 poin');
                                     return;
                                 }
@@ -1118,6 +1134,11 @@ class Custom_Admin_Option_Page
                                             appendLog('---');
                                             appendLog('Permalink: ' + (json.data.permalink || ''));
                                             appendLog('Timezone: ' + (json.data.timezone || ''));
+                                            appendLog('Date Format: ' + (json.data.date_format || ''));
+                                            appendLog('Time Format: ' + (json.data.time_format || ''));
+                                            appendLog('Start of Week: ' + (json.data.start_of_week || ''));
+                                            appendLog('Standard Pages: ' + (json.data.standard_pages || ''));
+                                            appendLog('Homepage ID: ' + (json.data.page_on_front || ''));
                                             appendLog('Home Title: ' + (json.data.home_title || ''));
                                             appendLog('Home Description: ' + (json.data.home_description || ''));
                                             appendLog('Home Keywords: ' + (json.data.home_keywords || ''));
@@ -1513,6 +1534,9 @@ class Custom_Admin_Option_Page
         Velocity_Addons_Optimasi::render_optimize_db_page();
     }
 }
+
+// Initialize the Pengaturan Admin page
+$custom_admin_options_page = new Custom_Admin_Option_Page();
 
 // Initialize the Pengaturan Admin page
 $custom_admin_options_page = new Custom_Admin_Option_Page();
