@@ -176,6 +176,60 @@
           this.setSaving(false);
         }
       },
+      getLicenseSettings: function (source) {
+        if (!source || typeof source !== "object") {
+          return null;
+        }
+        if (
+          source.velocity_license &&
+          typeof source.velocity_license === "object"
+        ) {
+          return source.velocity_license;
+        }
+        if (
+          source.settings &&
+          source.settings.velocity_license &&
+          typeof source.settings.velocity_license === "object"
+        ) {
+          return source.settings.velocity_license;
+        }
+        return source;
+      },
+      isLicenseActive: function (licenseSettings) {
+        var resolvedLicenseSettings = this.getLicenseSettings(licenseSettings);
+        var status =
+          resolvedLicenseSettings &&
+          typeof resolvedLicenseSettings.status !== "undefined"
+            ? String(resolvedLicenseSettings.status).trim().toLowerCase()
+            : "";
+        return (
+          ["active", "activated", "valid", "1", "true", "200"].indexOf(
+            status,
+          ) !== -1
+        );
+      },
+      updateLicenseBadge: function (licenseSettings) {
+        var badge = document.querySelector(".velocity-topnav__badge");
+        if (!badge) {
+          return;
+        }
+        var resolvedLicenseSettings = this.getLicenseSettings(licenseSettings);
+        var isActive = this.isLicenseActive(resolvedLicenseSettings);
+        badge.textContent = isActive ? "Active" : "Inactive";
+        badge.style.background = isActive ? "#16a34a" : "#dc2626";
+      },
+      syncLicenseUi: function (licenseSettings) {
+        var resolvedLicenseSettings = this.getLicenseSettings(licenseSettings);
+        this.updateLicenseBadge(resolvedLicenseSettings);
+        if (!this.licenseButton) {
+          return;
+        }
+        this.licenseButton.textContent = this.isLicenseActive(
+          resolvedLicenseSettings,
+        )
+          ? "License Verified!"
+          : this.licenseButtonDefaultLabel || "Check License";
+      },
       checkLicense: async function () {
         var input =
           this.form.querySelector("#velocity_license__key") ||
@@ -203,19 +257,20 @@
               deepClone(response.settings),
             );
             applyValuesToForm(this.form, response.settings);
-          }
-          if (this.licenseButton) {
-            this.licenseButton.textContent = "License Verified!";
+            this.syncLicenseUi(response);
+          } else {
+            this.syncLicenseUi({ status: "active" });
           }
           this.showNotice("License berhasil diverifikasi.", "success");
         } catch (error) {
           if (input) {
             input.value = "";
           }
-          if (this.licenseButton) {
-            this.licenseButton.textContent =
-              this.licenseButtonDefaultLabel || "Check License";
-          }
+          this.syncLicenseUi(
+            (this.model && this.model.velocity_license) || {
+              status: "inactive",
+            },
+          );
           this.showNotice(error.message || "License check gagal.", "error");
         } finally {
           if (this.licenseButton) {
@@ -251,15 +306,20 @@
               deepClone(response.settings),
             );
             applyValuesToForm(this.form, response.settings);
-          }
-          if (this.licenseButton) {
-            this.licenseButton.textContent = "License Verified!";
+            this.syncLicenseUi(response);
+          } else {
+            this.syncLicenseUi({ status: "active" });
           }
           this.showNotice(
             response.message || "License auto activate berhasil.",
             "success",
           );
         } catch (error) {
+          this.syncLicenseUi(
+            (this.model && this.model.velocity_license) || {
+              status: "inactive",
+            },
+          );
           this.showNotice(error.message || "Auto activate gagal.", "error");
         } finally {
           if (this.autoLicenseButton) {

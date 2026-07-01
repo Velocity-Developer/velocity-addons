@@ -278,10 +278,6 @@ class Custom_Admin_Option_Page
 
     public function page_velocity_addons()
     {
-        static $velocity_page_velocity_addons_calls = 0;
-        $velocity_page_velocity_addons_calls++;
-        echo "\n<!-- velocity-debug: page_velocity_addons call={$velocity_page_velocity_addons_calls} page=" . esc_html(isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '') . " sub=" . esc_html(isset($_GET['sub']) ? sanitize_key(wp_unslash($_GET['sub'])) : '') . " -->\n";
-
         $sub = isset($_GET['sub']) ? sanitize_key(wp_unslash($_GET['sub'])) : 'dashboard';
         $pages = $this->get_admin_velocity_addons_sub_pages();
         $page_slugs = [
