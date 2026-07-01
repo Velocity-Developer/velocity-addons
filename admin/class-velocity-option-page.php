@@ -1200,158 +1200,68 @@ class Custom_Admin_Option_Page
         if (!current_user_can('manage_options')) return;
     ?>
         <style>
-            #velocity-beaver-builder-page {
-                min-height: calc(100vh - 160px);
-                display: grid;
-                grid-template-rows: auto 1fr auto;
-                gap: 24px;
-                background:
-                    radial-gradient(circle at top, rgba(34, 197, 94, 0.18), transparent 34%),
-                    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 24%),
-                    #050816;
-                color: #e5fbe9;
-            }
-
-            #velocity-beaver-builder-page .vd-section,
-            #velocity-beaver-builder-page .vd-footer {
-                display: none;
-            }
-
             .vd-coming-soon-shell {
+                min-height: calc(100vh - 260px);
                 display: grid;
                 place-items: center;
-                padding: 40px 20px;
+                padding: 40px 20px 56px;
             }
 
             .vd-coming-soon-card {
-                width: min(720px, 100%);
-                padding: 40px 28px;
-                border: 1px solid rgba(74, 222, 128, .22);
-                border-radius: 20px;
-                background: rgba(3, 7, 18, .72);
-                box-shadow: 0 0 0 1px rgba(34, 197, 94, .08), 0 24px 80px rgba(0, 0, 0, .45);
+                width: min(920px, 100%);
+                position: relative;
+                overflow: hidden;
+                border: 1px solid rgba(148, 163, 184, .28);
+                border-radius: 24px;
+                background: rgba(255, 255, 255, .68);
+                box-shadow: 0 30px 80px rgba(15, 23, 42, .08);
                 backdrop-filter: blur(14px);
+                padding: clamp(28px, 5vw, 56px);
                 text-align: center;
             }
 
-            .vd-coming-soon-badge {
+            .vd-coming-soon-eyebrow {
+                position: relative;
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
+                margin-bottom: 18px;
                 padding: 8px 14px;
                 border-radius: 999px;
-                border: 1px solid rgba(74, 222, 128, .25);
-                color: #7ef7a8;
-                background: rgba(34, 197, 94, .08);
-                letter-spacing: .18em;
+                background: rgba(15, 23, 42, .04);
+                color: #15803d;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: .14em;
                 text-transform: uppercase;
-                font-size: 11px;
-            }
-
-            .vd-orb-wrap {
-                position: relative;
-                width: 190px;
-                height: 190px;
-                margin: 24px auto 28px;
-            }
-
-            .vd-orb,
-            .vd-orb::before,
-            .vd-orb::after {
-                position: absolute;
-                inset: 0;
-                border-radius: 50%;
-            }
-
-            .vd-orb {
-                background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .95), rgba(74, 222, 128, .95) 28%, rgba(16, 185, 129, .45) 56%, rgba(5, 8, 22, 0) 72%);
-                filter: drop-shadow(0 0 26px rgba(74, 222, 128, .45));
-                animation: vdFloat 4.8s ease-in-out infinite;
-            }
-
-            .vd-orb::before {
-                content: '';
-                inset: 24px;
-                border: 1px solid rgba(126, 247, 168, .26);
-                animation: vdSpin 10s linear infinite;
-            }
-
-            .vd-orb::after {
-                content: '';
-                inset: -14px;
-                border: 1px dashed rgba(126, 247, 168, .22);
-                animation: vdSpinReverse 16s linear infinite;
             }
 
             .vd-coming-soon-title {
+                position: relative;
                 margin: 0;
-                font-size: clamp(34px, 6vw, 66px);
-                line-height: 1;
-                letter-spacing: .08em;
-                text-transform: uppercase;
-                color: #f3fff6;
-                text-shadow: 0 0 18px rgba(74, 222, 128, .24);
+                font-size: clamp(38px, 7vw, 82px);
+                line-height: .95;
+                font-weight: 800;
+                letter-spacing: -.05em;
+                color: #0f172a;
             }
 
             .vd-coming-soon-copy {
-                margin: 14px auto 0;
-                max-width: 52ch;
-                color: #a7d8b2;
+                position: relative;
+                max-width: 620px;
+                margin: 18px auto 0;
                 font-size: 16px;
-                line-height: 1.8;
-            }
-
-            .vd-coming-soon-note {
-                margin-top: 18px;
-                color: #7ef7a8;
-                font-size: 13px;
-                letter-spacing: .08em;
-                text-transform: uppercase;
-            }
-
-            @keyframes vdFloat {
-
-                0%,
-                100% {
-                    transform: translateY(0) scale(1);
-                }
-
-                50% {
-                    transform: translateY(-10px) scale(1.02);
-                }
-            }
-
-            @keyframes vdSpin {
-                from {
-                    transform: rotate(0deg);
-                }
-
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-
-            @keyframes vdSpinReverse {
-                from {
-                    transform: rotate(360deg);
-                }
-
-                to {
-                    transform: rotate(0deg);
-                }
+                line-height: 1.75;
+                color: #475569;
             }
         </style>
         <div class="velocity-dashboard-wrapper" id="velocity-beaver-builder-page">
             <?php Velocity_Addons_Admin_Navigation::render(); ?>
             <div class="vd-coming-soon-shell">
                 <div class="vd-coming-soon-card">
-                    <div class="vd-coming-soon-badge">Beaver Builder</div>
-                    <div class="vd-orb-wrap" aria-hidden="true">
-                        <div class="vd-orb"></div>
-                    </div>
+                    <div class="vd-coming-soon-eyebrow">Beaver Builder</div>
                     <h1 class="vd-coming-soon-title">Coming Soon</h1>
-                    <p class="vd-coming-soon-copy">Fitur masih dalam pengembangan. Sementara tampilkan halaman ini sebagai placeholder dengan logo animasi.</p>
-                    <div class="vd-coming-soon-note">Cooming Soon</div>
+                    <p class="vd-coming-soon-copy">Halaman dalam pengembangan.</p>
                 </div>
             </div>
             <div class="vd-footer">
