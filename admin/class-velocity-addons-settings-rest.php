@@ -322,13 +322,15 @@ class Velocity_Addons_Admin_Settings_REST
         $run_permalink = !empty($tasks['permalink']);
         $run_timezone = !empty($tasks['timezone']);
         $run_datetime = !empty($tasks['datetime']);
+        $run_standard_pages = !empty($tasks['standard_pages']);
         $run_home_seo = !empty($tasks['home_seo']);
         $run_share_image = !empty($tasks['share_image']);
 
-        if (!$run_permalink && !$run_timezone && !$run_datetime && !$run_home_seo && !$run_share_image) {
+        if (!$run_permalink && !$run_timezone && !$run_datetime && !$run_standard_pages && !$run_home_seo && !$run_share_image) {
             $run_permalink = true;
             $run_timezone = true;
             $run_datetime = true;
+            $run_standard_pages = true;
             $run_home_seo = true;
             $run_share_image = true;
         }
@@ -336,6 +338,7 @@ class Velocity_Addons_Admin_Settings_REST
         $logs[] = 'Task permalink: ' . ($run_permalink ? 'ya' : 'tidak');
         $logs[] = 'Task timezone: ' . ($run_timezone ? 'ya' : 'tidak');
         $logs[] = 'Task datetime: ' . ($run_datetime ? 'ya' : 'tidak');
+        $logs[] = 'Task standard pages: ' . ($run_standard_pages ? 'ya' : 'tidak');
         $logs[] = 'Task home seo: ' . ($run_home_seo ? 'ya' : 'tidak');
         $logs[] = 'Task share image: ' . ($run_share_image ? 'ya' : 'tidak');
 
@@ -383,6 +386,8 @@ class Velocity_Addons_Admin_Settings_REST
         $date_format = '';
         $time_format = '';
         $start_of_week = '';
+        $standard_pages = '';
+        $page_on_front = 0;
         if ($run_permalink) {
             update_option('permalink_structure', '/%category%/%postname%/');
             $logs[] = 'Option permalink_structure diupdate';
@@ -421,22 +426,32 @@ class Velocity_Addons_Admin_Settings_REST
 
         if ($run_standard_pages) {
             $page_titles = array('Home', 'Profile', 'Gallery', 'Contact');
-            $created_pages = array();
+            $prepared_pages = array();
             $home_page_id = 0;
 
             foreach ($page_titles as $page_title) {
-                $page_id = $this->get_or_create_page_by_title($page_title);
-                if ($page_id > 0) {
-                    $created_pages[] = $page_title;
-                    $logs[] = 'Page siap: ' . $page_title . ' (#' . $page_id . ')';
-                    if ($page_title === 'Home') {
-                        $home_page_id = $page_id;
-                    }
+                $page_result = $this->get_or_create_page_by_title($page_title);
+                if (empty($page_result['id'])) {
+                    $logs[] = 'Gagal siapkan page: ' . $page_title;
+                    continue;
+                }
+
+                $page_id = (int) $page_result['id'];
+                $prepared_pages[] = $page_title;
+                $logs[] = sprintf(
+                    'Page %s: %s (#%d)',
+                    !empty($page_result['created']) ? 'dibuat' : 'sudah ada, skip',
+                    $page_title,
+                    $page_id
+                );
+
+                if ($page_title === 'Home') {
+                    $home_page_id = $page_id;
                 }
             }
 
-            if (!empty($created_pages)) {
-                $standard_pages = implode(', ', $created_pages);
+            if (!empty($prepared_pages)) {
+                $standard_pages = implode(', ', $prepared_pages);
             }
 
             if ($home_page_id > 0) {
@@ -505,6 +520,38 @@ class Velocity_Addons_Admin_Settings_REST
                 ),
                 'logs'    => $logs,
             )
+        );
+    }
+
+    private function get_or_create_page_by_title($page_title)
+    {
+        $page_title = sanitize_text_field((string) $page_title);
+        if ($page_title === '') {
+            return array('id' => 0, 'created' => false);
+        }
+
+        $existing_page = get_page_by_title($page_title, OBJECT, 'page');
+        if ($existing_page instanceof WP_Post) {
+            return array(
+                'id'      => (int) $existing_page->ID,
+                'created' => false,
+            );
+        }
+
+        $page_id = wp_insert_post(array(
+            'post_title'   => $page_title,
+            'post_type'    => 'page',
+            'post_status'  => 'publish',
+            'post_content' => '',
+        ), true);
+
+        if (is_wp_error($page_id)) {
+            return array('id' => 0, 'created' => false);
+        }
+
+        return array(
+            'id'      => (int) $page_id,
+            'created' => true,
         );
     }
 
@@ -956,7 +1003,7 @@ class Velocity_Addons_Admin_Settings_REST
                     'captcha_velocity' => array(
                         'type'       => 'object',
                         'properties' => array(
-                            'provider'  => array('type' => 'select', 'allowed' => array('google', 'image'), 'default' => 'google'),
+                            'provider'  => array('type' => 'select', 'allowed' => array('google', 'image'), 'default' => 'image'),
                             'aktif'     => array('type' => 'bool', 'default' => 1),
                             'difficulty' => array('type' => 'select', 'allowed' => array('easy', 'medium', 'hard'), 'default' => 'medium'),
                             'sitekey'   => array('type' => 'text', 'default' => ''),

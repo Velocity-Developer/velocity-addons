@@ -1023,6 +1023,10 @@ class Custom_Admin_Option_Page
                             <span>Set date format ke <code>j F Y</code>, time format ke <code>H:i</code>, minggu dimulai di <strong>Minggu</strong></span>
                         </label>
                         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="velocity-setup-task-standard-pages" checked style="margin-top:4px;">
+                            <span>Generate Basic Page: <strong>Home</strong>, <strong>Profile</strong>, <strong>Gallery</strong>, <strong>Contact</strong>. Jika sudah ada, skip. Lalu set Reading homepage ke <strong>Home</strong></span>
+                        </label>
+                        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
                             <input type="checkbox" id="velocity-setup-task-home-seo" checked style="margin-top:4px;">
                             <span>Generate <strong>Home Title</strong>, <strong>Home Description</strong>, <strong>Home Keywords</strong></span>
                         </label>
@@ -1040,6 +1044,7 @@ class Custom_Admin_Option_Page
                             var permalinkCheckbox = document.getElementById('velocity-setup-task-permalink');
                             var timezoneCheckbox = document.getElementById('velocity-setup-task-timezone');
                             var dateTimeCheckbox = document.getElementById('velocity-setup-task-datetime');
+                            var standardPagesCheckbox = document.getElementById('velocity-setup-task-standard-pages');
                             var homeSeoCheckbox = document.getElementById('velocity-setup-task-home-seo');
                             var shareImageCheckbox = document.getElementById('velocity-setup-task-share-image');
                             var config = window.velocitySettingsConfig || {};
@@ -1084,11 +1089,12 @@ class Custom_Admin_Option_Page
                                     permalink: !!(permalinkCheckbox && permalinkCheckbox.checked),
                                     timezone: !!(timezoneCheckbox && timezoneCheckbox.checked),
                                     datetime: !!(dateTimeCheckbox && dateTimeCheckbox.checked),
+                                    standard_pages: !!(standardPagesCheckbox && standardPagesCheckbox.checked),
                                     home_seo: !!(homeSeoCheckbox && homeSeoCheckbox.checked),
                                     share_image: !!(shareImageCheckbox && shareImageCheckbox.checked)
                                 };
 
-                                if (!tasks.permalink && !tasks.timezone && !tasks.datetime && !tasks.home_seo && !tasks.share_image) {
+                                if (!tasks.permalink && !tasks.timezone && !tasks.datetime && !tasks.standard_pages && !tasks.home_seo && !tasks.share_image) {
                                     appendLog('[inline] error: pilih minimal 1 poin');
                                     return;
                                 }
