@@ -79,6 +79,11 @@
       licenseButton: null,
       licenseButtonDefaultLabel: "",
       boot: function (formEl) {
+        if (!formEl || formEl.__velocitySettingsBooted) {
+          return;
+        }
+        formEl.__velocitySettingsBooted = true;
+
         this.form = formEl;
         this.noticeEl = ensureNoticeElement(formEl);
         this.saveButtons = collectSubmitButtons(formEl);
@@ -96,14 +101,20 @@
         try {
           var response = await apiRequest("/settings/" + this.route, "GET");
           if (response && response.settings) {
-            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
+            this.model = deepMergePreferRight(
+              deepClone(this.model),
+              deepClone(response.settings),
+            );
             applyValuesToForm(this.form, response.settings);
             if (this.route === "general") {
               syncGeneralDynamicMenu(response.settings);
             }
           }
         } catch (error) {
-          this.showNotice(error.message || "Gagal mengambil pengaturan.", "error");
+          this.showNotice(
+            error.message || "Gagal mengambil pengaturan.",
+            "error",
+          );
         }
       },
       submit: async function (event) {
@@ -117,7 +128,10 @@
             settings: payload,
           });
           if (response && response.settings) {
-            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
+            this.model = deepMergePreferRight(
+              deepClone(this.model),
+              deepClone(response.settings),
+            );
             applyValuesToForm(this.form, response.settings);
             if (this.route === "general") {
               syncGeneralDynamicMenu(response.settings);
@@ -125,7 +139,10 @@
           }
           this.showNotice("Pengaturan berhasil disimpan.", "success");
         } catch (error) {
-          this.showNotice(error.message || "Gagal menyimpan pengaturan.", "error");
+          this.showNotice(
+            error.message || "Gagal menyimpan pengaturan.",
+            "error",
+          );
         } finally {
           this.setSaving(false);
         }
@@ -133,15 +150,28 @@
       resetGeneral: async function () {
         this.setSaving(true);
         try {
-          var response = await apiRequest("/settings/general/reset", "POST", {});
+          var response = await apiRequest(
+            "/settings/general/reset",
+            "POST",
+            {},
+          );
           if (response && response.settings) {
-            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
+            this.model = deepMergePreferRight(
+              deepClone(this.model),
+              deepClone(response.settings),
+            );
             applyValuesToForm(this.form, response.settings);
             syncGeneralDynamicMenu(response.settings);
           }
-          this.showNotice("Pengaturan umum berhasil dikembalikan ke default.", "success");
+          this.showNotice(
+            "Pengaturan umum berhasil dikembalikan ke default.",
+            "success",
+          );
         } catch (error) {
-          this.showNotice(error.message || "Gagal reset pengaturan umum.", "error");
+          this.showNotice(
+            error.message || "Gagal reset pengaturan umum.",
+            "error",
+          );
         } finally {
           this.setSaving(false);
         }
@@ -150,7 +180,8 @@
         var input =
           this.form.querySelector("#velocity_license__key") ||
           this.form.querySelector('input[name="velocity_license[key]"]');
-        var key = input && typeof input.value === "string" ? input.value.trim() : "";
+        var key =
+          input && typeof input.value === "string" ? input.value.trim() : "";
 
         if (!key) {
           this.showNotice("Silakan isi license key terlebih dahulu.", "error");
@@ -163,9 +194,14 @@
         }
 
         try {
-          var response = await apiRequest("/license/check", "POST", { license_key: key });
+          var response = await apiRequest("/license/check", "POST", {
+            license_key: key,
+          });
           if (response && response.settings) {
-            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
+            this.model = deepMergePreferRight(
+              deepClone(this.model),
+              deepClone(response.settings),
+            );
             applyValuesToForm(this.form, response.settings);
           }
           if (this.licenseButton) {
@@ -177,7 +213,8 @@
             input.value = "";
           }
           if (this.licenseButton) {
-            this.licenseButton.textContent = this.licenseButtonDefaultLabel || "Check License";
+            this.licenseButton.textContent =
+              this.licenseButtonDefaultLabel || "Check License";
           }
           this.showNotice(error.message || "License check gagal.", "error");
         } finally {
@@ -188,7 +225,7 @@
       },
       bindGeneralReset: function () {
         var hiddenAction = document.querySelector(
-          'input[name="action"][value="velocity_reset_general_defaults"]'
+          'input[name="action"][value="velocity_reset_general_defaults"]',
         );
         if (!hiddenAction || !hiddenAction.form) {
           return;
@@ -209,18 +246,25 @@
         try {
           var response = await apiRequest("/license/auto-activate", "POST", {});
           if (response && response.settings) {
-            this.model = deepMergePreferRight(deepClone(this.model), deepClone(response.settings));
+            this.model = deepMergePreferRight(
+              deepClone(this.model),
+              deepClone(response.settings),
+            );
             applyValuesToForm(this.form, response.settings);
           }
           if (this.licenseButton) {
             this.licenseButton.textContent = "License Verified!";
           }
-          this.showNotice(response.message || "License auto activate berhasil.", "success");
+          this.showNotice(
+            response.message || "License auto activate berhasil.",
+            "success",
+          );
         } catch (error) {
           this.showNotice(error.message || "Auto activate gagal.", "error");
         } finally {
           if (this.autoLicenseButton) {
-            this.autoLicenseButton.textContent = this.autoLicenseButtonDefaultLabel || "Auto Activate";
+            this.autoLicenseButton.textContent =
+              this.autoLicenseButtonDefaultLabel || "Auto Activate";
             this.autoLicenseButton.removeAttribute("aria-busy");
           }
         }
@@ -229,10 +273,12 @@
         this.licenseButton = this.form.querySelector(".check-license");
         this.autoLicenseButton = this.form.querySelector(".auto-license");
         if (this.licenseButton) {
-          this.licenseButtonDefaultLabel = this.licenseButton.textContent || "Check License";
+          this.licenseButtonDefaultLabel =
+            this.licenseButton.textContent || "Check License";
         }
         if (this.autoLicenseButton) {
-          this.autoLicenseButtonDefaultLabel = this.autoLicenseButton.textContent || "Auto Activate";
+          this.autoLicenseButtonDefaultLabel =
+            this.autoLicenseButton.textContent || "Auto Activate";
         }
         var self = this;
         if (this.licenseButton) {
@@ -253,7 +299,9 @@
           this.saveButtons[i].disabled = isSaving;
         }
         if (this.resetForm) {
-          var resetButtons = this.resetForm.querySelectorAll('button[type="submit"],input[type="submit"]');
+          var resetButtons = this.resetForm.querySelectorAll(
+            'button[type="submit"],input[type="submit"]',
+          );
           for (var j = 0; j < resetButtons.length; j++) {
             resetButtons[j].disabled = isSaving;
           }
@@ -315,7 +363,11 @@
     var initialModel = buildInitialModelFromForm(form);
     form.setAttribute(
       "x-data",
-      "velocitySettingsPage('" + activeBinding.route + "', " + JSON.stringify(initialModel) + ")"
+      "velocitySettingsPage('" +
+        activeBinding.route +
+        "', " +
+        JSON.stringify(initialModel) +
+        ")",
     );
     form.setAttribute("x-init", "boot($el)");
     form.setAttribute("x-on:submit.prevent", "submit($event)");
@@ -364,7 +416,11 @@
       if (!field.name || field.disabled) {
         continue;
       }
-      if (field.name === "option_page" || field.name === "action" || field.name.indexOf("_wp") === 0) {
+      if (
+        field.name === "option_page" ||
+        field.name === "action" ||
+        field.name.indexOf("_wp") === 0
+      ) {
         continue;
       }
 
@@ -442,7 +498,8 @@
       if (field.tagName === "SELECT" && field.multiple) {
         var selected = Array.isArray(value) ? value.map(String) : [];
         for (var x = 0; x < field.options.length; x++) {
-          field.options[x].selected = selected.indexOf(String(field.options[x].value)) !== -1;
+          field.options[x].selected =
+            selected.indexOf(String(field.options[x].value)) !== -1;
         }
         continue;
       }
@@ -508,12 +565,16 @@
 
   function collectSubmitButtons(form) {
     var buttons = Array.prototype.slice.call(
-      form.querySelectorAll('button[type="submit"],input[type="submit"]')
+      form.querySelectorAll('button[type="submit"],input[type="submit"]'),
     );
     var formId = form.getAttribute("id");
     if (formId) {
       var external = document.querySelectorAll(
-        'button[type="submit"][form="' + formId + '"],input[type="submit"][form="' + formId + '"]'
+        'button[type="submit"][form="' +
+          formId +
+          '"],input[type="submit"][form="' +
+          formId +
+          '"]',
       );
       buttons = buttons.concat(Array.prototype.slice.call(external));
     }
@@ -528,7 +589,8 @@
 
     notice = document.createElement("div");
     notice.id = "velocity-settings-toast";
-    notice.className = "notice velocity-settings-notice velocity-settings-toast is-hidden";
+    notice.className =
+      "notice velocity-settings-notice velocity-settings-toast is-hidden";
     notice.style.display = "none";
     (document.body || form.parentNode).appendChild(notice);
     return notice;
@@ -594,7 +656,11 @@
     ) {
       return true;
     }
-    if (field.type === "submit" || field.type === "button" || field.type === "reset") {
+    if (
+      field.type === "submit" ||
+      field.type === "button" ||
+      field.type === "reset"
+    ) {
       return true;
     }
     return false;
@@ -611,7 +677,10 @@
       if (/^\d+$/.test(part)) {
         expr += "[" + part + "]";
       } else {
-        expr += "['" + String(part).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "']";
+        expr +=
+          "['" +
+          String(part).replace(/\\/g, "\\\\").replace(/'/g, "\\'") +
+          "']";
       }
     }
     return expr;
@@ -719,12 +788,36 @@
 
   function syncGeneralDynamicMenu(settings) {
     var dynamicItems = [
-      { option: "seo_velocity", href: "admin.php?page=velocity_seo_settings", label: "SEO" },
-      { option: "floating_whatsapp", href: "admin.php?page=velocity_floating_whatsapp", label: "Floating Whatsapp" },
-      { option: "news_generate", href: "admin.php?page=velocity_news_settings", label: "Import Artikel" },
-      { option: "velocity_duitku", href: "admin.php?page=velocity_duitku_settings", label: "Duitku" },
-      { option: "statistik_velocity", href: "admin.php?page=velocity_statistics", label: "Statistik Pengunjung" },
-      { option: "velocity_optimasi", href: "admin.php?page=velocity_optimize_db", label: "Optimize Database" },
+      {
+        option: "seo_velocity",
+        href: "admin.php?page=velocity_seo_settings",
+        label: "SEO",
+      },
+      {
+        option: "floating_whatsapp",
+        href: "admin.php?page=velocity_floating_whatsapp",
+        label: "Floating Whatsapp",
+      },
+      {
+        option: "news_generate",
+        href: "admin.php?page=velocity_news_settings",
+        label: "Import Artikel",
+      },
+      {
+        option: "velocity_duitku",
+        href: "admin.php?page=velocity_duitku_settings",
+        label: "Duitku",
+      },
+      {
+        option: "statistik_velocity",
+        href: "admin.php?page=velocity_statistics",
+        label: "Statistik Pengunjung",
+      },
+      {
+        option: "velocity_optimasi",
+        href: "admin.php?page=velocity_optimize_db",
+        label: "Optimize Database",
+      },
     ];
 
     var submenu = getVelocitySubmenuContainer();
@@ -747,8 +840,12 @@
 
   function getVelocitySubmenuContainer() {
     return (
-      document.querySelector("#toplevel_page_admin_velocity_addons ul.wp-submenu") ||
-      document.querySelector("#toplevel_page_admin_velocity_addons ul.wp-submenu-wrap")
+      document.querySelector(
+        "#toplevel_page_admin_velocity_addons ul.wp-submenu",
+      ) ||
+      document.querySelector(
+        "#toplevel_page_admin_velocity_addons ul.wp-submenu-wrap",
+      )
     );
   }
 
