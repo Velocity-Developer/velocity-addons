@@ -374,6 +374,10 @@ class Velocity_Addons_Admin_Navigation
 						'label' => 'License',
 					),
 					array(
+						'page'  => 'velocity_beaver_builder',
+						'label' => 'Beaver Builder',
+					),
+					array(
 						'page'  => 'velocity_one_click_setup',
 						'label' => '1 Click setup',
 					),
@@ -448,6 +452,7 @@ class Velocity_Addons_Admin_Navigation
 			'velocity_statistics_shortcode' => 'shortcode',
 			'velocity_optimize_db' => 'optimasi',
 			'velocity_license_settings' => 'license',
+			'velocity_beaver_builder' => 'beaver-builder',
 			'velocity_one_click_setup' => '1-click-setup',
 			'velocity_news_settings' => 'import-artikel',
 		);

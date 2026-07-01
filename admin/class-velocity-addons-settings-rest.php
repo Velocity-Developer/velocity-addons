@@ -87,6 +87,30 @@ class Velocity_Addons_Admin_Settings_REST
                 ),
             )
         );
+
+        register_rest_route(
+            $this->namespace,
+            '/beaver-builder/templates',
+            array(
+                array(
+                    'methods'             => WP_REST_Server::READABLE,
+                    'callback'            => array($this, 'get_beaver_builder_templates'),
+                    'permission_callback' => array($this, 'permissions_manage_options'),
+                ),
+            )
+        );
+
+        register_rest_route(
+            $this->namespace,
+            '/beaver-builder/import',
+            array(
+                array(
+                    'methods'             => WP_REST_Server::EDITABLE,
+                    'callback'            => array($this, 'import_beaver_builder_template'),
+                    'permission_callback' => array($this, 'permissions_manage_options'),
+                ),
+            )
+        );
     }
 
     public function permissions_manage_options()
@@ -178,6 +202,116 @@ class Velocity_Addons_Admin_Settings_REST
                 'settings' => $this->get_page_settings($this->get_page_definition('general')),
             )
         );
+    }
+
+    public function get_beaver_builder_templates(WP_REST_Request $request)
+    {
+        $type = sanitize_key((string) $request->get_param('type'));
+        $allowed_types = array('header', 'content', 'footer', 'archive', 'single-post', 'single-page');
+
+        if (!in_array($type, $allowed_types, true)) {
+            return new WP_Error(
+                'velocity_invalid_template_type',
+                __('Tipe template tidak valid.', 'velocity-addons'),
+                array('status' => 400)
+            );
+        }
+
+        $endpoint = apply_filters('velocity_addons_beaver_builder_templates_endpoint', '', $type, $request);
+        if (!is_string($endpoint) || $endpoint === '') {
+            return new WP_Error(
+                'velocity_missing_beaver_builder_templates_endpoint',
+                __('Endpoint Beaver Builder templates belum diset.', 'velocity-addons'),
+                array('status' => 400)
+            );
+        }
+
+        $response = wp_remote_get(add_query_arg(array('type' => $type), $endpoint), array('timeout' => 20));
+        if (is_wp_error($response)) {
+            return new WP_Error(
+                'velocity_beaver_builder_templates_request_failed',
+                $response->get_error_message(),
+                array('status' => 400)
+            );
+        }
+
+        $decoded = json_decode((string) wp_remote_retrieve_body($response), true);
+        if (!is_array($decoded)) {
+            return new WP_Error(
+                'velocity_beaver_builder_templates_invalid_response',
+                __('Response endpoint Beaver Builder tidak valid.', 'velocity-addons'),
+                array('status' => 400)
+            );
+        }
+
+        return rest_ensure_response($decoded);
+    }
+
+    public function import_beaver_builder_template(WP_REST_Request $request)
+    {
+        $payload = $request->get_json_params();
+        if (!is_array($payload)) {
+            $payload = $request->get_params();
+        }
+
+        $type = isset($payload['type']) ? sanitize_key((string) $payload['type']) : '';
+        $design = isset($payload['design']) ? sanitize_text_field((string) $payload['design']) : '';
+        $allowed_types = array('header', 'content', 'footer', 'archive', 'single-post', 'single-page');
+
+        if (!in_array($type, $allowed_types, true)) {
+            return new WP_Error(
+                'velocity_invalid_template_type',
+                __('Tipe template tidak valid.', 'velocity-addons'),
+                array('status' => 400)
+            );
+        }
+
+        if ($design === '') {
+            return new WP_Error(
+                'velocity_beaver_builder_design_required',
+                __('Desain wajib dipilih.', 'velocity-addons'),
+                array('status' => 400)
+            );
+        }
+
+        $endpoint = apply_filters('velocity_addons_beaver_builder_import_endpoint', '', $type, $design, $payload, $request);
+        if (!is_string($endpoint) || $endpoint === '') {
+            return new WP_Error(
+                'velocity_missing_beaver_builder_import_endpoint',
+                __('Endpoint Beaver Builder import belum diset.', 'velocity-addons'),
+                array('status' => 400)
+            );
+        }
+
+        $response = wp_remote_post(
+            $endpoint,
+            array(
+                'timeout' => 30,
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                ),
+                'body'    => wp_json_encode($payload),
+            )
+        );
+
+        if (is_wp_error($response)) {
+            return new WP_Error(
+                'velocity_beaver_builder_import_request_failed',
+                $response->get_error_message(),
+                array('status' => 400)
+            );
+        }
+
+        $decoded = json_decode((string) wp_remote_retrieve_body($response), true);
+        if (!is_array($decoded)) {
+            return new WP_Error(
+                'velocity_beaver_builder_import_invalid_response',
+                __('Response import Beaver Builder tidak valid.', 'velocity-addons'),
+                array('status' => 400)
+            );
+        }
+
+        return rest_ensure_response($decoded);
     }
 
     public function check_license(WP_REST_Request $request)

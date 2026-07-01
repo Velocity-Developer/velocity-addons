@@ -266,6 +266,7 @@ class Custom_Admin_Option_Page
             'shortcode' => array($this, 'visitor_stats_page_callback'),
             'optimasi' => array($this, 'optimize_db_page_callback'),
             'license' => array($this, 'velocity_license_page'),
+            'beaver-builder' => array($this, 'velocity_beaver_builder_page'),
             '1-click-setup' => array($this, 'velocity_one_click_setup_page'),
             'import-artikel' => array($this, 'velocity_news_page'),
         );
@@ -990,6 +991,369 @@ class Custom_Admin_Option_Page
                 </div>
                 <?php submit_button(); ?>
             </form>
+            <div class="vd-section" id="velocity-beaver-builder-import">
+                <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                    <h3 style="margin:0; font-size:1.1rem; color:#374151;">Beaver Builder Import</h3>
+                </div>
+                <div class="vd-section-body">
+                    <p>Pilih tipe template, lalu pilih desain dari endpoint API dan klik import.</p>
+                    <div style="display:grid;gap:16px;max-width:860px;">
+                        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;">
+                            <div>
+                                <label class="vd-form-label" for="velocity-bb-template-type">Template Type</label>
+                                <select id="velocity-bb-template-type" class="regular-text" style="max-width:100%;">
+                                    <option value="header">Header</option>
+                                    <option value="content">Konten</option>
+                                    <option value="footer">Footer</option>
+                                    <option value="archive">Archive</option>
+                                    <option value="single-post">Single Post</option>
+                                    <option value="single-page">Single Page</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="vd-form-label" for="velocity-bb-template-design">Desain</label>
+                                <select id="velocity-bb-template-design" class="regular-text" style="max-width:100%;">
+                                    <option value="">Pilih tipe dulu</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button type="button" class="button button-secondary" id="velocity-bb-load-designs">Load Desain</button>
+                            <button type="button" class="button button-primary" id="velocity-bb-import-design">Import Template</button>
+                        </div>
+                        <div id="velocity-bb-template-meta" style="padding:12px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;display:none;"></div>
+                        <div id="velocity-bb-import-log" style="background:#111827;color:#e5e7eb;border-radius:8px;padding:14px;min-height:140px;font-family:monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow:auto;">Klik load untuk ambil daftar desain...</div>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var config = window.velocitySettingsConfig || {};
+                            var typeEl = document.getElementById('velocity-bb-template-type');
+                            var designEl = document.getElementById('velocity-bb-template-design');
+                            var loadBtn = document.getElementById('velocity-bb-load-designs');
+                            var importBtn = document.getElementById('velocity-bb-import-design');
+                            var logEl = document.getElementById('velocity-bb-import-log');
+                            var metaEl = document.getElementById('velocity-bb-template-meta');
+                            var designs = [];
+
+                            function setLog(lines) {
+                                if (!logEl) return;
+                                logEl.textContent = Array.isArray(lines) ? lines.join('\n') : String(lines || '');
+                                logEl.scrollTop = logEl.scrollHeight;
+                            }
+
+                            function appendLog(line) {
+                                if (!logEl) return;
+                                logEl.textContent += '\n' + String(line || '');
+                                logEl.scrollTop = logEl.scrollHeight;
+                            }
+
+                            function apiRequest(path, method, body) {
+                                var restBase = String(config.restBase || '').replace(/\/$/, '');
+                                if (!restBase) {
+                                    return Promise.reject(new Error('REST base tidak tersedia.'));
+                                }
+
+                                var options = {
+                                    method: method,
+                                    credentials: 'same-origin',
+                                    headers: {
+                                        'X-WP-Nonce': config.nonce || ''
+                                    }
+                                };
+
+                                if (body) {
+                                    options.headers['Content-Type'] = 'application/json';
+                                    options.body = JSON.stringify(body);
+                                }
+
+                                return fetch(restBase + path, options).then(function(response) {
+                                    return response.json().catch(function() {
+                                        return {};
+                                    }).then(function(json) {
+                                        if (!response.ok) {
+                                            throw new Error((json && json.message) || 'Request gagal.');
+                                        }
+                                        return json;
+                                    });
+                                });
+                            }
+
+                            function renderMeta(item) {
+                                if (!metaEl) return;
+                                if (!item) {
+                                    metaEl.style.display = 'none';
+                                    metaEl.innerHTML = '';
+                                    return;
+                                }
+                                metaEl.style.display = 'block';
+                                metaEl.innerHTML = '<strong>' + String(item.name || item.label || item.id || '-') + '</strong>' +
+                                    (item.description ? '<div style="margin-top:6px;color:#6b7280;">' + String(item.description) + '</div>' : '');
+                            }
+
+                            function populateDesigns(items) {
+                                designs = Array.isArray(items) ? items : [];
+                                designEl.innerHTML = '';
+                                if (!designs.length) {
+                                    designEl.innerHTML = '<option value="">Tidak ada desain</option>';
+                                    renderMeta(null);
+                                    return;
+                                }
+
+                                designs.forEach(function(item, index) {
+                                    var option = document.createElement('option');
+                                    option.value = String(item.id || item.slug || item.value || '');
+                                    option.textContent = String(item.name || item.label || option.value || ('Desain ' + (index + 1)));
+                                    designEl.appendChild(option);
+                                });
+                                renderMeta(designs[0]);
+                            }
+
+                            if (designEl) {
+                                designEl.addEventListener('change', function() {
+                                    var selected = designs.find(function(item) {
+                                        var value = String(item.id || item.slug || item.value || '');
+                                        return value === String(designEl.value || '');
+                                    });
+                                    renderMeta(selected || null);
+                                });
+                            }
+
+                            if (loadBtn) {
+                                loadBtn.addEventListener('click', function() {
+                                    var type = typeEl ? String(typeEl.value || '') : '';
+                                    if (!type) {
+                                        setLog('Pilih tipe template dulu.');
+                                        return;
+                                    }
+
+                                    loadBtn.disabled = true;
+                                    setLog(['[start] Ambil daftar desain', 'Type: ' + type]);
+                                    apiRequest('/beaver-builder/templates?type=' + encodeURIComponent(type), 'GET')
+                                        .then(function(response) {
+                                            var items = [];
+                                            if (response && Array.isArray(response.items)) {
+                                                items = response.items;
+                                            } else if (response && Array.isArray(response.data)) {
+                                                items = response.data;
+                                            } else if (Array.isArray(response)) {
+                                                items = response;
+                                            }
+                                            populateDesigns(items);
+                                            appendLog('[ok] Jumlah desain: ' + items.length);
+                                        })
+                                        .catch(function(error) {
+                                            populateDesigns([]);
+                                            setLog('[error] ' + (error && error.message ? error.message : 'Gagal load desain.'));
+                                        })
+                                        .finally(function() {
+                                            loadBtn.disabled = false;
+                                        });
+                                });
+                            }
+
+                            if (importBtn) {
+                                importBtn.addEventListener('click', function() {
+                                    var type = typeEl ? String(typeEl.value || '') : '';
+                                    var design = designEl ? String(designEl.value || '') : '';
+                                    if (!type || !design) {
+                                        setLog('Pilih tipe dan desain dulu.');
+                                        return;
+                                    }
+
+                                    importBtn.disabled = true;
+                                    setLog(['[start] Import template Beaver Builder', 'Type: ' + type, 'Design: ' + design]);
+                                    apiRequest('/beaver-builder/import', 'POST', {
+                                            type: type,
+                                            design: design
+                                        })
+                                        .then(function(response) {
+                                            if (response && Array.isArray(response.logs) && response.logs.length) {
+                                                setLog(response.logs);
+                                            } else {
+                                                appendLog('[ok] Import selesai');
+                                            }
+                                            if (response && response.message) {
+                                                appendLog('Message: ' + response.message);
+                                            }
+                                        })
+                                        .catch(function(error) {
+                                            setLog('[error] ' + (error && error.message ? error.message : 'Gagal import template.'));
+                                        })
+                                        .finally(function() {
+                                            importBtn.disabled = false;
+                                        });
+                                });
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+            <div class="vd-footer">
+                <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
+            </div>
+        </div>
+    <?php
+    }
+
+    public function velocity_beaver_builder_page()
+    {
+        if (!current_user_can('manage_options')) return;
+    ?>
+        <style>
+            #velocity-beaver-builder-page {
+                min-height: calc(100vh - 160px);
+                display: grid;
+                grid-template-rows: auto 1fr auto;
+                gap: 24px;
+                background:
+                    radial-gradient(circle at top, rgba(34, 197, 94, 0.18), transparent 34%),
+                    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 24%),
+                    #050816;
+                color: #e5fbe9;
+            }
+
+            #velocity-beaver-builder-page .vd-section,
+            #velocity-beaver-builder-page .vd-footer {
+                display: none;
+            }
+
+            .vd-coming-soon-shell {
+                display: grid;
+                place-items: center;
+                padding: 40px 20px;
+            }
+
+            .vd-coming-soon-card {
+                width: min(720px, 100%);
+                padding: 40px 28px;
+                border: 1px solid rgba(74, 222, 128, .22);
+                border-radius: 20px;
+                background: rgba(3, 7, 18, .72);
+                box-shadow: 0 0 0 1px rgba(34, 197, 94, .08), 0 24px 80px rgba(0, 0, 0, .45);
+                backdrop-filter: blur(14px);
+                text-align: center;
+            }
+
+            .vd-coming-soon-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 14px;
+                border-radius: 999px;
+                border: 1px solid rgba(74, 222, 128, .25);
+                color: #7ef7a8;
+                background: rgba(34, 197, 94, .08);
+                letter-spacing: .18em;
+                text-transform: uppercase;
+                font-size: 11px;
+            }
+
+            .vd-orb-wrap {
+                position: relative;
+                width: 190px;
+                height: 190px;
+                margin: 24px auto 28px;
+            }
+
+            .vd-orb,
+            .vd-orb::before,
+            .vd-orb::after {
+                position: absolute;
+                inset: 0;
+                border-radius: 50%;
+            }
+
+            .vd-orb {
+                background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .95), rgba(74, 222, 128, .95) 28%, rgba(16, 185, 129, .45) 56%, rgba(5, 8, 22, 0) 72%);
+                filter: drop-shadow(0 0 26px rgba(74, 222, 128, .45));
+                animation: vdFloat 4.8s ease-in-out infinite;
+            }
+
+            .vd-orb::before {
+                content: '';
+                inset: 24px;
+                border: 1px solid rgba(126, 247, 168, .26);
+                animation: vdSpin 10s linear infinite;
+            }
+
+            .vd-orb::after {
+                content: '';
+                inset: -14px;
+                border: 1px dashed rgba(126, 247, 168, .22);
+                animation: vdSpinReverse 16s linear infinite;
+            }
+
+            .vd-coming-soon-title {
+                margin: 0;
+                font-size: clamp(34px, 6vw, 66px);
+                line-height: 1;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+                color: #f3fff6;
+                text-shadow: 0 0 18px rgba(74, 222, 128, .24);
+            }
+
+            .vd-coming-soon-copy {
+                margin: 14px auto 0;
+                max-width: 52ch;
+                color: #a7d8b2;
+                font-size: 16px;
+                line-height: 1.8;
+            }
+
+            .vd-coming-soon-note {
+                margin-top: 18px;
+                color: #7ef7a8;
+                font-size: 13px;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            @keyframes vdFloat {
+
+                0%,
+                100% {
+                    transform: translateY(0) scale(1);
+                }
+
+                50% {
+                    transform: translateY(-10px) scale(1.02);
+                }
+            }
+
+            @keyframes vdSpin {
+                from {
+                    transform: rotate(0deg);
+                }
+
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes vdSpinReverse {
+                from {
+                    transform: rotate(360deg);
+                }
+
+                to {
+                    transform: rotate(0deg);
+                }
+            }
+        </style>
+        <div class="velocity-dashboard-wrapper" id="velocity-beaver-builder-page">
+            <?php Velocity_Addons_Admin_Navigation::render(); ?>
+            <div class="vd-coming-soon-shell">
+                <div class="vd-coming-soon-card">
+                    <div class="vd-coming-soon-badge">Beaver Builder</div>
+                    <div class="vd-orb-wrap" aria-hidden="true">
+                        <div class="vd-orb"></div>
+                    </div>
+                    <h1 class="vd-coming-soon-title">Coming Soon</h1>
+                    <p class="vd-coming-soon-copy">Fitur masih dalam pengembangan. Sementara tampilkan halaman ini sebagai placeholder dengan logo animasi.</p>
+                    <div class="vd-coming-soon-note">Cooming Soon</div>
+                </div>
+            </div>
             <div class="vd-footer">
                 <small>Powered by <a href="https://velocitydeveloper.com/" target="_blank">velocitydeveloper.com</a></small>
             </div>
