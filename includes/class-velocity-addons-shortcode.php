@@ -24,7 +24,44 @@ class Velocity_Addons_Shortcode {
 
     public function vd_breadcrumbs() {
         ob_start();
-        echo justg_breadcrumb();
+
+        if ( function_exists( 'justg_breadcrumb' ) ) {
+            echo justg_breadcrumb();
+        } else {
+            $separator = ' &raquo; ';
+            echo '<div class="vd-breadcrumbs">';
+            echo '<a href="' . esc_url( home_url( '/' ) ) . '">' . esc_html__( 'Home', 'velocity-addons' ) . '</a>';
+            if ( is_category() || is_single() ) {
+                echo $separator;
+                if ( is_single() ) {
+                    $categories = get_the_category();
+                    if ( $categories ) {
+                        echo '<a href="' . esc_url( get_category_link( $categories[0]->term_id ) ) . '">' . esc_html( $categories[0]->name ) . '</a>';
+                        echo $separator;
+                    }
+                    echo '<span>' . esc_html( get_the_title() ) . '</span>';
+                } else {
+                    echo '<span>' . esc_html( single_cat_title( '', false ) ) . '</span>';
+                }
+            } elseif ( is_page() ) {
+                echo $separator;
+                echo '<span>' . esc_html( get_the_title() ) . '</span>';
+            } elseif ( is_tag() ) {
+                echo $separator;
+                echo '<span>' . esc_html( single_tag_title( '', false ) ) . '</span>';
+            } elseif ( is_search() ) {
+                echo $separator;
+                echo '<span>' . esc_html__( 'Search', 'velocity-addons' ) . ': ' . esc_html( get_search_query() ) . '</span>';
+            } elseif ( is_404() ) {
+                echo $separator;
+                echo '<span>' . esc_html__( 'Page Not Found', 'velocity-addons' ) . '</span>';
+            } elseif ( is_archive() ) {
+                echo $separator;
+                echo '<span>' . esc_html( get_the_archive_title() ) . '</span>';
+            }
+            echo '</div>';
+        }
+
         return ob_get_clean();
     }
     
