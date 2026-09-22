@@ -33,6 +33,48 @@ class Velocity_Addons_Maintenance_Mode
         }
     }
 
+    /** IP pengunjung (REMOTE_ADDR; header yang bisa dipalsukan sengaja tidak dipakai). */
+    public static function client_ip()
+    {
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? trim((string) $_SERVER['REMOTE_ADDR']) : '';
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '';
+    }
+
+    /** Daftar whitelist (teks, satu per baris) -> array IP/CIDR valid. */
+    public static function parse_ip_list($text)
+    {
+        $out = [];
+        foreach (preg_split('/[\r\n,]+/', (string) $text) as $line) {
+            $line = trim(preg_replace('/#.*$/', '', $line));
+            if ($line === '') continue;
+            if (filter_var($line, FILTER_VALIDATE_IP)) {
+                $out[] = $line;
+            } elseif (preg_match('#^([0-9.]+)/(\d{1,2})$#', $line, $m) && filter_var($m[1], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && (int) $m[2] <= 32) {
+                $out[] = $line;
+            }
+        }
+        return array_values(array_unique($out));
+    }
+
+    public static function ip_diizinkan($text)
+    {
+        $ip = self::client_ip();
+        if ($ip === '') return false;
+        $daftar = apply_filters('velocity_maintenance_ip_whitelist', self::parse_ip_list($text));
+        foreach ((array) $daftar as $item) {
+            if (strpos($item, '/') === false) {
+                if ($item === $ip) return true;
+                continue;
+            }
+            [$net, $bits] = explode('/', $item, 2);
+            $bits = (int) $bits;
+            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) continue;
+            $mask = $bits === 0 ? 0 : (~0 << (32 - $bits)) & 0xFFFFFFFF;
+            if ((ip2long($ip) & $mask) === (ip2long($net) & $mask)) return true;
+        }
+        return false;
+    }
+
     public function check_maintenance_mode()
     {
         // 1) Selalu lolos untuk konteks non-frontend/editor
@@ -48,6 +90,18 @@ class Velocity_Addons_Maintenance_Mode
         if (is_page('myaccount')) return;
 
         $opt     = get_option('maintenance_mode_data', []);
+
+        // 4) Lolos untuk IP yang di-whitelist (mis. IP kantor). Halaman tidak boleh
+        //    masuk cache, supaya versi "sudah jadi" tidak tersaji ke pengunjung lain.
+        if (self::ip_diizinkan(is_array($opt) ? ($opt['ip_whitelist'] ?? '') : '')) {
+            if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE', true);
+            if (!headers_sent()) {
+                nocache_headers();
+                header('X-LiteSpeed-Cache-Control: no-cache');
+            }
+            return;
+        }
+
         $hd      = !empty($opt['header']) ? $opt['header'] : 'Maintenance Mode';
         $bd      = !empty($opt['body']) ? $opt['body'] : 'We are currently performing maintenance. Please check back later.';
         $bg_id   = !empty($opt['background']) ? absint($opt['background']) : 0;

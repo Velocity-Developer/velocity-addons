@@ -1578,6 +1578,7 @@ class Velocity_Addons_Admin_Settings_REST
                             'background' => array('type' => 'int', 'default' => 0),
                             'show_logo'  => array('type' => 'bool', 'default' => 1),
                             'logo'       => array('type' => 'int', 'default' => 0),
+                            'ip_whitelist' => array('type' => 'textarea', 'default' => ''),
                         ),
                     ),
                 ),

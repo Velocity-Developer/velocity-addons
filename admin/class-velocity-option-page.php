@@ -503,6 +503,13 @@ class Custom_Admin_Option_Page
                         'type'  => 'media',
                         'title' => 'Background Image',
                         'label' => 'Pilih gambar latar belakang untuk tampilan halaman maintenance.',
+                    ],
+                    [
+                        'id'    => 'maintenance_mode_data',
+                        'sub'   => 'ip_whitelist',
+                        'type'  => 'textarea',
+                        'title' => 'IP Whitelist',
+                        'label' => 'Satu IP per baris. Pengunjung dari IP ini tetap melihat situs walau maintenance aktif.',
                     ]
                 ],
             ],
@@ -907,6 +914,22 @@ class Custom_Admin_Option_Page
                         echo '</div>';
                         echo '<div class="vd-form-right">';
                         $this->field(['id' => 'maintenance_mode_data', 'sub' => 'background', 'type' => 'media', 'title' => 'Background Image']);
+                        echo '</div>';
+                        echo '</div>';
+
+                        // IP whitelist
+                        $ip_kini = Velocity_Addons_Maintenance_Mode::client_ip();
+                        echo '<div class="vd-form-group">';
+                        echo '<div class="vd-form-left">';
+                        echo '<label class="vd-form-label" for="maintenance_mode__ip_whitelist">IP Whitelist</label>';
+                        echo '<small class="vd-form-hint">Satu IP (atau rentang CIDR, mis. 203.0.113.0/24) per baris; teks setelah # diabaikan. Pengunjung dari IP ini tetap melihat situs walau maintenance aktif.';
+                        if ($ip_kini !== '') {
+                            echo ' IP Anda saat ini: <code>' . esc_html($ip_kini) . '</code>';
+                        }
+                        echo '</small>';
+                        echo '</div>';
+                        echo '<div class="vd-form-right">';
+                        $this->field(['id' => 'maintenance_mode_data', 'sub' => 'ip_whitelist', 'type' => 'textarea', 'std' => '']);
                         echo '</div>';
                         echo '</div>';
                         ?>
