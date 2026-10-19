@@ -1650,6 +1650,8 @@ class Custom_Admin_Option_Page
         $summary_stats = $stats_handler->get_summary_stats();
         $page_stats    = $stats_handler->get_page_stats(30);
         $referer_stats = $stats_handler->get_referer_stats(30);
+        $monthly_stats  = $stats_handler->get_monthly_stats();
+        $location_stats = $stats_handler->get_location_stats(90, 10);
 
     ?>
         <div class="velocity-dashboard-wrapper vd-ons" id="velocity-statistics-page">
@@ -1842,6 +1844,80 @@ class Custom_Admin_Option_Page
                         <div style="color:#999;font-size:12px;"><span data-stat-total><?php echo number_format_i18n((int) ($obj->total_visits ?? 0)); ?></span> total visits</div>
                     </div>
                 <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <div class="vd-grid-2">
+        <div class="vd-section">
+            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Rekap Per Bulan</h3>
+            </div>
+            <div class="vd-section-body">
+                <table class="widefat striped" style="margin-top:5px;">
+                    <thead>
+                        <tr>
+                            <th>Bulan</th>
+                            <th>Pengunjung Unik</th>
+                            <th>Pageview</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($monthly_stats)) : ?>
+                            <tr>
+                                <td colspan="3" style="text-align:center;color:#666;">No data available</td>
+                            </tr>
+                            <?php else:
+                            $sum_unique = 0;
+                            $sum_views  = 0;
+                            foreach ($monthly_stats as $month):
+                                $sum_unique += (int) $month->unique_visitors;
+                                $sum_views  += (int) $month->total_pageviews;
+                            ?>
+                                <tr>
+                                    <td><?php echo esc_html(date_i18n('F Y', mktime(0, 0, 0, (int) $month->stat_month, 1, (int) $month->stat_year))); ?></td>
+                                    <td><?php echo number_format_i18n((int) $month->unique_visitors); ?></td>
+                                    <td><?php echo number_format_i18n((int) $month->total_pageviews); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong><?php echo number_format_i18n($sum_unique); ?></strong></td>
+                                <td><strong><?php echo number_format_i18n($sum_views); ?></strong></td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="vd-section">
+            <div class="vd-section-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+                <h3 style="margin:0; font-size:1.1rem; color:#374151;">Lokasi Pengunjung Indonesia (90 Hari)</h3>
+            </div>
+            <div class="vd-section-body">
+                <table class="widefat striped" style="margin-top:5px;">
+                    <thead>
+                        <tr>
+                            <th>Kota / Kabupaten</th>
+                            <th>Provinsi</th>
+                            <th>Pengunjung Unik</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($location_stats)) : ?>
+                            <tr>
+                                <td colspan="3" style="text-align:center;color:#666;">No data available</td>
+                            </tr>
+                            <?php else: foreach ($location_stats as $loc): ?>
+                                <tr>
+                                    <td><?php echo esc_html($loc['city']); ?></td>
+                                    <td><?php echo esc_html($loc['province']); ?></td>
+                                    <td><?php echo number_format_i18n((int) $loc['visitors']); ?></td>
+                                </tr>
+                        <?php endforeach;
+                        endif; ?>
+                    </tbody>
+                </table>
+                <p style="margin:10px 0 0;color:#999;font-size:12px;">Perkiraan dari alamat IP, hanya IP Indonesia. IP operator seluler sering terbaca sebagai kota pusat operator. <a href="https://db-ip.com" target="_blank" rel="noopener noreferrer">IP Geolocation by DB-IP</a></p>
             </div>
         </div>
     </div>

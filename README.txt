@@ -4,7 +4,7 @@ Donate link: https://velocitydeveloper.com
 Tags: settings, security, seo, optimization, setup
 Requires at least: 3.0.1
 Tested up to: 6.2
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,10 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.3.2=
+- Statistik: tambahkan tabel Rekap Per Bulan (pengunjung unik + pageview sejak statistik dicatat, beserta total).
+- Statistik: tambahkan tabel Lokasi Pengunjung Indonesia (kota/kabupaten + provinsi, 90 hari) dari data IP DB-IP Lite di folder data/.
 
 =2.3.1=
 - Tambahkan IP Whitelist pada Maintenance Mode: pengunjung dari IP (atau rentang CIDR) yang terdaftar tetap melihat situs, tanpa cache halaman.

@@ -497,6 +497,7 @@ class Velocity_Addons_Statistic {
         delete_option('vd_legacy_last_date');
         delete_option('velocity_addons_stats_legacy_added');
         delete_option('velocity_addons_stats_migrated');
+        delete_transient('vd_location_stats_90_10');
     }
 
 
@@ -538,6 +539,117 @@ class Velocity_Addons_Statistic {
              LIMIT 10",
             (int)$days
         ) );
+    }
+
+    /**
+     * Rekap per bulan sejak statistik dicatat (terbaru di atas).
+     * Bulan selesai dari tabel monthly; bulan berjalan dihitung dari daily.
+     */
+    public function get_monthly_stats() {
+        global $wpdb;
+
+        $rows = array();
+        if ( $this->table_exists($this->monthly_stats_table) ) {
+            foreach ( (array) $wpdb->get_results(
+                "SELECT stat_year, stat_month, unique_visitors, total_pageviews FROM {$this->monthly_stats_table}"
+            ) as $r ) {
+                $rows[ sprintf('%04d-%02d', $r->stat_year, $r->stat_month) ] = $r;
+            }
+        }
+
+        if ( $this->table_exists($this->daily_stats_table) ) {
+            $ts    = current_time('timestamp');
+            $year  = (int) wp_date('Y', $ts);
+            $month = (int) wp_date('n', $ts);
+            $cur   = $wpdb->get_row( $wpdb->prepare(
+                "SELECT COALESCE(SUM(unique_visitors),0) AS unique_visitors, COALESCE(SUM(total_pageviews),0) AS total_pageviews
+                 FROM {$this->daily_stats_table}
+                 WHERE MONTH(stat_date) = %d AND YEAR(stat_date) = %d",
+                $month, $year
+            ) );
+            if ( $cur && (int) $cur->total_pageviews > 0 ) {
+                $cur->stat_year  = $year;
+                $cur->stat_month = $month;
+                $rows[ sprintf('%04d-%02d', $year, $month) ] = $cur;
+            }
+        }
+
+        krsort($rows);
+        return array_values($rows);
+    }
+
+    /**
+     * Daerah (kota + provinsi) dengan pengunjung unik terbanyak, khusus IP Indonesia.
+     * Sumber: IP di log kunjungan (log disimpan 90 hari) + data DB-IP Lite di folder data/.
+     */
+    public function get_location_stats($days = 90, $limit = 10) {
+        global $wpdb;
+
+        $cache_key = 'vd_location_stats_' . (int) $days . '_' . (int) $limit;
+        $cached    = get_transient($cache_key);
+        if ( is_array($cached) ) {
+            return $cached;
+        }
+
+        $result = array();
+        $dir    = plugin_dir_path( dirname( __FILE__ ) ) . 'data/';
+        $places = is_readable($dir . 'geo-id-places.json') ? json_decode( file_get_contents($dir . 'geo-id-places.json'), true ) : null;
+
+        if ( is_array($places) && $this->table_exists($this->logs_table) ) {
+            $ips = $wpdb->get_col( $wpdb->prepare(
+                "SELECT DISTINCT visitor_ip FROM {$this->logs_table} WHERE visit_date >= DATE_SUB(CURDATE(), INTERVAL %d DAY)",
+                (int) $days
+            ) );
+
+            $bins   = array();
+            $counts = array();
+            foreach ( (array) $ips as $ip ) {
+                $packed = @inet_pton( (string) $ip );
+                if ( $packed === false ) {
+                    continue; // mis. IP mode hash
+                }
+                $size = strlen($packed);
+                if ( ! isset($bins[ $size ]) ) {
+                    $file           = $dir . ( $size === 4 ? 'geo-id-v4.bin' : 'geo-id-v6.bin' );
+                    $bins[ $size ]  = is_readable($file) ? file_get_contents($file) : '';
+                }
+                $place = $this->find_ip_place($bins[ $size ], $packed, $size);
+                if ( $place !== null && isset($places[ $place ]) ) {
+                    $counts[ $place ] = ( $counts[ $place ] ?? 0 ) + 1;
+                }
+            }
+
+            arsort($counts);
+            foreach ( array_slice($counts, 0, (int) $limit, true) as $place => $visitors ) {
+                $result[] = array(
+                    'city'     => (string) $places[ $place ][0],
+                    'province' => (string) $places[ $place ][1],
+                    'visitors' => (int) $visitors,
+                );
+            }
+        }
+
+        set_transient($cache_key, $result, HOUR_IN_SECONDS);
+        return $result;
+    }
+
+    /** Binary search rentang IP (record: start|end big-endian + uint16 indeks tempat). */
+    private function find_ip_place($bin, $packed, $size) {
+        $rec = $size * 2 + 2;
+        $lo  = 0;
+        $hi  = intdiv(strlen($bin), $rec) - 1;
+        while ( $lo <= $hi ) {
+            $mid = ( $lo + $hi ) >> 1;
+            $off = $mid * $rec;
+            if ( strcmp($packed, substr($bin, $off, $size)) < 0 ) {
+                $hi = $mid - 1;
+            } elseif ( strcmp($packed, substr($bin, $off + $size, $size)) > 0 ) {
+                $lo = $mid + 1;
+            } else {
+                return unpack('n', substr($bin, $off + $size * 2, 2))[1];
+            }
+        }
+        return null;
     }
 
     public function get_summary_stats() {
