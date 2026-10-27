@@ -53,36 +53,42 @@
         if (filter_var($ip, FILTER_VALIDATE_IP) === FALSE) {
             $ip = $_SERVER["REMOTE_ADDR"];
         }
-        $cookie_name = 'VD_'.ip2long($ip);
 
-        if(!isset($_COOKIE[$cookie_name])) {
+        // Cache disimpan di server (transient), bukan cookie: cookie bisa dipalsukan
+        // pengunjung (mis. VD_<ip>=ID) untuk lolos dari blok negara.
+        $cache_key    = 'vd_geo_' . md5($ip);
+        $country_code = get_transient($cache_key);
 
-            $response = wp_remote_get( 'http://www.geoplugin.net/json.gp?ip='. $ip );            
+        if ($country_code === false) {
+            $country_code = '';
+            // geoplugin.net tidak melayani HTTPS untuk akun gratis, jadi pakai api.country.is (HTTPS, tanpa API key).
+            $response = wp_remote_get('https://api.country.is/' . rawurlencode($ip), array('timeout' => 5));
 
-            if ( is_array( $response ) && ! is_wp_error( $response ) ) {
-
-                $data = json_decode($response['body']);
-
-                $country_code = isset($data->geoplugin_countryCode)?$data->geoplugin_countryCode:'';
-
-                // Menentukan waktu kedaluwarsa cookie (7 hari)
-                $expirationTime = time() + (7 * 24 * 60 * 60);
-                // Menetapkan cookie
-                setcookie($cookie_name, $country_code, $expirationTime, "/");
-
-                return $country_code;
-
-            } else {
-
-                wp_die('Velocity Security gagal akses geoplugin.net untuk ip <strong>'.$ip.'</strong>', 'Geoplugin gagal');
-
+            if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+                $data = json_decode(wp_remote_retrieve_body($response));
+                if (isset($data->country) && preg_match('/^[A-Z]{2}$/', $data->country)) {
+                    $country_code = $data->country;
+                }
             }
 
-        } else {
-
-            return $_COOKIE[$cookie_name];
+            // Hasil gagal di-cache 1 jam agar login tidak menunggu timeout tiap kali API mati.
+            set_transient($cache_key, $country_code, $country_code ? 7 * DAY_IN_SECONDS : HOUR_IN_SECONDS);
         }
 
+        if ($country_code) {
+            return $country_code;
+        }
+
+        // Lookup gagal: dulu wp_die() sehingga halaman login mati untuk semua orang.
+        // Sekarang pakai header CF-IPCountry bila ada (situs di belakang Cloudflare). Header ini bisa
+        // dipalsukan bila situs tidak lewat Cloudflare, tapi hanya dipakai saat lookup gagal.
+        // Tanpa header, kembalikan '' = login tetap diizinkan; limit login + captcha masih melindungi.
+        $cf_country = isset($_SERVER['HTTP_CF_IPCOUNTRY']) ? strtoupper(trim($_SERVER['HTTP_CF_IPCOUNTRY'])) : '';
+        if (preg_match('/^[A-Z0-9]{2}$/', $cf_country)) {
+            return $cf_country;
+        }
+
+        return '';
     }
 }
 

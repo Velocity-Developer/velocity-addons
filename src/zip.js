@@ -40,6 +40,7 @@ const files = glob.sync("**/*", {
   ignore: [
     "dist/**", // Abaikan folder dist
     "src/**", // Abaikan folder src
+    "tests/**", // Abaikan self-check (tidak ikut rilis)
     "admin-react/**", // Abaikan asset admin React dari paket build
     "node_modules/**", // Abaikan folder node_modules
     "package.json", // Abaikan file package.json
