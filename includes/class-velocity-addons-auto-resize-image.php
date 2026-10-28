@@ -87,9 +87,17 @@ class Velocity_Addons_Auto_Resize_Image
 
         $image_editor->set_quality($quality);
 
+        // WP mereset quality ke default saat format output berubah (get_output_format), jadi paksa lewat filter.
+        $force_quality = function () use ($quality) {
+            return $quality;
+        };
+        add_filter('wp_editor_set_quality', $force_quality, 999);
+
         $saved_image = $target_mime !== ''
             ? $image_editor->save(null, $target_mime)
             : $image_editor->save($file_path);
+
+        remove_filter('wp_editor_set_quality', $force_quality, 999);
 
         if (is_wp_error($saved_image)) {
             error_log('Image Save Error: ' . $saved_image->get_error_message());
