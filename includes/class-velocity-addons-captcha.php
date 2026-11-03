@@ -65,11 +65,6 @@ class Velocity_Addons_Captcha
                 $this->active = true;
             }
 
-            // Tambahkan filter timeout
-            add_filter('http_request_timeout', function ($timeout) {
-                return 60;
-            });
-
             // Tambahkan action captcha ke login_form (skip jika addon UM reCAPTCHA aktif untuk hindari duplikasi)
             if (! defined('UM_RECAPTCHA_VERSION')) {
                 add_action('login_form', array($this, 'display'));
