@@ -25,6 +25,8 @@ This section describes how to install the plugin and get it working.
 =2.3.2=
 - Statistik: tambahkan tabel Rekap Per Bulan (pengunjung unik + pageview sejak statistik dicatat, beserta total).
 - Statistik: tambahkan tabel Lokasi Pengunjung Indonesia (kota/kabupaten + provinsi, 90 hari) dari data IP DB-IP Lite di folder data/.
+- Auto Resize: kolom Quality kini dipakai juga saat Output format diubah (sebelumnya kembali ke kualitas bawaan WordPress).
+- Captcha: hapus filter http_request_timeout 60 detik yang berlaku untuk semua request HTTP situs (membuat halaman tertahan sampai 60 detik bila ada request keluar yang lambat).
 
 =2.3.1=
 - Tambahkan IP Whitelist pada Maintenance Mode: pengunjung dari IP (atau rentang CIDR) yang terdaftar tetap melihat situs, tanpa cache halaman.
