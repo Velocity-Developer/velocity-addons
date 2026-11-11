@@ -54,7 +54,7 @@ class Velocity_Addons_Dashboard
         $theme_version = $theme ? $theme->get('Version') : '';
         $php_version   = PHP_VERSION;
         $timezone      = function_exists('wp_timezone_string') ? wp_timezone_string() : get_option('timezone_string');
-        $server_time   = wp_date('d M Y H:i', current_time('timestamp'));
+        $server_time   = wp_date('d M Y H:i');
         $active_plugins = count((array) get_option('active_plugins', array()));
         $users_count    = function_exists('count_users') ? count_users() : array('total_users' => 0);
         $total_users    = isset($users_count['total_users']) ? (int) $users_count['total_users'] : 0;

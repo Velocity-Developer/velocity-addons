@@ -106,9 +106,8 @@ class Velocity_Addons_Statistic {
         $referer  = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw( wp_unslash($_SERVER['HTTP_REFERER']) ) : '';
 
         // Konsisten timezone WP
-        $ts         = current_time('timestamp');
-        $visit_date = wp_date('Y-m-d', $ts);
-        $visit_time = wp_date('H:i:s', $ts);
+        $visit_date = wp_date('Y-m-d');
+        $visit_time = wp_date('H:i:s');
 
         // 1) Hit per post dengan throttle
         if ( is_singular() ) {
@@ -404,16 +403,15 @@ class Velocity_Addons_Statistic {
     private function aggregate_monthly_stats() {
         global $wpdb;
 
-        $ts   = current_time('timestamp');
-        $day  = (int) wp_date('j', $ts); // tanggal (1–31)
+        $day  = (int) wp_date('j'); // tanggal (1–31)
 
         // Hanya jalan tiap tanggal 1 (untuk memfinalisasi bulan sebelumnya)
         if ( $day !== 1 ) {
             return;
         }
 
-        $current_month = (int) wp_date('n', $ts); // 1–12
-        $current_year  = (int) wp_date('Y', $ts);
+        $current_month = (int) wp_date('n'); // 1–12
+        $current_year  = (int) wp_date('Y');
 
         // Hitung bulan & tahun yang mau direkap → bulan lalu
         if ( $current_month === 1 ) {
@@ -558,9 +556,8 @@ class Velocity_Addons_Statistic {
         }
 
         if ( $this->table_exists($this->daily_stats_table) ) {
-            $ts    = current_time('timestamp');
-            $year  = (int) wp_date('Y', $ts);
-            $month = (int) wp_date('n', $ts);
+            $year  = (int) wp_date('Y');
+            $month = (int) wp_date('n');
             $cur   = $wpdb->get_row( $wpdb->prepare(
                 "SELECT COALESCE(SUM(unique_visitors),0) AS unique_visitors, COALESCE(SUM(total_pageviews),0) AS total_pageviews
                  FROM {$this->daily_stats_table}
@@ -665,7 +662,7 @@ class Velocity_Addons_Statistic {
         }
 
         // Pakai tanggal WP, hindari selisih timezone dengan CURDATE()
-        $today_str = wp_date('Y-m-d', current_time('timestamp'));
+        $today_str = wp_date('Y-m-d');
 
         $today = $wpdb->get_row( $wpdb->prepare(
             "SELECT unique_visitors, total_pageviews AS total_visits
@@ -696,8 +693,8 @@ class Velocity_Addons_Statistic {
         $all_time = null;
         if ( $this->table_exists($this->monthly_stats_table) ) {
             // Hindari double-count bulan berjalan: pakai monthly utk bulan lampau, daily utk bulan aktif.
-            $current_month = (int) wp_date('n', current_time('timestamp'));
-            $current_year  = (int) wp_date('Y', current_time('timestamp'));
+            $current_month = (int) wp_date('n');
+            $current_year  = (int) wp_date('Y');
 
             $all_time = $wpdb->get_row( $wpdb->prepare(
                 "SELECT
@@ -918,10 +915,10 @@ class Velocity_Addons_Statistic {
 
         switch ($mode) {
             case 'unique_day':
-                $key = sprintf('vd_hitd_%d_%s_%s', $post_id, md5($this->visitor_id ?: $this->get_visitor_ip()), wp_date('Ymd', current_time('timestamp')));
+                $key = sprintf('vd_hitd_%d_%s_%s', $post_id, md5($this->visitor_id ?: $this->get_visitor_ip()), wp_date('Ymd'));
                 if ( false === get_transient($key) ) {
                     $this->increment_post_meta_atomic($post_id, 'hit', 1);
-                    $ttl = DAY_IN_SECONDS - ( current_time('timestamp') - strtotime(wp_date('Y-m-d 00:00:00', current_time('timestamp'))) );
+                    $ttl = DAY_IN_SECONDS - ( current_time('timestamp') - strtotime(wp_date('Y-m-d 00:00:00')) );
                     set_transient($key, 1, max(60, $ttl));
                 }
                 break;

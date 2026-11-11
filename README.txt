@@ -4,7 +4,7 @@ Donate link: https://velocitydeveloper.com
 Tags: settings, security, seo, optimization, setup
 Requires at least: 3.0.1
 Tested up to: 6.2
-Stable tag: 2.3.2
+Stable tag: 2.3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,10 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.3.3=
+- Dashboard: Waktu Server di widget Info Web kini sesuai zona waktu situs (sebelumnya offset zona waktu terpasang dua kali, mis. +7 jam di situs WIB).
+- Statistik: tanggal/jam kunjungan, statistik hari ini, bulan berjalan, rekap bulanan, dan hit unik harian kini memakai tanggal lokal yang benar (sebelumnya terkena offset ganda yang sama).
 
 =2.3.2=
 - Statistik: tambahkan tabel Rekap Per Bulan (pengunjung unik + pageview sejak statistik dicatat, beserta total).
