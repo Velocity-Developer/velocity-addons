@@ -6,7 +6,7 @@
  * CRM menandatangani token pendek (Ed25519) dengan kunci rahasia yang hanya ada di CRM;
  * plugin hanya menyimpan kunci publik, jadi tidak ada rahasia per situs.
  * Token: base64url(json payload) . "." . base64url(tanda tangan), dikirim sebagai ?velocity_sso=...
- * Payload: v=1, aud=host situs, iat, exp (maks. 5 menit), jti (sekali pakai), sub (nama staf CRM).
+ * Payload: v=1, aud=host situs, iat, exp (maks. 2 menit), jti (sekali pakai), sub (nama staf CRM).
  *
  * ?velocity_sso=ping -> JSON {velocity_sso:1, home} supaya CRM tahu situs ini mendukung SSO.
  * Matikan: define('VELOCITY_CRM_SSO_DISABLED', true) di wp-config.php.
@@ -22,10 +22,12 @@ class Velocity_Addons_Crm_Sso
 
     /** Kunci publik CRM (base64). Lebih dari satu = masa rotasi kunci. */
     const KUNCI_PUBLIK = array(
-        'jJOVJajQkRpHjZQtkEl4txZnQDWmHZUcdMAslKhdu5c=',
+        'P6XOJeAHLO6ek18/GD3Yq50snlarCp+9OW35KAvRfX0=',
     );
 
-    const UMUR_MAKS = 300;
+    const UMUR_MAKS = 120;
+
+    const AWALAN_JTI = 'velocity_sso_jti_';
 
     const OPSI_LOG = 'velocity_crm_sso_log';
 
@@ -55,9 +57,9 @@ class Velocity_Addons_Crm_Sso
             self::gagal($hasil->get_error_message());
         }
 
-        $jti_key = 'velocity_sso_' . md5($hasil['jti']);
-        // jti sekali pakai: disimpan melebihi umur token
-        if (get_transient($jti_key) !== false || !set_transient($jti_key, 1, self::UMUR_MAKS * 2)) {
+        // jti sekali pakai: add_option atomik (INSERT gagal bila baris sudah ada), tidak bergantung object cache
+        self::bersihkan_jti();
+        if (!add_option(self::AWALAN_JTI . md5($hasil['jti']), (string) time(), '', 'no')) {
             self::gagal('Link login sudah dipakai. Klik ulang tombol di CRM.');
         }
 
@@ -126,6 +128,21 @@ class Velocity_Addons_Crm_Sso
         }
 
         return $p;
+    }
+
+    /** Hapus catatan jti yang lebih tua dari 2x umur token (maks. 50 baris per permintaan). */
+    private static function bersihkan_jti()
+    {
+        global $wpdb;
+        $batas = time() - self::UMUR_MAKS * 2;
+        $nama  = $wpdb->get_col($wpdb->prepare(
+            "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND CAST(option_value AS UNSIGNED) < %d LIMIT 50",
+            $wpdb->esc_like(self::AWALAN_JTI) . '%',
+            $batas
+        ));
+        foreach ((array) $nama as $n) {
+            delete_option($n);
+        }
     }
 
     private static function admin_tujuan()
