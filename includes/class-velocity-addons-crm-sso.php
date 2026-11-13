@@ -53,7 +53,8 @@ class Velocity_Addons_Crm_Sso
         $token = wp_unslash($_GET['velocity_sso']);
 
         if ($token === 'ping') {
-            wp_send_json(array('velocity_sso' => self::VERSI, 'home' => home_url('/')));
+            // multisite tidak didukung -> 0 supaya CRM langsung memakai jalur cadangan
+            wp_send_json(array('velocity_sso' => is_multisite() ? 0 : self::VERSI, 'home' => home_url('/')));
         }
 
         if (is_multisite()) {
@@ -166,12 +167,12 @@ class Velocity_Addons_Crm_Sso
         return $hasil === 1;
     }
 
-    /** Utamakan administrator milik Velocity (email @velocitydeveloper.*), lalu admin ber-ID terkecil. */
+    /** Utamakan administrator milik Velocity (email @velocitydeveloper.com/.net/.id), lalu admin ber-ID terkecil. */
     private static function admin_tujuan()
     {
         $admins = get_users(array('role' => 'administrator', 'orderby' => 'ID', 'order' => 'ASC', 'number' => 50));
         foreach ($admins as $u) {
-            if (preg_match('/@velocitydeveloper\./i', (string) $u->user_email)) {
+            if (preg_match('/@velocitydeveloper\.(com|net|id)$/i', (string) $u->user_email)) {
                 return $u;
             }
         }
