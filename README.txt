@@ -4,7 +4,7 @@ Donate link: https://velocitydeveloper.com
 Tags: settings, security, seo, optimization, setup
 Requires at least: 3.0.1
 Tested up to: 6.2
-Stable tag: 2.3.3
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,9 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.4.0=
+- Login wp-admin satu klik dari CRM Velocity (tombol Login WP): token bertanda tangan Ed25519 berumur 60 detik, sekali pakai, hanya untuk domain situs ini. Kunci rahasia hanya di CRM; plugin menyimpan kunci publik. 20 login terakhir dicatat di opsi velocity_crm_sso_log. Matikan dengan define('VELOCITY_CRM_SSO_DISABLED', true) di wp-config.php.
 
 =2.3.3=
 - Dashboard: Waktu Server di widget Info Web kini sesuai zona waktu situs (sebelumnya offset zona waktu terpasang dua kali, mis. +7 jam di situs WIB).

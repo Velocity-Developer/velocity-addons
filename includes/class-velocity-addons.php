@@ -242,6 +242,11 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-remote-auth.php';
 
         /**
+         * Class untuk login wp-admin satu klik dari CRM (token Ed25519)
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-crm-sso.php';
+
+        /**
          * Class untuk menambah option page untuk Floating Whatsapp
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-floating-whatsapp.php';
