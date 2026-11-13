@@ -25,6 +25,8 @@ This section describes how to install the plugin and get it working.
 
 =2.4.0=
 - Login wp-admin satu klik dari CRM Velocity (tombol Login WP): token bertanda tangan Ed25519 berumur 60 detik, sekali pakai, hanya untuk domain situs ini. Kunci rahasia hanya di CRM; plugin menyimpan kunci publik. 20 login terakhir dicatat di opsi velocity_crm_sso_log. Matikan dengan define('VELOCITY_CRM_SSO_DISABLED', true) di wp-config.php.
+- Login CRM hanya lewat https; masuk sebagai administrator ber-email @velocitydeveloper bila ada; tidak tersedia di multisite; tidak memicu hook wp_login (agar 2FA tidak memotong), jejak di hook velocity_crm_sso_login.
+- Syarat minimum: WordPress 5.2, PHP 7.0.
 
 =2.3.3=
 - Dashboard: Waktu Server di widget Info Web kini sesuai zona waktu situs (sebelumnya offset zona waktu terpasang dua kali, mis. +7 jam di situs WIB).
