@@ -2,7 +2,8 @@
 Contributors: velocitydeveloper
 Donate link: https://velocitydeveloper.com
 Tags: settings, security, seo, optimization, setup
-Requires at least: 3.0.1
+Requires at least: 5.2
+Requires PHP: 7.0
 Tested up to: 6.2
 Stable tag: 2.4.0
 License: GPLv2 or later

@@ -17,6 +17,8 @@
  * Plugin URI:        https://velocitydeveloper.com
  * Description:       Toolkit pengaturan, keamanan, SEO, optimasi, maintenance, dan 1 Click Setup untuk WordPress.
  * Version:           2.4.0
+ * Requires at least: 5.2
+ * Requires PHP:      7.0
  * Author:            Velocity
  * Author URI:        https://velocitydeveloper.com
  * License:           GPL-2.0+

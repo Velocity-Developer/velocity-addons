@@ -46,10 +46,18 @@ class Velocity_Addons_Crm_Sso
             return;
         }
         nocache_headers();
+        do_action('litespeed_control_set_nocache', 'velocity crm sso');
+        if (!defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
         $token = wp_unslash($_GET['velocity_sso']);
 
         if ($token === 'ping') {
             wp_send_json(array('velocity_sso' => self::VERSI, 'home' => home_url('/')));
+        }
+
+        if (is_multisite()) {
+            self::gagal('Login CRM tidak tersedia di WordPress multisite.');
         }
 
         $hasil = self::verifikasi($token, self::host_situs(), time());
@@ -57,9 +65,9 @@ class Velocity_Addons_Crm_Sso
             self::gagal($hasil->get_error_message());
         }
 
-        // jti sekali pakai: add_option atomik (INSERT gagal bila baris sudah ada), tidak bergantung object cache
+        // jti sekali pakai: INSERT IGNORE atomik (add_option memakai ON DUPLICATE KEY UPDATE, jadi tidak dipakai)
         self::bersihkan_jti();
-        if (!add_option(self::AWALAN_JTI . md5($hasil['jti']), (string) time(), '', 'no')) {
+        if (!self::klaim_jti($hasil['jti'])) {
             self::gagal('Link login sudah dipakai. Klik ulang tombol di CRM.');
         }
 
@@ -71,7 +79,9 @@ class Velocity_Addons_Crm_Sso
         wp_clear_auth_cookie();
         wp_set_current_user($admin->ID);
         wp_set_auth_cookie($admin->ID, false, is_ssl());
-        do_action('wp_login', $admin->user_login, $admin);
+        // sengaja TIDAK memicu 'wp_login': plugin 2FA memasang hook di sana dan akan memotong login ini.
+        // Token bertanda tangan CRM sudah menjadi faktor kedua; jejak audit lewat hook di bawah + log opsi.
+        do_action('velocity_crm_sso_login', $admin, $hasil);
         self::catat($hasil, $admin);
 
         wp_safe_redirect(admin_url());
@@ -145,10 +155,27 @@ class Velocity_Addons_Crm_Sso
         }
     }
 
+    private static function klaim_jti($jti)
+    {
+        global $wpdb;
+        $hasil = $wpdb->query($wpdb->prepare(
+            "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
+            self::AWALAN_JTI . md5($jti),
+            (string) time()
+        ));
+        return $hasil === 1;
+    }
+
+    /** Utamakan administrator milik Velocity (email @velocitydeveloper.*), lalu admin ber-ID terkecil. */
     private static function admin_tujuan()
     {
-        $user = get_users(array('role' => 'administrator', 'orderby' => 'ID', 'order' => 'ASC', 'number' => 1));
-        return $user ? $user[0] : null;
+        $admins = get_users(array('role' => 'administrator', 'orderby' => 'ID', 'order' => 'ASC', 'number' => 50));
+        foreach ($admins as $u) {
+            if (preg_match('/@velocitydeveloper\./i', (string) $u->user_email)) {
+                return $u;
+            }
+        }
+        return $admins ? $admins[0] : null;
     }
 
     private static function host_situs()
