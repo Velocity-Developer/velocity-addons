@@ -54,12 +54,15 @@ class Velocity_Addons_Statistic {
 
         // Cron harian (agregasi + cleanup)
         add_action('vd_daily_aggregation', array($this, 'run_daily_aggregation'));
+        if ( ! wp_next_scheduled('vd_daily_aggregation') ) {
+            wp_schedule_event( time() + 3600, 'daily', 'vd_daily_aggregation' );
+        }
 
-        // Cron 10 menit untuk cleanup sesi online
-        add_filter('cron_schedules', array($this, 'crons_add_ten_minutes'));
+        // Cleanup sesi online ikut cron harian: jadwal 10 menit lama memicu loopback wp-cron
+        // 6x/jam di tiap situs (beban server bersama). Hitung online sudah menyaring last_seen.
         add_action('vd_cleanup_online_sessions', array($this, 'cleanup_online_sessions'));
-        if ( ! wp_next_scheduled('vd_cleanup_online_sessions') ) {
-            wp_schedule_event( time() + 600, 'vd_ten_minutes', 'vd_cleanup_online_sessions' );
+        if ( wp_next_scheduled('vd_cleanup_online_sessions') ) {
+            wp_clear_scheduled_hook('vd_cleanup_online_sessions');
         }
 
         // Tabel sesi online dibuat di activator; tidak dibuat di sini lagi
@@ -142,15 +145,6 @@ class Velocity_Addons_Statistic {
     /** ==========================
      *  Online users (via DB table)
      *  ========================== */
-    public function crons_add_ten_minutes($schedules) {
-        if ( ! isset($schedules['vd_ten_minutes']) ) {
-            $schedules['vd_ten_minutes'] = array(
-                'interval' => 10 * 60,
-                'display'  => __('Every 10 minutes', 'velocity-addons'),
-            );
-        }
-        return $schedules;
-    }
 
     
 
@@ -398,6 +392,7 @@ class Velocity_Addons_Statistic {
     public function run_daily_aggregation() {
         $this->aggregate_monthly_stats();
         $this->cleanup_old_logs();
+        $this->cleanup_online_sessions();
     }
 
     private function aggregate_monthly_stats() {

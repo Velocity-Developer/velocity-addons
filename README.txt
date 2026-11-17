@@ -5,7 +5,7 @@ Tags: settings, security, seo, optimization, setup
 Requires at least: 5.2
 Requires PHP: 7.0
 Tested up to: 6.2
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,10 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.4.1=
+- Statistik: pembersihan sesi "pengunjung online" kini ikut cron harian (vd_daily_aggregation); jadwal 10 menit vd_cleanup_online_sessions dihapus otomatis. Sebelumnya jadwal itu memicu wp-cron 6x per jam di setiap situs. Hitungan pengunjung online tidak berubah.
+- Statistik: cron harian dijadwalkan ulang otomatis bila hilang.
 
 =2.4.0=
 - Login wp-admin satu klik dari CRM Velocity (tombol Login WP): token bertanda tangan Ed25519 berumur 60 detik, sekali pakai, hanya untuk domain situs ini. Kunci rahasia hanya di CRM; plugin menyimpan kunci publik. 20 login terakhir dicatat di opsi velocity_crm_sso_log. Matikan dengan define('VELOCITY_CRM_SSO_DISABLED', true) di wp-config.php.
