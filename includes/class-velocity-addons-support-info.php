@@ -45,7 +45,7 @@ class Velocity_Addons_Support_Info
         }
         ?>
         <a id="vd-support-float" href="<?php echo esc_url($this->wa_url()); ?>" target="_blank" rel="noopener"
-            title="Jika perlu bantuan, hubungi Tim Support kami lewat WhatsApp 0877-4229-5809">
+            aria-label="Bantuan Support lewat WhatsApp 0877-4229-5809">
             <span class="vd-sf-ikon" aria-hidden="true"><span class="dashicons dashicons-whatsapp"></span></span>
             <span class="vd-sf-teks"><small>Ada kendala?</small><strong>Bantuan Support</strong></span>
         </a>
@@ -73,11 +73,11 @@ class Velocity_Addons_Support_Info
             #vd-support-float .vd-sf-teks { display: flex; flex-direction: column; line-height: 1.15; }
             #vd-support-float small { font-size: 11px; opacity: .88; }
             #vd-support-float strong { font-size: 14px; font-weight: 700; letter-spacing: .2px; }
-            #vd-support-float:hover, #vd-support-float:focus {
+            #vd-support-float:hover, #vd-support-float:focus-visible {
                 color: #fff; transform: translateY(-3px);
                 box-shadow: 0 12px 26px rgba(27, 94, 32, .45), inset 0 1px 0 rgba(255, 255, 255, .25);
             }
-            #vd-support-float:focus { outline: 2px solid #1d2327; outline-offset: 3px; }
+            #vd-support-float:focus-visible { outline: 2px solid #1d2327; outline-offset: 3px; }
             @keyframes vd-sf-masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
             @keyframes vd-sf-denyut { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 70%, 100% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); } }
             @media (max-width: 782px) {
