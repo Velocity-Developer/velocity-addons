@@ -46,27 +46,49 @@ class Velocity_Addons_Support_Info
         ?>
         <a id="vd-support-float" href="<?php echo esc_url($this->wa_url()); ?>" target="_blank" rel="noopener"
             title="Jika perlu bantuan, hubungi Tim Support kami lewat WhatsApp 0877-4229-5809">
-            <span class="dashicons dashicons-whatsapp" aria-hidden="true"></span>
-            <span>Bantuan Support</span>
+            <span class="vd-sf-ikon" aria-hidden="true"><span class="dashicons dashicons-whatsapp"></span></span>
+            <span class="vd-sf-teks"><small>Ada kendala?</small><strong>Bantuan Support</strong></span>
         </a>
         <style>
             #vd-support-float {
                 position: fixed; right: 20px; bottom: 20px; z-index: 9990;
-                display: inline-flex; align-items: center; gap: 6px;
-                padding: 8px 14px 8px 11px; border-radius: 999px;
-                background: #25d366; color: #fff; text-decoration: none;
-                font-size: 13px; font-weight: 600; line-height: 1;
-                box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
-                transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+                display: inline-flex; align-items: center; gap: 10px;
+                padding: 6px 18px 6px 6px; border-radius: 999px;
+                background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+                color: #fff; text-decoration: none;
+                box-shadow: 0 8px 22px rgba(18, 140, 126, .38), inset 0 1px 0 rgba(255, 255, 255, .25);
+                animation: vd-sf-masuk .45s ease-out both .3s;
+                transition: transform .18s ease, box-shadow .18s ease;
             }
-            #vd-support-float .dashicons { font-size: 18px; width: 18px; height: 18px; }
+            #vd-support-float .vd-sf-ikon {
+                position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%;
+                background: #fff; display: grid; place-items: center;
+            }
+            #vd-support-float .vd-sf-ikon::after {
+                content: ""; position: absolute; inset: 0; border-radius: 50%;
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, .7);
+                animation: vd-sf-denyut 2.4s ease-out infinite 1s;
+            }
+            #vd-support-float .dashicons { color: #25d366; font-size: 21px; width: 21px; height: 21px; }
+            #vd-support-float .vd-sf-teks { display: flex; flex-direction: column; line-height: 1.15; }
+            #vd-support-float small { font-size: 11px; opacity: .88; }
+            #vd-support-float strong { font-size: 14px; font-weight: 700; letter-spacing: .2px; }
             #vd-support-float:hover, #vd-support-float:focus {
-                background: #1ebe5b; color: #fff; transform: translateY(-2px);
-                box-shadow: 0 6px 18px rgba(0, 0, 0, .22);
+                color: #fff; transform: translateY(-3px);
+                box-shadow: 0 12px 26px rgba(18, 140, 126, .45), inset 0 1px 0 rgba(255, 255, 255, .25);
             }
-            #vd-support-float:focus { outline: 2px solid #1d2327; outline-offset: 2px; }
-            @media (max-width: 782px) { #vd-support-float { right: 12px; bottom: 12px; } }
-            @media (prefers-reduced-motion: reduce) { #vd-support-float { transition: none; } #vd-support-float:hover { transform: none; } }
+            #vd-support-float:focus { outline: 2px solid #1d2327; outline-offset: 3px; }
+            @keyframes vd-sf-masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+            @keyframes vd-sf-denyut { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 70%, 100% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); } }
+            @media (max-width: 782px) {
+                #vd-support-float { right: 12px; bottom: 12px; padding-right: 14px; }
+                #vd-support-float small { display: none; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                #vd-support-float, #vd-support-float .vd-sf-ikon::after { animation: none; }
+                #vd-support-float { transition: none; }
+                #vd-support-float:hover { transform: none; }
+            }
         </style>
         <?php
     }
