@@ -5,7 +5,7 @@ Tags: settings, security, seo, optimization, setup
 Requires at least: 5.2
 Requires PHP: 7.0
 Tested up to: 6.2
-Stable tag: 2.4.3
+Stable tag: 2.4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,9 @@ This section describes how to install the plugin and get it working.
 3. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
 
 == Changelog ==
+
+=2.4.4=
+- wp-admin: tampilan tombol "Bantuan Support" diperbarui: gradasi hijau tua, ikon WA dalam lingkaran putih berdenyut halus, teks dua baris ("Ada kendala?" + "Bantuan Support"), animasi muncul. Di HP satu baris. Animasi mati bila pengguna memilih kurangi gerakan.
 
 =2.4.3=
 - wp-admin: tombol WA melayang "Bantuan Support" di kanan bawah, khusus administrator. Tidak tampil di tampilan depan dan editor blok.
