@@ -137,6 +137,11 @@ class Velocity_Addons
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-hide-admin-notice.php';
 
         /**
+         * Berisi Class info kontak Tim Support di admin bar (khusus admin).
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-support-info.php';
+
+        /**
          * Berisi Class untuk membatasi gagal login.
          */
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-velocity-addons-limit-login-attempts.php';
