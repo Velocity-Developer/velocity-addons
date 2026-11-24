@@ -33,7 +33,7 @@ class Velocity_Addons_Support_Info
             'id'     => 'velocity-support',
             'parent' => 'top-secondary',
             'title'  => '<span class="ab-icon dashicons dashicons-whatsapp" aria-hidden="true"></span>'
-                . '<span class="ab-label">Butuh bantuan? WA Tim Support 0877-4229-5809</span>',
+                . '<span class="ab-label">Bantuan Support</span>',
             'href'   => 'https://wa.me/' . self::WA . '?text=' . rawurlencode($text),
             'meta'   => array(
                 'target' => '_blank',

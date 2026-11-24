@@ -24,7 +24,7 @@ This section describes how to install the plugin and get it working.
 == Changelog ==
 
 =2.4.2=
-- Admin bar: item "Butuh bantuan? WA Tim Support 0877-4229-5809" di kanan atas (kiri "Howdy") khusus administrator, di wp-admin dan tampilan depan. Klik membuka WhatsApp Tim Support dengan pesan berisi domain web. Di HP tampil ikon WA saja.
+- Admin bar: item "Bantuan Support" (WhatsApp 0877-4229-5809) di kanan atas (kiri "Howdy") khusus administrator, di wp-admin dan tampilan depan. Klik membuka WhatsApp Tim Support dengan pesan berisi domain web. Di HP tampil ikon WA saja.
 
 =2.4.1=
 - Statistik: pembersihan sesi "pengunjung online" kini ikut cron harian (vd_daily_aggregation); jadwal 10 menit vd_cleanup_online_sessions dihapus otomatis. Sebelumnya jadwal itu memicu wp-cron 6x per jam di setiap situs. Hitungan pengunjung online tidak berubah.
