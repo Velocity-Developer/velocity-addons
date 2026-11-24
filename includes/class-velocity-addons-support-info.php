@@ -54,9 +54,9 @@ class Velocity_Addons_Support_Info
                 position: fixed; right: 20px; bottom: 20px; z-index: 9990;
                 display: inline-flex; align-items: center; gap: 10px;
                 padding: 6px 18px 6px 6px; border-radius: 999px;
-                background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+                background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
                 color: #fff; text-decoration: none;
-                box-shadow: 0 8px 22px rgba(18, 140, 126, .38), inset 0 1px 0 rgba(255, 255, 255, .25);
+                box-shadow: 0 8px 22px rgba(27, 94, 32, .38), inset 0 1px 0 rgba(255, 255, 255, .25);
                 animation: vd-sf-masuk .45s ease-out both .3s;
                 transition: transform .18s ease, box-shadow .18s ease;
             }
@@ -75,7 +75,7 @@ class Velocity_Addons_Support_Info
             #vd-support-float strong { font-size: 14px; font-weight: 700; letter-spacing: .2px; }
             #vd-support-float:hover, #vd-support-float:focus {
                 color: #fff; transform: translateY(-3px);
-                box-shadow: 0 12px 26px rgba(18, 140, 126, .45), inset 0 1px 0 rgba(255, 255, 255, .25);
+                box-shadow: 0 12px 26px rgba(27, 94, 32, .45), inset 0 1px 0 rgba(255, 255, 255, .25);
             }
             #vd-support-float:focus { outline: 2px solid #1d2327; outline-offset: 3px; }
             @keyframes vd-sf-masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
