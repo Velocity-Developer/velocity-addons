@@ -40,7 +40,12 @@ class Velocity_Addons_Support_Info
         }
 
         // Bisa dimatikan di Velocity Addons > General (bawaan aktif).
-        if (!get_option('floating_bantuan_support', 1)) {
+        // Di halaman General tombol tetap dirender (tersembunyi) agar sakelar
+        // bisa memunculkan/menyembunyikannya langsung tanpa muat ulang.
+        $aktif        = (bool) get_option('floating_bantuan_support', 1);
+        $page         = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+        $hal_pengaturan = ($page === 'velocity_general_settings');
+        if (!$aktif && !$hal_pengaturan) {
             return;
         }
 
@@ -49,7 +54,7 @@ class Velocity_Addons_Support_Info
             return;
         }
         ?>
-        <a id="vd-support-float" href="<?php echo esc_url($this->wa_url()); ?>" target="_blank" rel="noopener"
+        <a id="vd-support-float" href="<?php echo esc_url($this->wa_url()); ?>" target="_blank" rel="noopener"<?php echo $aktif ? '' : ' hidden'; ?>
             aria-label="Bantuan Support lewat WhatsApp 0877-4229-5809">
             <span class="vd-sf-ikon" aria-hidden="true"><span class="dashicons dashicons-whatsapp"></span></span>
             <span class="vd-sf-teks"><small>Ada kendala?</small><strong>Bantuan Support</strong></span>
@@ -94,8 +99,22 @@ class Velocity_Addons_Support_Info
                 #vd-support-float { transition: none; }
                 #vd-support-float:hover { transform: none; }
             }
+            #vd-support-float[hidden] { display: none; }
         </style>
-        <?php
+        <?php if ($hal_pengaturan) : ?>
+        <script>
+            (function () {
+                var sakelar = document.getElementById('floating_bantuan_support');
+                var tombol = document.getElementById('vd-support-float');
+                if (!sakelar || !tombol) {
+                    return;
+                }
+                sakelar.addEventListener('change', function () {
+                    tombol.hidden = !sakelar.checked;
+                });
+            })();
+        </script>
+        <?php endif;
     }
 
     public function add_node($wp_admin_bar)
