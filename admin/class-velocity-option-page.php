@@ -299,6 +299,7 @@ class Custom_Admin_Option_Page
         register_setting('velocity_general_options_group', 'statistik_velocity');
         register_setting('velocity_general_options_group', 'floating_whatsapp');
         register_setting('velocity_general_options_group', 'floating_scrollTop');
+        register_setting('velocity_general_options_group', 'floating_bantuan_support');
         register_setting('velocity_general_options_group', 'news_generate');
         register_setting('velocity_general_options_group', 'velocity_gallery');
         register_setting('velocity_general_options_group', 'velocity_optimasi');
@@ -644,6 +645,7 @@ class Custom_Admin_Option_Page
             ['id' => 'classic_widget_velocity', 'type' => 'checkbox', 'title' => 'Classic Widget', 'std' => 1, 'label' => 'Aktifkan widget klasik.'],
             ['id' => 'enable_xml_sitemap', 'type' => 'checkbox', 'title' => 'XML Sitemap', 'std' => 1, 'label' => 'Aktifkan XML Sitemap Generator (sitemap.xml).'],
             ['id' => 'floating_scrollTop', 'type' => 'checkbox', 'title' => 'Floating Scrolltop', 'std' => 1, 'label' => 'Aktifkan scrollTop ke halaman atas.'],
+            ['id' => 'floating_bantuan_support', 'type' => 'checkbox', 'title' => 'Floating Bantuan Support', 'std' => 1, 'label' => 'Tampilkan tombol WhatsApp "Bantuan Support" melayang di kanan bawah wp-admin (khusus admin).'],
             ['id' => 'remove_slug_category_velocity', 'type' => 'checkbox', 'title' => 'Remove Slug Category', 'std' => 0, 'label' => 'Aktifkan untuk hapus slug /category/ dari URL.'],
             ['id' => 'remove_category_archive_title_velocity', 'type' => 'checkbox', 'title' => 'Remove Category from Archive Title', 'std' => 1, 'label' => 'Hapus prefix "Category:" dari judul halaman arsip kategori.'],
         ];
@@ -730,6 +732,7 @@ class Custom_Admin_Option_Page
             'statistik_velocity' => 1,
             'floating_whatsapp' => 1,
             'floating_scrollTop' => 1,
+            'floating_bantuan_support' => 1,
             'remove_slug_category_velocity' => 0,
             'remove_category_archive_title_velocity' => 1,
             'news_generate' => 1,

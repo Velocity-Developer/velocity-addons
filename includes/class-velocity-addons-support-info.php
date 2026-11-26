@@ -39,6 +39,11 @@ class Velocity_Addons_Support_Info
             return;
         }
 
+        // Bisa dimatikan di Velocity Addons > General (bawaan aktif).
+        if (!get_option('floating_bantuan_support', 1)) {
+            return;
+        }
+
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
         if ($screen && method_exists($screen, 'is_block_editor') && $screen->is_block_editor()) {
             return;
